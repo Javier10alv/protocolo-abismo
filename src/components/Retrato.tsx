@@ -54,7 +54,7 @@ const CARA: Partial<Record<Personaje, { x: number; y: number; alto: number }>> =
 /** Proporción ancho/alto de cada sprite (para calcular el recorte). */
 const PROPORCION: Partial<Record<Personaje, number>> = {
   leo: 449 / 1200,
-  lisa: 417 / 1200,
+  lisa: 416 / 1200,
   reyes: 412 / 1200,
   aris: 498 / 1200,
 };

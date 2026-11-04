@@ -98,7 +98,7 @@ export default function Conversacion({ onCompletar }: PropsMecanica) {
           const empatados = (['escucha', 'plan', 'ingenio'] as Estilo[]).filter((e) => cuenta(e) === max);
           const clave = [...nuevas].reverse().find((e) => empatados.includes(e)) ?? nuevas[nuevas.length - 1];
           const conductas = [...new Set(nuevas)].map((e) => `estilo_${e}`);
-          window.setTimeout(() => onCompletar({ clave, conductas, intentos: 0, ayudaRecibida: false }), 1400);
+          window.setTimeout(() => onCompletar({ clave, conductas, intentos: 0, ayudaRecibida: false, precision: 100 }), 1400);
         }
       },
       reducido ? 200 : 1100,

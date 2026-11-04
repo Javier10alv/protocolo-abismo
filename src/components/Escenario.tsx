@@ -7,10 +7,20 @@ import { NOMBRE_PERSONAJE, SPRITE_PERSONAJE } from './Retrato';
  * y, encima, los sprites de los personajes presentes. Todo es decorativo y no
  * captura clics (pointer-events-none): la interacción vive en el panel de diálogo.
  */
-export default function Escenario({ escena, visible }: { escena: Scene; visible: boolean }) {
-  // Si el fondo es un vídeo, los personajes ya aparecen en él: no se dibujan sprites encima.
-  // Solo se dibujan los personajes que tienen sprite.
-  const personajes = escena.fondoVideo ? [] : (escena.personajes ?? []).filter((p) => SPRITE_PERSONAJE[p]);
+interface Props {
+  escena: Scene;
+  visible: boolean;
+  /** Personajes en escena ahora mismo (por defecto, todos los de la escena). Permite que entren por pasos. */
+  enEscena?: Personaje[];
+  /** Quién habla: el resto se atenúa ligeramente. */
+  hablando?: Personaje | null;
+}
+
+export default function Escenario({ escena, visible, enEscena, hablando = null }: Props) {
+  // Si el fondo ya dibuja a los personajes (vídeo o ilustración de grupo), no se superponen sprites.
+  const sinSprites = !!escena.fondoVideo || !!escena.spritesEnFondo;
+  const candidatos = sinSprites ? [] : (escena.personajes ?? []).filter((p) => SPRITE_PERSONAJE[p]);
+  const presentes = enEscena ?? candidatos;
 
   return (
     <div className="pointer-events-none fixed inset-0">
@@ -34,7 +44,7 @@ export default function Escenario({ escena, visible }: { escena: Scene; visible:
         style={{ background: 'linear-gradient(to top, rgba(2,6,23,0.92) 0%, rgba(2,6,23,0.55) 40%, rgba(8,20,45,0.15) 100%)' }}
       />
 
-      <CapaPersonajes personajes={personajes} visible={visible} />
+      <CapaPersonajes candidatos={candidatos} presentes={presentes} hablando={hablando} visible={visible} />
     </div>
   );
 }
@@ -45,25 +55,27 @@ export default function Escenario({ escena, visible }: { escena: Scene; visible:
  */
 const LADO: Record<Personaje, 'izquierda' | 'derecha'> = { leo: 'izquierda', lisa: 'derecha', reyes: 'izquierda', aris: 'derecha' };
 
-function CapaPersonajes({ personajes, visible }: { personajes: Personaje[]; visible: boolean }) {
-  if (personajes.length === 0) return null;
+function CapaPersonajes({ candidatos, presentes, hablando, visible }: { candidatos: Personaje[]; presentes: Personaje[]; hablando: Personaje | null; visible: boolean }) {
+  if (candidatos.length === 0) return null;
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-      {personajes.map((p, i) => {
-        const izquierda = personajes.length === 1 ? i === 0 && LADO[p] === 'izquierda' : LADO[p] === 'izquierda';
+      {candidatos.map((p, i) => {
+        const izquierda = LADO[p] === 'izquierda';
+        const dentro = visible && presentes.includes(p);
+        const atenuado = hablando !== null && hablando !== p;
         return (
           <img
             key={p}
             src={SPRITE_PERSONAJE[p]!}
             alt={NOMBRE_PERSONAJE[p]}
             draggable={false}
-            className={`absolute top-[7dvh] h-[62dvh] w-auto sm:top-auto sm:bottom-0 max-w-none select-none drop-shadow-[0_0_24px_rgba(8,145,178,0.35)] transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none sm:h-[78dvh] lg:h-[86dvh] ${
+            className={`absolute top-[7dvh] h-[62dvh] w-auto max-w-none select-none drop-shadow-[0_0_24px_rgba(8,145,178,0.35)] transition-[opacity,transform,filter] duration-700 ease-out motion-reduce:transition-none sm:top-auto sm:bottom-0 sm:h-[78dvh] lg:h-[86dvh] ${
               izquierda ? 'left-[-4%] sm:left-[2%] lg:left-[6%]' : 'right-[-4%] sm:right-[2%] lg:right-[6%]'
-            } ${visible ? 'translate-x-0 opacity-100' : izquierda ? '-translate-x-8 opacity-0' : 'translate-x-8 opacity-0'}`}
+            } ${dentro ? 'translate-x-0 opacity-100' : izquierda ? '-translate-x-16 opacity-0' : 'translate-x-16 opacity-0'}`}
             style={{
-              transitionDelay: `${200 + i * 150}ms`,
-              // Ligera penumbra para integrarlos con la luz de la estación.
-              filter: 'brightness(0.92) saturate(0.95)',
+              transitionDelay: dentro ? `${150 + i * 120}ms` : '0ms',
+              // Penumbra para integrarlos con la luz de la estación; más tenue si no hablan.
+              filter: atenuado ? 'brightness(0.62) saturate(0.8)' : 'brightness(0.95) saturate(0.97)',
             }}
           />
         );

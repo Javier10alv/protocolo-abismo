@@ -1,7 +1,7 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { sonido } from '../audio/sonido';
 import { Bocadillo, Boton } from '../components/ui';
-import { INTENTOS_ANTES_DE_AYUDA, type PropsMecanica } from './tipos';
+import { INTENTOS_ANTES_DE_AYUDA, precisionPorIntentos, type PropsMecanica } from './tipos';
 
 const COLS = 6;
 const FILAS = 5;
@@ -75,7 +75,7 @@ export default function Sonar({ onCompletar }: PropsMecanica) {
       else if (!coordinado) conductas.push('actuo_con_poca_informacion');
       if (ayuda) conductas.push('ayuda_automatica');
       const clave = coordinado ? 'coordinado' : fallos > 0 ? 'constante' : antes >= 3 ? 'explorador' : 'intuitivo';
-      window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayuda }), 1000);
+      window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayuda, precision: precisionPorIntentos(fallos, ayuda) }), 1000);
       return;
     }
     sonido.aviso();

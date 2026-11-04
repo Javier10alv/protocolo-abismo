@@ -1,36 +1,34 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useShallow } from 'zustand/react/shallow';
 import { sonido } from '../audio/sonido';
 import Retrato, { NOMBRE_PERSONAJE } from '../components/Retrato';
 import { Boton, Etiqueta, Panel } from '../components/ui';
+import { codigoValido, CODIGO_DOCENTE, normalizarNombre } from '../config';
 import { escenasPorId } from '../data/guion';
-import { generarCodigo } from '../logica/simulacion';
 import { useAjustesStore } from '../store/useAjustesStore';
-import { useShallow } from 'zustand/react/shallow';
-import { useGameStore } from '../store/useGameStore';
+import { SIN_ALUMNO, useGameStore } from '../store/useGameStore';
 
-const RE_CODIGO = /^[A-Z0-9-]+$/;
-
-function normalizar(v: string) {
-  return v.toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9-]/g, '');
-}
+// Letras (con tildes, ñ, ü), espacios, apóstrofos y guiones.
+const RE_NOMBRE = /^[\p{L}' -]+$/u;
 
 export default function Entrada() {
   const navigate = useNavigate();
   const guardada = useGameStore(
-    useShallow((s) => ({ codigo: s.alumnoCodigo, clase: s.claseId, escena: s.escenaActual, completada: s.completada, pasos: s.historial.length })),
+    useShallow((s) => ({ nombre: s.alumnoNombre, codigo: s.alumnoCodigo, escena: s.escenaActual, completada: s.completada, pasos: s.historial.length })),
   );
-  const reiniciarPartida = useGameStore((s) => s.reiniciarPartida);
+  const iniciarPartida = useGameStore((s) => s.iniciarPartida);
   const { sonido: sonidoOn, alternar } = useAjustesStore();
 
-  const hayGuardada = guardada.codigo !== 'ANON' && !guardada.completada && guardada.pasos > 0;
-  const [clase, setClase] = useState(guardada.codigo !== 'ANON' ? guardada.clase : '');
-  const [codigo, setCodigo] = useState(guardada.codigo !== 'ANON' ? guardada.codigo : '');
-  const [errores, setErrores] = useState<{ clase?: string; codigo?: string }>({});
+  const hayGuardada = guardada.codigo !== SIN_ALUMNO && !guardada.completada && guardada.pasos > 0;
+  const [nombre, setNombre] = useState('');
+  const [codigo, setCodigo] = useState('');
+  const [errores, setErrores] = useState<{ nombre?: string; codigo?: string }>({});
   const [paso, setPaso] = useState<'datos' | 'briefing'>('datos');
-  const idClase = useId();
+  const idNombre = useId();
   const idCodigo = useId();
   const tituloBriefing = useRef<HTMLHeadingElement>(null);
+  const continuaGuardada = hayGuardada && normalizarNombre(nombre) === normalizarNombre(guardada.nombre);
 
   useEffect(() => {
     if (paso === 'briefing') tituloBriefing.current?.focus();
@@ -38,8 +36,11 @@ export default function Entrada() {
 
   const validar = () => {
     const e: typeof errores = {};
-    if (clase.length < 2 || clase.length > 20 || !RE_CODIGO.test(clase)) e.clase = 'Escribe el código de clase que te ha dado tu docente (por ejemplo, 2ESO-B).';
-    if (codigo.length < 3 || codigo.length > 12 || !RE_CODIGO.test(codigo)) e.codigo = 'Tu código debe tener entre 3 y 12 letras o números.';
+    const limpio = nombre.trim().replace(/\s+/g, ' ');
+    if (limpio.length < 3 || limpio.length > 80 || !RE_NOMBRE.test(limpio) || !limpio.includes(' ')) {
+      e.nombre = 'Escribe tu nombre y apellidos (solo letras).';
+    }
+    if (!codigoValido(codigo)) e.codigo = 'El código de verificación no es correcto. Pídeselo a tu docente.';
     setErrores(e);
     return Object.keys(e).length === 0;
   };
@@ -48,7 +49,7 @@ export default function Entrada() {
     ev.preventDefault();
     if (!validar()) return;
     sonido.seleccion();
-    if (hayGuardada && guardada.codigo === codigo && guardada.clase === clase) {
+    if (continuaGuardada) {
       navigate('/jugar');
       return;
     }
@@ -56,10 +57,13 @@ export default function Entrada() {
   };
 
   const empezar = () => {
-    reiniciarPartida(codigo, clase);
+    // Cada partida nueva recibe un ID único; el nombre queda asociado a ese ID.
+    iniciarPartida(nombre.trim().replace(/\s+/g, ' '), CODIGO_DOCENTE);
     sonido.iniciarAmbiente();
     navigate('/jugar');
   };
+
+  const primerNombre = nombre.trim().split(/\s+/)[0] ?? '';
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-slate-950 text-slate-100">
@@ -79,74 +83,69 @@ export default function Entrada() {
           <Panel className="p-5 sm:p-7">
             <form onSubmit={continuar} noValidate className="grid gap-5">
               <div className="grid gap-1.5">
-                <label htmlFor={idClase} className="text-sm font-medium text-cyan-100">
-                  Código de clase
+                <label htmlFor={idNombre} className="text-sm font-medium text-cyan-100">
+                  Nombre completo
                 </label>
                 <input
-                  id={idClase}
-                  value={clase}
-                  onChange={(e) => setClase(normalizar(e.target.value))}
-                  placeholder="2ESO-B"
-                  autoComplete="off"
-                  autoCapitalize="characters"
-                  maxLength={20}
-                  aria-invalid={!!errores.clase}
-                  aria-describedby={errores.clase ? `${idClase}-error` : undefined}
-                  className="min-h-12 rounded-xl border border-cyan-400/30 bg-slate-900/80 px-4 font-mono text-lg tracking-widest text-white placeholder:text-slate-600 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+                  id={idNombre}
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  placeholder="Nombre y apellidos"
+                  autoComplete="name"
+                  maxLength={80}
+                  aria-invalid={!!errores.nombre}
+                  aria-describedby={`${idNombre}-ayuda${errores.nombre ? ` ${idNombre}-error` : ''}`}
+                  className="min-h-12 rounded-xl border border-cyan-400/30 bg-slate-900/80 px-4 text-lg text-white placeholder:text-slate-600 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
                 />
-                {errores.clase && (
-                  <p id={`${idClase}-error`} className="text-sm text-amber-300">
-                    {errores.clase}
+                <p id={`${idNombre}-ayuda`} className="text-xs text-slate-400">
+                  Solo lo verá tu docente.
+                </p>
+                {errores.nombre && (
+                  <p id={`${idNombre}-error`} role="alert" className="text-sm text-amber-300">
+                    {errores.nombre}
                   </p>
                 )}
               </div>
 
               <div className="grid gap-1.5">
                 <label htmlFor={idCodigo} className="text-sm font-medium text-cyan-100">
-                  Tu código de investigador/a
+                  Código de verificación del docente
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    id={idCodigo}
-                    value={codigo}
-                    onChange={(e) => setCodigo(normalizar(e.target.value))}
-                    placeholder="A7K2"
-                    autoComplete="off"
-                    autoCapitalize="characters"
-                    maxLength={12}
-                    aria-invalid={!!errores.codigo}
-                    aria-describedby={`${idCodigo}-ayuda${errores.codigo ? ` ${idCodigo}-error` : ''}`}
-                    className="min-h-12 min-w-0 flex-1 rounded-xl border border-cyan-400/30 bg-slate-900/80 px-4 font-mono text-lg tracking-widest text-white placeholder:text-slate-600 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
-                  />
-                  <Boton onClick={() => setCodigo(generarCodigo())} title="Generar un código al azar">
-                    🎲
-                  </Boton>
-                </div>
-                <p id={`${idCodigo}-ayuda`} className="text-xs text-slate-400">
-                  Usa el código que te ha dado tu docente. Nunca escribas tu nombre.
-                </p>
+                <input
+                  id={idCodigo}
+                  value={codigo}
+                  onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                  placeholder="Código que te ha dado tu docente"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  maxLength={20}
+                  aria-invalid={!!errores.codigo}
+                  aria-describedby={errores.codigo ? `${idCodigo}-error` : undefined}
+                  className="min-h-12 rounded-xl border border-cyan-400/30 bg-slate-900/80 px-4 font-mono text-lg tracking-widest text-white placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-600 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+                />
                 {errores.codigo && (
-                  <p id={`${idCodigo}-error`} className="text-sm text-amber-300">
-                    {errores.codigo}
+                  <p id={`${idCodigo}-error`} role="alert" className="flex items-center gap-2 rounded-lg border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+                    <span aria-hidden="true">⛔</span> {errores.codigo}
                   </p>
                 )}
               </div>
 
               {hayGuardada && (
                 <p className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-sm text-cyan-100">
-                  Hay una misión en pausa de <strong className="font-mono">{guardada.codigo}</strong> en «{escenasPorId.get(guardada.escena)?.titulo}». Escribe el mismo código para continuarla.
+                  Hay una misión en pausa en «{escenasPorId.get(guardada.escena)?.titulo}». Escribe el mismo nombre para continuarla.
                 </p>
               )}
 
               <Boton type="submit" variante="primario" className="min-h-12 text-lg" silencioso>
-                {hayGuardada && guardada.codigo === codigo && guardada.clase === clase ? 'Continuar la misión →' : 'Entrar en la estación →'}
+                {continuaGuardada ? 'Continuar la misión →' : 'Entrar en la estación →'}
               </Boton>
             </form>
           </Panel>
         ) : (
           <Panel className="grid gap-5 p-5 sm:p-7">
             <h2 ref={tituloBriefing} tabIndex={-1} className="text-2xl font-semibold text-white outline-none">
-              Antes de bajar, {codigo}
+              Antes de bajar, {primerNombre}
             </h2>
             <ul className="grid gap-3 text-slate-300">
               <li className="flex gap-3">
@@ -165,7 +164,7 @@ export default function Entrada() {
               </li>
               <li className="flex gap-3">
                 <span aria-hidden="true">⏸</span>
-                <span>Tu partida se guarda sola. Dura unos 20 minutos.</span>
+                <span>Tu partida se guarda sola. Dura unos 15 minutos.</span>
               </li>
             </ul>
             <ul className="grid gap-2 rounded-xl border border-slate-700 bg-slate-900/60 p-3" aria-label="El equipo">

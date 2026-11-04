@@ -2,19 +2,19 @@
 
 MVP para el hackathon **hack4edu**. Juego narrativo tipo "elige tu propia aventura" que evalúa de forma **invisible** las habilidades blandas de estudiantes de 10 a 18 años de contextos vulnerables, sin exámenes. El alumno juega; el docente ve un radar de fortalezas y una recomendación pedagógica.
 
-Premisa: el alumno llega en submarino a la estación de investigación Abismo, a 3.000 m, en su primer día. Un sismo provoca un apagón y debe cooperar con Lisa (bióloga jefa), Leo (ingeniero mecánico en prácticas, inseguro), el Comandante Reyes (seguridad y piloto) y la Dra. Aris (científica de datos) para volver a la superficie. Solo Lisa y Leo tienen sprite; Reyes y Aris usan retratos provisionales (iniciales).
+Premisa: el alumno llega en submarino a la estación Abismo, a 3.000 m, en su primer día. Un sismo provoca un apagón con cinco problemas a la vez. Con Lisa (bióloga jefa), Leo (ingeniero mecánico en prácticas, inseguro), el Comandante Reyes (seguridad y piloto) y la Dra. Aris (científica de datos) los resuelve en el orden que elija. Los cuatro tienen sprite.
 
 ## Comandos
 
 ```bash
 npm install
 npm run dev      # servidor de desarrollo (http://localhost:5173)
-npm run validar  # valida el guion: estructura, 3 puntos, ramas, mecánicas, esquema
+npm run validar  # valida el guion: estructura, hub, puntuación, mecánicas, esquema
 npm run build    # validar + tsc -b + vite build — debe pasar sin errores antes de cada commit
 npx tsx scripts/generar-fondos.ts  # regenera las ilustraciones SVG de public/img
 ```
 
-Rutas: `/` entrada del alumno · `/jugar` juego · `/docente` panel (en modo demo, «Cargar clase de ejemplo»).
+Rutas: `/` entrada (nombre completo + código del docente `ABISMO2026`, en `src/config.ts`) · `/jugar` juego · `/docente` panel (empieza vacío; sin partidas muestra una fila de «Alumno de Prueba»).
 
 ## Stack
 
@@ -34,9 +34,11 @@ src/
 ├── data/escenas.json           Guion (contenido, sin lógica)
 ├── data/guion.ts               VERSION_GUION, escenasPorId, eleccionesDe, describirEleccion, etapaDe
 ├── logica/partida.ts           Transiciones puras: crearEstadoInicial, aplicarOpcion, aplicarMinijuego
-├── logica/puntuacion.ts        Máximos alcanzables por escena/camino y normalización a %
+├── logica/puntuacion.ts        PESOS_ORDEN (10/7/5/3/1), máximos alcanzables y normalización a %
+├── logica/metricas.ts          Métricas por área para el panel: orden, puntos, tiempo y precisión
 ├── logica/recomendacion.ts     Recomendación con plantilla, resumen para el LLM, agrupamientos
-├── logica/simulacion.ts        Partidas simuladas (demo y validador) y generador de códigos
+├── logica/simulacion.ts        Partidas simuladas (validador) y la fila «Alumno de Prueba» del panel
+├── config.ts                   CODIGO_DOCENTE y normalización de nombres
 ├── mecanicas/registro.ts       Claves de desenlace de cada mecánica y etiquetas de conducta
 ├── mecanicas/*.tsx             Cableado, Conversacion, Sonar, Secuencia, Energia, Tuberias, Cultivo, Evacuacion, Sos, Ondas
 ├── store/                      useGameStore (partida) y useAjustesStore (sonido, texto grande…)
@@ -57,7 +59,8 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 - **Habilidades** (siempre estas 5, en este orden): `logica`, `creatividad`, `comunicacion`, `resiliencia`, `liderazgo`. Empiezan en 0 y solo suben.
 - **Scene** = `EscenaDecision | EscenaMinijuego` (campo `tipo`). Comunes: `id`, `titulo`, `imagen`, `altImagen`, `textoNarrativo` (máx. 3 líneas), `personajes?`.
-  - Decisión: `opciones` (3; hasta 5 en una bifurcación hacia minijuegos, como el apagón: una rama por habilidad). **Opcion**: `id`, `textoBoton`, `modificadores`, `siguienteEscena` (id o `'FIN'`).
+  - **Hub** (`tipo: 'hub'`): `introduccion` (líneas de diálogo; los personajes entran al hablar), `pregunta`, `preguntasRetorno` (una por vuelta), `cierre`, `opciones` (`id`, `area`, `textoBoton`, `escena`) y `siguienteEscena`. Cada opción abre un minijuego cuyos resultados vuelven al hub.
+  - Decisión: `opciones` (3–5). `sinPuntuacion: true` para escenas de reflexión (modificadores vacíos). **Opcion**: `id`, `textoBoton`, `modificadores`, `siguienteEscena` (id o `'FIN'`).
   - Minijuego: `mecanica`, `instruccion`, `resultados`. **Resultado**: `id`, `clave`, `descripcion` (para el docente), `textoCierre` (para el alumno), `modificadores`, `siguienteEscena`.
 - Opcionales en cualquier escena: `cinematica` (`src`, `descripcion` para lectores de pantalla, `subtitulos` con `desde`/`hasta`/`texto`/`personaje?`) se ve una vez por partida antes de la escena (`useCinematicasStore`); `fondoVideo` (`src`, `bucleDesde`) sustituye la imagen por un vídeo silencioso en bucle y oculta los sprites, porque los personajes ya salen en el vídeo.
 - Una mecánica devuelve `ResultadoMecanica` (`clave`, `conductas`, `intentos`, `ayudaRecibida`). Las claves posibles de cada mecánica están en `mecanicas/registro.ts` y deben coincidir con las del guion (lo comprueba `npm run validar`).
@@ -67,27 +70,30 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 ## Reglas del guion
 
-- Cada opción suma **exactamente 3 puntos**: 2 a una habilidad principal y 1 a una secundaria. Ninguna opción es "la buena" ni moralmente superior.
-- Estructura: sala de control → apagón (5 ramas: tuberías, cultivo, evacuación, S.O.S., ondas) → escotilla → pasillo → hangar → radio → generador → fallo → energía → cápsula.
+- **Puntuación por orden (hub):** el área elegida en 1.ª posición suma 10, la 2.ª 7, la 3.ª 5, la 4.ª 3 y la 5.ª 1 (`PESOS_ORDEN`). Ninguna prioridad es "la buena". Los minijuegos del hub no suman puntos (resultados con `modificadores: {}`).
+- Las escenas de decisión fuera del hub siguen la regla de 3 puntos: 2 a una habilidad principal y 1 a una secundaria.
+- Estructura (guion 4.0.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, cultivo, evacuación, S.O.S., ondas) → `esc_03_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas (cableado, conversación, sonar, secuencia, energía) siguen en el código, sin usarse.
 - Ids: escenas `esc_NN_nombre`, opciones `esc_NN_a|b|c|d|e`, resultados `esc_NN_clave`. Las ramas comparten `NN` (p. ej. `esc_03_tuberias`, `esc_03_sos`); los ids de opción/resultado son únicos en todo el guion.
-- Los minijuegos también cumplen la regla de 3 puntos en cada `resultado`.
 - Cada vez que cambies `escenas.json`, **sube `VERSION_GUION`** en `src/data/guion.ts`. Las partidas guardadas con otra versión se descartan al cargar.
-- Toda escena debe ser alcanzable y todo camino debe llegar a `FIN`.
+- Toda escena debe ser alcanzable y se debe poder llegar a `FIN`. El único ciclo permitido es minijuego → hub.
 - Narrativa sin violencia gráfica ni muertes; el peligro es ambiental y siempre hay salida colaborativa. Lenguaje claro para 10–18 años.
 
 ## Reglas de evaluación (no negociables)
 
 - **El alumno nunca ve puntuaciones**: ni en la UI, ni en mensajes, ni en respuestas de red que pueda inspeccionar.
 - **El radar se normaliza** como porcentaje del máximo alcanzable de cada habilidad sobre las escenas que el alumno visitó (`maximosAlcanzables` en `logica/puntuacion.ts`). El máximo se calcula desde el guion, no se escribe a mano.
-- `tiempoRespuestaMs` es telemetría: **no puntúa**.
+- `tiempoRespuestaMs` (duración de cada minijuego) y `precision` (0–100) son **métricas para el docente**: no cambian los puntos.
+- Tuberías (90 s) y S.O.S. (60 s) tienen cuenta atrás (`useCuentaAtras`). Al agotarse, un personaje da más tiempo: nunca se pierde.
 - Las mecánicas inspiradas en tests con «respuesta óptima» se adaptan: lo óptimo se registra como conducta para el docente, nunca resta. Un plan inviable (p. ej. sobrecargar a una persona) se trata como intento fallido que se rehace. Si una mecánica provoca errores a propósito (Ondas), debe explicárselo al alumno en el cierre.
 - Mecánicas: se puntúan **comportamientos** (reintentar, pedir pista, explorar antes de actuar), nunca velocidad ni precisión motora. Fallar no penaliza: tras 3 intentos (`INTENTOS_ANTES_DE_AYUDA`), un personaje ayuda y la historia sigue.
 - Para añadir una mecánica: tipo en `MECANICAS` (types/game.ts), entrada en `MECANICAS_INFO` (registro.ts), componente en `mecanicas/` registrado en `mecanicas/index.ts`, y escena con sus `resultados` en el guion.
 
 ## Privacidad (usuarios menores)
 
-- Solo códigos seudónimos (`alumnoCodigo`, p. ej. `A7K2`), nunca nombres reales.
-- Al LLM se le envían porcentajes y textos de las decisiones; nunca `alumnoCodigo`, `claseId` ni `partidaId`.
+- El alumno entra con su **nombre completo** (`alumnoNombre`) y el código del docente. Cada partida tiene un **ID único seudónimo** (`alumnoCodigo`, p. ej. `K7Q2-M4X9`), que es el que se usa en análisis y exportaciones.
+- El nombre es un dato personal de un menor: solo se muestra en el panel del docente, no va en el CSV salvo que el docente lo marque y **nunca** se envía al LLM.
+- `CODIGO_DOCENTE` está en el frontend: filtra accesos casuales, no es seguridad.
+- Al LLM se le envían porcentajes y textos de las decisiones; nunca `alumnoNombre`, `alumnoCodigo`, `claseId` ni `partidaId`.
 - La API key del LLM vive solo en la Edge Function, jamás en el frontend.
 - En Supabase: RLS activado; el alumno (`anon`) solo inserta, el docente solo lee las partidas de sus clases.
 - El envío de la partida es idempotente (`on_conflict=partida_id` + `resolution=ignore-duplicates`): si el alumno recarga en la pantalla FIN, se vuelve a llamar sin duplicar.

@@ -118,7 +118,9 @@ export default function Cultivo({ onCompletar }: PropsMecanica) {
           : fallos >= 2
             ? 'tenaz'
             : 'practico';
-    onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayuda });
+    // Precisión: combinaciones que funcionaron sobre todas las probadas.
+    const precision = Math.round((soluciones.length / (soluciones.length + fallos)) * 100);
+    onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayuda, precision: ayuda ? Math.min(precision, 40) : precision });
   };
 
   return (

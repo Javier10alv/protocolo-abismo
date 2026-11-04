@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { sonido } from '../audio/sonido';
 import { Bocadillo, Boton } from '../components/ui';
-import { INTENTOS_ANTES_DE_AYUDA, type PropsMecanica } from './tipos';
+import { INTENTOS_ANTES_DE_AYUDA, precisionPorIntentos, type PropsMecanica } from './tipos';
 
 type Sistema = 'oxigeno' | 'motores' | 'luces' | 'comunicaciones';
 
@@ -51,7 +51,7 @@ export default function Energia({ onCompletar }: PropsMecanica) {
     if (final.comunicaciones > final.luces) conductas.push('priorizo_comunicaciones');
     else if (final.luces > final.comunicaciones) conductas.push('priorizo_iluminacion');
     else conductas.push('priorizo_margen');
-    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida }), 1300);
+    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida, precision: precisionPorIntentos(fallosTotales, ayudaRecibida) }), 1300);
   };
 
   const aplicar = () => {

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { sonido } from '../audio/sonido';
 import { Bocadillo, Boton } from '../components/ui';
-import { INTENTOS_ANTES_DE_AYUDA, type PropsMecanica } from './tipos';
+import { BarraTiempo, useCuentaAtras } from './CuentaAtras';
+import { INTENTOS_ANTES_DE_AYUDA, precisionPorIntentos, type PropsMecanica } from './tipos';
 
 // Conexiones de cada pieza como máscara de bits: N=1, E=2, S=4, O=8.
 const N = 1;
@@ -125,24 +126,15 @@ export default function Tuberias({ onCompletar }: PropsMecanica) {
   const [mostrarAgua, setMostrarAgua] = useState(false);
   const [mensaje, setMensaje] = useState<{ texto: string; ok: boolean } | null>(null);
   const [consejo, setConsejo] = useState<string | null>(null);
-  const [temperatura, setTemperatura] = useState(35);
-  const [purga, setPurga] = useState(false);
+  const [purgas, setPurgas] = useState(0);
 
   const { llenas, llega } = useMemo(() => flujo(tablero), [tablero]);
 
-  // Al llegar al máximo, Leo abre la purga y la temperatura vuelve a 60 (no puntúa).
-  useEffect(() => {
-    if (temperatura >= 100 && !purga) setPurga(true);
-  }, [temperatura, purga]);
-
-  // Temperatura del motor: solo ambienta. Nunca puntúa ni termina la partida.
-  useEffect(() => {
-    if (resuelto) return;
-    const id = window.setInterval(() => {
-      setTemperatura((t) => (t >= 100 ? 60 : t + 1));
-    }, 900);
-    return () => window.clearInterval(id);
-  }, [resuelto]);
+  // Contrarreloj: si se agota, Leo abre la purga de emergencia y da 45 s más. Nunca se pierde.
+  const { restante, total } = useCuentaAtras(90, !resuelto, () => {
+    setPurgas((n) => n + 1);
+    return 45;
+  });
 
   const girarPieza = (i: number) => {
     if (resuelto) return;
@@ -159,9 +151,10 @@ export default function Tuberias({ onCompletar }: PropsMecanica) {
     if (pidioConsejo) conductas.push('pidio_ayuda');
     if (fallosTotales > 0) conductas.push('reintento');
     if (ayudaRecibida) conductas.push('ayuda_automatica');
+    if (purgas > 0) conductas.push('tiempo_agotado');
     if (!pidioConsejo && fallosTotales === 0) conductas.push('anticipo_recorrido');
     const clave = pidioConsejo ? 'guiado' : fallosTotales > 0 ? 'insistente' : 'planificador';
-    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida }), 1300);
+    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida, precision: Math.max(0, precisionPorIntentos(fallosTotales, ayudaRecibida) - (pidioConsejo ? 15 : 0)) }), 1300);
   };
 
   const abrirValvula = () => {
@@ -210,13 +203,8 @@ export default function Tuberias({ onCompletar }: PropsMecanica) {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2">
-        <span className="text-sm text-slate-300">Temperatura del motor</span>
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800" role="meter" aria-label="Temperatura del motor" aria-valuemin={0} aria-valuemax={100} aria-valuenow={temperatura}>
-          <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-rose-500 transition-[width] duration-700" style={{ width: `${temperatura}%` }} />
-        </div>
-      </div>
-      {purga && !resuelto && (
+      <BarraTiempo etiqueta="Sobrecalentamiento en" restante={restante} total={total} />
+      {purgas > 0 && !resuelto && (
         <Bocadillo personaje="leo" expresion="pensativo">
           ¡He abierto la purga de emergencia! Ganamos tiempo, sin prisa: piensa bien el recorrido.
         </Bocadillo>

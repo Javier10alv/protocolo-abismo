@@ -168,6 +168,7 @@ export const ETIQUETAS_CONDUCTA: Record<string, string> = {
   persistio_tras_error: 'Siguió intentándolo tras errores del sistema',
   hizo_pausa: 'Hizo una pausa para calmarse',
   pidio_relevo: 'Pidió relevo tras los errores',
+  tiempo_agotado: 'Se le agotó el tiempo (recibió más tiempo)',
 };
 
 export function etiquetaConducta(clave: string): string {

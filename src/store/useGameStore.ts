@@ -1,17 +1,25 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { VERSION_GUION } from '../data/guion';
-import { aplicarMinijuego, aplicarOpcion, crearEstadoInicial } from '../logica/partida';
+import { aplicarMinijuego, aplicarOpcion, aplicarOpcionHub, crearEstadoInicial, salirDelHub } from '../logica/partida';
 import type { EstadoAlumno, Opcion, ResultadoMecanica } from '../types/game';
 
 export { crearEstadoInicial };
+
+/** Partida vacía mientras no hay alumno identificado. */
+export const SIN_ALUMNO = 'SIN-ALUMNO';
 
 interface GameStore extends EstadoAlumno {
   /** Interno: cuándo se mostró la escena actual. No se persiste ni se envía. */
   escenaMostradaEn: number;
   seleccionarOpcion: (opcionSeleccionada: Opcion) => void;
+  elegirArea: (opcionHubId: string) => void;
+  salirDelHub: () => void;
   completarMinijuego: (resultado: ResultadoMecanica) => void;
-  reiniciarPartida: (alumnoCodigo?: string, claseId?: string) => void;
+  /** Empieza una partida nueva para un alumno (se genera un ID único). */
+  iniciarPartida: (alumnoNombre: string, claseId: string) => void;
+  /** Vuelve a empezar con el mismo alumno. */
+  reiniciarPartida: () => void;
 }
 
 /** Extrae del store solo los campos del esquema (lo que se persiste y se envía al backend). */
@@ -19,6 +27,7 @@ export const seleccionarEstadoAlumno = (s: EstadoAlumno): EstadoAlumno => ({
   version: s.version,
   partidaId: s.partidaId,
   alumnoCodigo: s.alumnoCodigo,
+  alumnoNombre: s.alumnoNombre,
   claseId: s.claseId,
   escenaActual: s.escenaActual,
   habilidades: s.habilidades,
@@ -30,39 +39,31 @@ export const seleccionarEstadoAlumno = (s: EstadoAlumno): EstadoAlumno => ({
 
 export const useGameStore = create<GameStore>()(
   persist<GameStore, [], [], EstadoAlumno>(
-    (set, get) => ({
-      ...crearEstadoInicial(),
-      escenaMostradaEn: Date.now(),
-
-      seleccionarOpcion: (opcionSeleccionada) => {
+    (set, get) => {
+      /** Aplica una transición pura y reinicia el cronómetro de la escena. */
+      const transicion = (f: (estado: EstadoAlumno, ms: number) => EstadoAlumno | null) => {
         const estado = get();
-        // aplicarOpcion ignora opciones que no son de la escena actual (p. ej. doble clic).
-        const siguiente = aplicarOpcion(
-          seleccionarEstadoAlumno(estado),
-          opcionSeleccionada.id,
-          Date.now() - estado.escenaMostradaEn,
-        );
+        const siguiente = f(seleccionarEstadoAlumno(estado), Date.now() - estado.escenaMostradaEn);
         if (siguiente) set({ ...siguiente, escenaMostradaEn: Date.now() });
-      },
+      };
 
-      completarMinijuego: (resultado) => {
-        const estado = get();
-        const siguiente = aplicarMinijuego(
-          seleccionarEstadoAlumno(estado),
-          resultado,
-          Date.now() - estado.escenaMostradaEn,
-        );
-        if (siguiente) set({ ...siguiente, escenaMostradaEn: Date.now() });
-      },
+      return {
+        ...crearEstadoInicial(SIN_ALUMNO, SIN_ALUMNO, new Date(), SIN_ALUMNO),
+        escenaMostradaEn: Date.now(),
 
-      reiniciarPartida: (alumnoCodigo, claseId) => {
-        const { alumnoCodigo: codigoActual, claseId: claseActual } = get();
-        set({
-          ...crearEstadoInicial(alumnoCodigo ?? codigoActual, claseId ?? claseActual),
-          escenaMostradaEn: Date.now(),
-        });
-      },
-    }),
+        // Todas ignoran elecciones que no son válidas en la escena actual (p. ej. un doble clic).
+        seleccionarOpcion: (opcion) => transicion((e, ms) => aplicarOpcion(e, opcion.id, ms)),
+        elegirArea: (id) => transicion((e, ms) => aplicarOpcionHub(e, id, ms)),
+        salirDelHub: () => transicion((e) => salirDelHub(e)),
+        completarMinijuego: (resultado) => transicion((e, ms) => aplicarMinijuego(e, resultado, ms)),
+
+        iniciarPartida: (alumnoNombre, claseId) => set({ ...crearEstadoInicial(alumnoNombre, claseId), escenaMostradaEn: Date.now() }),
+        reiniciarPartida: () => {
+          const { alumnoNombre, claseId, alumnoCodigo } = get();
+          set({ ...crearEstadoInicial(alumnoNombre, claseId, new Date(), alumnoCodigo), escenaMostradaEn: Date.now() });
+        },
+      };
+    },
     {
       name: 'protocolo-abismo-partida',
       storage: createJSONStorage(() => localStorage),

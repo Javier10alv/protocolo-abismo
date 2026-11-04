@@ -63,7 +63,7 @@ export default function Ondas({ onCompletar }: PropsMecanica) {
     if (pausas > 0) conductas.push('hizo_pausa');
     const clave = porRelevo ? 'relevo' : pausas > 0 ? 'regulado' : 'perseverante';
     // `intentos` = errores del sistema vividos (no son fallos del alumno).
-    window.setTimeout(() => onCompletar({ clave, conductas, intentos: nivel, ayudaRecibida: porRelevo }), 1500);
+    window.setTimeout(() => onCompletar({ clave, conductas, intentos: nivel, ayudaRecibida: porRelevo, precision: porRelevo ? 50 : pausas > 0 ? 90 : 100 }), 1500);
   };
 
   const sincronizar = () => {

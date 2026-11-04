@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { sonido } from '../audio/sonido';
 import { Bocadillo, Boton } from '../components/ui';
-import { INTENTOS_ANTES_DE_AYUDA, type PropsMecanica } from './tipos';
+import { INTENTOS_ANTES_DE_AYUDA, precisionPorIntentos, type PropsMecanica } from './tipos';
 
 type Cable = 'rojo' | 'azul' | 'verde' | 'amarillo';
 type Terminal = 'triangulo' | 'rayo' | 'cuadrado' | 'circulo';
@@ -109,7 +109,7 @@ export default function Cableado({ onCompletar }: PropsMecanica) {
     if (ayudaRecibida) conductas.push('ayuda_automatica');
     if (!consultoAntes && !pidioAyuda) conductas.push('probo_directamente');
     const clave = pidioAyuda ? 'colaborativo' : fallosTotales > 0 ? 'persistente' : consultoAntes ? 'metodico' : 'experimental';
-    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida }), 900);
+    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida, precision: precisionPorIntentos(fallosTotales, ayudaRecibida) }), 900);
   };
 
   const probar = () => {

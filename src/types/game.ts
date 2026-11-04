@@ -96,13 +96,52 @@ interface EscenaBase {
   textoNarrativo: string;
   /** Personajes presentes: se dibujan como sprites sobre el fondo. */
   personajes?: Personaje[];
-  cinematica?: Cinematica;
+  /** Vídeos que se reproducen en orden (una sola vez por partida) antes de la escena. */
+  cinematicas?: Cinematica[];
   fondoVideo?: FondoVideo;
+  /** El fondo ya dibuja a los personajes: no se superponen sprites. */
+  spritesEnFondo?: boolean;
 }
 
 export interface EscenaDecision extends EscenaBase {
   tipo: 'decision';
   opciones: Opcion[];
+  /** Escena de reflexión: sus opciones no suman puntos (modificadores vacíos). */
+  sinPuntuacion?: boolean;
+}
+
+export interface LineaDialogo {
+  personaje: Personaje;
+  texto: string;
+}
+
+/** Opción del hub: abre el minijuego de un área. */
+export interface OpcionHub {
+  id: string;
+  area: Habilidad;
+  textoBoton: string;
+  /** Escena (minijuego) que se abre. Sus resultados vuelven al hub. */
+  escena: string;
+}
+
+/**
+ * Hub central: el alumno elige un área, juega su minijuego y vuelve aquí.
+ * La opción hecha desaparece y se repite hasta completar todas. El orden de
+ * elección puntúa con PESOS_ORDEN (10, 7, 5, 3, 1).
+ */
+export interface EscenaHub extends EscenaBase {
+  tipo: 'hub';
+  /** Diálogo de presentación, línea a línea (los personajes entran al hablar). */
+  introduccion: LineaDialogo[];
+  /** Pregunta que abre el menú la primera vez. */
+  pregunta: LineaDialogo;
+  /** Preguntas al volver; se usa la del número de áreas ya hechas (1.ª vuelta, 2.ª…). */
+  preguntasRetorno: LineaDialogo[];
+  /** Despedida al completar todas las áreas. */
+  cierre: LineaDialogo;
+  opciones: OpcionHub[];
+  /** A dónde se va al completar todas las áreas. */
+  siguienteEscena: string;
 }
 
 export interface EscenaMinijuego extends EscenaBase {
@@ -113,7 +152,7 @@ export interface EscenaMinijuego extends EscenaBase {
   resultados: Resultado[];
 }
 
-export type Scene = EscenaDecision | EscenaMinijuego;
+export type Scene = EscenaDecision | EscenaMinijuego | EscenaHub;
 
 /** Lo que devuelve una mecánica al terminar. */
 export interface ResultadoMecanica {
@@ -124,6 +163,8 @@ export interface ResultadoMecanica {
   intentos: number;
   /** true si un personaje ayudó tras 3 intentos. */
   ayudaRecibida: boolean;
+  /** Eficiencia en el minijuego (0–100). Métrica para el docente: no suma puntos. */
+  precision: number;
 }
 
 export interface RegistroDecision {
@@ -136,13 +177,22 @@ export interface RegistroDecision {
   conductas?: string[];
   intentos?: number;
   ayudaRecibida?: boolean;
+  /** Solo minijuegos: eficiencia 0–100. */
+  precision?: number;
+  /** Solo elecciones del hub: área elegida, posición (1.ª, 2.ª…) y puntos ganados. */
+  area?: Habilidad;
+  orden?: number;
+  puntos?: number;
 }
 
 /** Objeto que se envía al backend. Debe validar contra estado-alumno.schema.json. */
 export interface EstadoAlumno {
   version: string;
   partidaId: string;
+  /** ID único y seudónimo del alumno (se genera al entrar). Es lo que se usa en análisis y exportaciones. */
   alumnoCodigo: string;
+  /** Nombre completo. Dato personal: solo se muestra al docente y nunca se envía a la IA. */
+  alumnoNombre: string;
   claseId: string;
   escenaActual: string;
   habilidades: Habilidades;

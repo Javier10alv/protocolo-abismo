@@ -1,156 +1,133 @@
 [
   {
-    "id": "esc_01_despertar",
-    "tipo": "decision",
+    "id": "esc_01_hub",
+    "tipo": "hub",
     "titulo": "La sala de control",
     "imagen": "/img/base.webp",
-    "altImagen": "Sala de control circular de la estación, llena de pantallas azules y consolas. Al fondo, grandes ventanales al mar profundo; a la izquierda, un pasillo con luz roja.",
-    "textoNarrativo": "Es tu primer día en la estación Abismo. Lisa, la bióloga jefa, y Leo, ingeniero mecánico en prácticas, te enseñan la sala de control mientras el Comandante Reyes y la Dra. Aris revisan las pantallas. De pronto, un temblor sacude el suelo.",
+    "altImagen": "Sala de control circular de la estación, con pantallas azules y grandes ventanales al mar profundo. A la izquierda, un pasillo con luz roja.",
+    "textoNarrativo": "Un temblor ha dejado la estación Abismo sin energía. Hay cinco problemas urgentes y no se pueden atender todos a la vez.",
     "personajes": [
       "leo",
       "lisa"
     ],
-    "cinematica": {
-      "src": "/video/intro.mp4",
-      "descripcion": "Un submarino se acerca a la estación Abismo en el fondo del mar y entra hasta la sala de control.",
-      "subtitulos": [
-        {
-          "desde": 0.3,
-          "hasta": 2.6,
-          "texto": "Estación de investigación Abismo"
-        },
-        {
-          "desde": 2.6,
-          "hasta": 5.0,
-          "texto": "3.000 metros bajo el mar · Tu primer día"
-        }
-      ]
+    "cinematicas": [
+      {
+        "src": "/video/intro.mp4",
+        "descripcion": "Un submarino se acerca a la estación Abismo en el fondo del mar y entra hasta la sala de control.",
+        "subtitulos": [
+          {
+            "desde": 0.3,
+            "hasta": 2.6,
+            "texto": "Estación de investigación Abismo"
+          },
+          {
+            "desde": 2.6,
+            "hasta": 5.0,
+            "texto": "3.000 metros bajo el mar · Tu primer día"
+          }
+        ]
+      },
+      {
+        "src": "/video/emergencia.mp4",
+        "descripcion": "Las luces azules de la sala de control se apagan y todo se tiñe de rojo mientras suena la alarma. Leo y Lisa se miran, preocupados.",
+        "subtitulos": [
+          {
+            "desde": 3.4,
+            "hasta": 5.9,
+            "texto": "⚠ FALLO DE ENERGÍA · Protocolo de emergencia activado"
+          },
+          {
+            "desde": 6.0,
+            "hasta": 8.1,
+            "personaje": "leo",
+            "texto": "¡Nos hemos quedado sin energía! ¡Todo está fallando a la vez!"
+          },
+          {
+            "desde": 8.1,
+            "hasta": 10.4,
+            "personaje": "lisa",
+            "texto": "Calma. Vamos a resolverlo, pero hay que decidir por dónde empezar."
+          }
+        ]
+      }
+    ],
+    "introduccion": [
+      {
+        "personaje": "leo",
+        "texto": "¡Menos mal que has llegado! El temblor ha tumbado la red eléctrica: el motor se recalienta, los cultivos se apagan, la antena está rota y el sistema central no responde."
+      },
+      {
+        "personaje": "leo",
+        "texto": "Y en el Sector C empieza a entrar agua… Es demasiado para hacerlo todo a la vez."
+      }
+    ],
+    "pregunta": {
+      "personaje": "lisa",
+      "texto": "Tranquilidad: lo resolveremos paso a paso. Pero alguien tiene que decidir por dónde empezar. ¿Qué atendemos primero?"
+    },
+    "preguntasRetorno": [
+      {
+        "personaje": "lisa",
+        "texto": "¡Bien hecho! Uno menos. Aún nos quedan problemas por resolver: ¿qué atendemos ahora?"
+      },
+      {
+        "personaje": "lisa",
+        "texto": "La estación ya aguanta mejor. Quedan tres frentes abiertos: ¿cuál es el siguiente?"
+      },
+      {
+        "personaje": "lisa",
+        "texto": "Casi lo tenemos. Solo quedan dos problemas: ¿por cuál seguimos?"
+      },
+      {
+        "personaje": "lisa",
+        "texto": "Último esfuerzo: queda un único problema. ¡Vamos a por él!"
+      }
+    ],
+    "cierre": {
+      "personaje": "lisa",
+      "texto": "¡Lo has conseguido! Todos los sistemas están estables y el batiscafo de rescate ya viene de camino."
     },
     "opciones": [
       {
         "id": "esc_01_a",
-        "textoBoton": "Revisar el panel de energía para entender qué ha fallado",
-        "modificadores": {
-          "logica": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_02_apagon"
+        "area": "logica",
+        "textoBoton": "¡El motor principal se está sobrecalentando! Corro al panel de ventilación para reconectar los tubos de enfriamiento antes de que esto explote.",
+        "escena": "esc_02_tuberias"
       },
       {
         "id": "esc_01_b",
-        "textoBoton": "Preguntar a Lisa y Leo qué ha pasado y si están bien",
-        "modificadores": {
-          "comunicacion": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_02_apagon"
+        "area": "creatividad",
+        "textoBoton": "¡El apagón va a destruir los cultivos y nos quedaremos sin comida! Voy a fabricar un filtro casero mezclando café, piezas de mascarillas y pilas gastadas para salvar las plantas.",
+        "escena": "esc_02_cultivo"
       },
       {
         "id": "esc_01_c",
-        "textoBoton": "Improvisar una linterna con piezas de la consola por si se va la luz",
-        "modificadores": {
-          "creatividad": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_02_apagon"
+        "area": "liderazgo",
+        "textoBoton": "¡Que nadie entre en pánico! Organizo al equipo: envío a Lisa a asegurar las compuertas, a Aris a salvar los datos del ordenador, y yo me ofrezco a ir al pasillo inundado a revisar los fusibles.",
+        "escena": "esc_02_evacuacion"
+      },
+      {
+        "id": "esc_01_d",
+        "area": "comunicacion",
+        "textoBoton": "¡La antena está medio rota! Solo tenemos batería para enviar un mensaje súper corto a la superficie. Tengo que elegir las palabras exactas para pedir rescate sin perder el tiempo.",
+        "escena": "esc_02_sos"
+      },
+      {
+        "id": "esc_01_e",
+        "area": "resiliencia",
+        "textoBoton": "El sistema central se ha bloqueado y la pantalla no para de dar error. Voy a intentar hackear y reconectar la señal a mano, ¡y no voy a parar hasta conseguirlo aunque el sistema me eche!",
+        "escena": "esc_02_ondas"
       }
-    ]
-  },
-  {
-    "id": "esc_02_apagon",
-    "tipo": "decision",
-    "titulo": "Apagón en el Abismo",
-    "imagen": "/img/base.webp",
-    "altImagen": "Sala de control a oscuras, iluminada solo por la luz roja de emergencia. Leo y Lisa, con trajes de buceo, junto a la escotilla.",
-    "textoNarrativo": "La luz azul se apaga y solo parpadea la roja de emergencia. Las alarmas no paran: la estación se ha quedado sin energía. Lisa, Leo, el Comandante Reyes y la Dra. Aris te miran. ¿Por dónde empiezas?",
-    "personajes": [
-      "leo",
-      "lisa",
-      "reyes",
-      "aris"
     ],
-    "cinematica": {
-      "src": "/video/emergencia.mp4",
-      "descripcion": "Las luces azules de la sala de control se apagan y todo se tiñe de rojo mientras suena la alarma. Leo y Lisa se miran, preocupados.",
-      "subtitulos": [
-        {
-          "desde": 3.4,
-          "hasta": 5.9,
-          "texto": "⚠ FALLO DE ENERGÍA · Protocolo de emergencia activado"
-        },
-        {
-          "desde": 6.0,
-          "hasta": 8.1,
-          "personaje": "leo",
-          "texto": "¡Nos hemos quedado sin energía! ¡Y la escotilla no se abre!"
-        },
-        {
-          "desde": 8.1,
-          "hasta": 10.4,
-          "personaje": "lisa",
-          "texto": "Calma. Hay varios frentes abiertos: tenemos que decidir por dónde empezar."
-        }
-      ]
-    },
-    "fondoVideo": {
-      "src": "/video/emergencia.mp4",
-      "bucleDesde": 6.2
-    },
-    "opciones": [
-      {
-        "id": "esc_02_a",
-        "textoBoton": "El motor se está sobrecalentando: corro al panel de ventilación a reconectar los tubos de refrigeración.",
-        "modificadores": {
-          "logica": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_03_tuberias"
-      },
-      {
-        "id": "esc_02_b",
-        "textoBoton": "Sin energía, los cultivos morirán: improviso un filtro con lo que haya a mano para salvar las plantas.",
-        "modificadores": {
-          "creatividad": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_03_cultivo"
-      },
-      {
-        "id": "esc_02_c",
-        "textoBoton": "¡Que nadie entre en pánico! Organizo al equipo para que cada persona se ocupe de una tarea.",
-        "modificadores": {
-          "liderazgo": 2,
-          "comunicacion": 1
-        },
-        "siguienteEscena": "esc_03_evacuacion"
-      },
-      {
-        "id": "esc_02_d",
-        "textoBoton": "La antena está medio rota: preparo un mensaje muy corto para pedir rescate a la superficie.",
-        "modificadores": {
-          "comunicacion": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_03_sos"
-      },
-      {
-        "id": "esc_02_e",
-        "textoBoton": "El sistema central no deja de dar error: intento reconectar la señal a mano, cueste lo que cueste.",
-        "modificadores": {
-          "resiliencia": 2,
-          "creatividad": 1
-        },
-        "siguienteEscena": "esc_03_ondas"
-      }
-    ]
+    "siguienteEscena": "esc_03_ascenso"
   },
   {
-    "id": "esc_03_tuberias",
+    "id": "esc_02_tuberias",
     "tipo": "minijuego",
     "mecanica": "tuberias",
     "titulo": "Refrigerar el motor",
-    "imagen": "/img/esc_07_generador.svg",
-    "altImagen": "Panel de ventilación con una cuadrícula de tuberías desconectadas entre un depósito de refrigerante y el motor principal.",
+    "imagen": "/img/fondos/sala_tuberias.webp",
+    "altImagen": "Sala del reactor con una gran estructura de tuberías iluminadas en cian y pasarelas metálicas alrededor.",
     "textoNarrativo": "El motor principal se calienta cada vez más. En el panel de ventilación, el temblor ha girado las piezas de tubería: el refrigerante no llega.",
     "personajes": [
       "leo"
@@ -158,47 +135,38 @@
     "instruccion": "Gira las piezas para unir el depósito (izquierda) con el motor (derecha) y abre la válvula. Piensa el recorrido antes de abrir.",
     "resultados": [
       {
-        "id": "esc_03_planificador",
+        "id": "esc_02_planificador",
         "clave": "planificador",
         "descripcion": "Anticipó el recorrido completo y acertó al abrir la válvula la primera vez.",
         "textoCierre": "El refrigerante recorre todo el circuito a la primera y la aguja de temperatura baja. Leo silba: «Lo tenías todo en la cabeza».",
-        "modificadores": {
-          "logica": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_insistente",
+        "id": "esc_02_insistente",
         "clave": "insistente",
         "descripcion": "Ajustó el circuito tras uno o más intentos fallidos, sin pedir ayuda.",
         "textoCierre": "Cada fuga te enseñó qué pieza fallaba. Al final, el refrigerante llega al motor y la temperatura se estabiliza.",
-        "modificadores": {
-          "resiliencia": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_guiado",
+        "id": "esc_02_guiado",
         "clave": "guiado",
         "descripcion": "Pidió consejo a Leo durante la reparación.",
         "textoCierre": "Con las indicaciones de Leo, el circuito queda completo. «Las tuberías son lo mío», sonríe, algo más seguro de sí mismo.",
-        "modificadores": {
-          "comunicacion": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       }
     ]
   },
   {
-    "id": "esc_03_cultivo",
+    "id": "esc_02_cultivo",
     "tipo": "minijuego",
     "mecanica": "cultivo",
     "titulo": "El invernadero hidropónico",
-    "imagen": "/img/esc_04_taller.svg",
-    "altImagen": "Invernadero hidropónico con bandejas de plantas mustias y un medidor de pH en rojo.",
+    "imagen": "/img/fondos/hibernadero.webp",
+    "altImagen": "Invernadero hidropónico: un largo pasillo con tanques de algas verdes brillantes y bandejas de cultivo.",
     "textoNarrativo": "Sin energía, el agua del invernadero se ha vuelto demasiado ácida y las plantas se marchitan. No hay herramientas de botánica, solo un cajón de objetos poco habituales.",
     "personajes": [
       "lisa"
@@ -206,69 +174,54 @@
     "instruccion": "Combina dos objetos para estabilizar el pH del agua. Hay varias soluciones: usa los objetos para cosas distintas de su uso normal.",
     "resultados": [
       {
-        "id": "esc_03_consultor",
+        "id": "esc_02_consultor",
         "clave": "consultor",
         "descripcion": "Pidió ideas a Lisa antes o durante la búsqueda.",
         "textoCierre": "Lisa y tú dais con la mezcla y las hojas recuperan el color. «Dos cabezas de científicas piensan mejor», ríe ella.",
-        "modificadores": {
-          "comunicacion": 2,
-          "creatividad": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_divergente",
+        "id": "esc_02_divergente",
         "clave": "divergente",
         "descripcion": "Encontró más de una solución distinta para el mismo problema.",
         "textoCierre": "Con varias soluciones funcionando, el invernadero tiene repuesto para días. Lisa lo apunta todo: «Esto va al manual».",
-        "modificadores": {
-          "creatividad": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_original",
+        "id": "esc_02_original",
         "clave": "original",
         "descripcion": "Dio con una solución poco habitual, usando un objeto para algo muy distinto de su función.",
         "textoCierre": "A nadie se le habría ocurrido usar eso así… y funciona. El medidor de pH vuelve al verde.",
-        "modificadores": {
-          "creatividad": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_tenaz",
+        "id": "esc_02_tenaz",
         "clave": "tenaz",
         "descripcion": "Siguió probando combinaciones tras varios intentos sin éxito.",
         "textoCierre": "No todas las mezclas funcionaron, pero no te rendiste. El agua se estabiliza y las plantas siguen dando oxígeno.",
-        "modificadores": {
-          "resiliencia": 2,
-          "creatividad": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_practico",
+        "id": "esc_02_practico",
         "clave": "practico",
         "descripcion": "Encontró una solución convencional y la aplicó enseguida.",
         "textoCierre": "Una solución sencilla y eficaz: el medidor de pH vuelve al verde y las plantas siguen dando oxígeno.",
-        "modificadores": {
-          "logica": 2,
-          "creatividad": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       }
     ]
   },
   {
-    "id": "esc_03_evacuacion",
+    "id": "esc_02_evacuacion",
     "tipo": "minijuego",
     "mecanica": "evacuacion",
     "titulo": "La evacuación del Sector C",
-    "imagen": "/img/base.webp",
-    "altImagen": "Sala de control en penumbra roja con un plano de la estación en una pantalla y cinco tareas marcadas.",
+    "imagen": "/img/fondos/liderazgo_decision.webp",
+    "altImagen": "El equipo reunido frente al núcleo de la estación: el Comandante Reyes, la Dra. Aris, Leo y Lisa esperan instrucciones.",
     "textoNarrativo": "La estación está cediendo en el Sector C. Hay que estabilizarla mientras se prepara una posible huida. Hay cinco tareas urgentes y cinco personas, contándote a ti.",
     "personajes": [
       "leo",
@@ -276,61 +229,50 @@
       "reyes",
       "aris"
     ],
+    "spritesEnFondo": true,
     "instruccion": "Asigna cada tarea a una persona y ejecuta el plan. Puedes preguntar al equipo antes de decidir.",
     "resultados": [
       {
-        "id": "esc_03_ejemplo",
+        "id": "esc_02_ejemplo",
         "clave": "ejemplo",
         "descripcion": "Asumió personalmente la tarea crítica y arriesgada (la válvula inundada).",
         "textoCierre": "Te metes en el agua hasta la cintura y cierras la válvula. Al verte, el equipo trabaja con otra energía. Reyes asiente: «Así se lidera».",
-        "modificadores": {
-          "liderazgo": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_situacional",
+        "id": "esc_02_situacional",
         "clave": "situacional",
         "descripcion": "Repartió las tareas según la especialidad de cada persona.",
         "textoCierre": "Cada uno hace lo que mejor sabe hacer y el plan avanza como un reloj. Aris comenta: «Nos conoces bien».",
-        "modificadores": {
-          "logica": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_consenso",
+        "id": "esc_02_consenso",
         "clave": "consenso",
         "descripcion": "Preguntó al equipo antes de repartir y tuvo en cuenta lo que dijeron.",
         "textoCierre": "Al sentirse escuchado, el equipo se coordina sin roces. Leo susurra: «Gracias por preguntar».",
-        "modificadores": {
-          "comunicacion": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_improvisado",
+        "id": "esc_02_improvisado",
         "clave": "improvisado",
         "descripcion": "Organizó un reparto poco convencional, distinto de las especialidades.",
         "textoCierre": "El reparto es poco habitual, pero el equipo se adapta y la estación aguanta.",
-        "modificadores": {
-          "creatividad": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       }
     ]
   },
   {
-    "id": "esc_03_sos",
+    "id": "esc_02_sos",
     "tipo": "minijuego",
     "mecanica": "sos",
     "titulo": "Protocolo S.O.S.",
-    "imagen": "/img/esc_06_radio.svg",
-    "altImagen": "Consola de radio con la antena dañada. En la pantalla, un indicador de ancho de banda casi vacío.",
+    "imagen": "/img/fondos/sala_control_pantalla.webp",
+    "altImagen": "Puesto de comunicaciones con un radar en la pantalla central y consolas a los lados.",
     "textoNarrativo": "La antena está dañada y el ancho de banda solo permite enviar tres fragmentos de texto. Lo que digas tiene que servir a la superficie para venir a buscaros.",
     "personajes": [
       "reyes",
@@ -339,47 +281,38 @@
     "instruccion": "Elige 3 fragmentos para formar el mensaje y transmítelo. La superficie te dirá si le falta algo.",
     "resultados": [
       {
-        "id": "esc_03_directo",
+        "id": "esc_02_directo",
         "clave": "directo",
         "descripcion": "Su primer mensaje ya incluía dónde, cuántos y qué necesitan: información justa y relevante.",
         "textoCierre": "«Recibido: Sector C, cinco personas, rescate en camino». Reyes levanta el pulgar: «Claro y al grano».",
-        "modificadores": {
-          "comunicacion": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_ajustado",
+        "id": "esc_02_ajustado",
         "clave": "ajustado",
         "descripcion": "Reformuló el mensaje a partir de la respuesta de la superficie.",
         "textoCierre": "Con cada respuesta afinaste el mensaje. Al final, la superficie lo tiene claro: «Recibido. Vamos para allá».",
-        "modificadores": {
-          "resiliencia": 2,
-          "comunicacion": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_asesorado",
+        "id": "esc_02_asesorado",
         "clave": "asesorado",
         "descripcion": "Pidió consejo al Comandante Reyes sobre qué incluir.",
         "textoCierre": "Con el consejo de Reyes, el mensaje sale perfecto. «Saber a quién preguntar también es saber comunicar», dice.",
-        "modificadores": {
-          "comunicacion": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       }
     ]
   },
   {
-    "id": "esc_03_ondas",
+    "id": "esc_02_ondas",
     "tipo": "minijuego",
     "mecanica": "ondas",
     "titulo": "La señal perdida",
-    "imagen": "/img/esc_06_radio.svg",
-    "altImagen": "Pantalla del sistema central con dos ondas desacompasadas y mensajes de error parpadeando.",
+    "imagen": "/img/fondos/alerta_roja.webp",
+    "altImagen": "Puesto de control bañado en luz roja, con un gran símbolo de alerta en la pantalla central.",
     "textoNarrativo": "El sistema central se ha bloqueado y la pantalla no deja de dar error. Para reconectarlo hay que sintonizar a mano la señal con la onda de referencia.",
     "personajes": [
       "aris"
@@ -387,436 +320,63 @@
     "instruccion": "Ajusta tu onda hasta que coincida con la de referencia. Si lo necesitas, puedes tomar aire o pedir relevo a Aris.",
     "resultados": [
       {
-        "id": "esc_03_perseverante",
+        "id": "esc_02_perseverante",
         "clave": "perseverante",
         "descripcion": "Siguió sintonizando tras los errores del sistema hasta completar la conexión.",
         "textoCierre": "La señal se estabiliza por fin. Aris revisa el registro: «Los fallos eran del sistema, no tuyos. Y aun así no paraste».",
-        "modificadores": {
-          "resiliencia": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_regulado",
+        "id": "esc_02_regulado",
         "clave": "regulado",
         "descripcion": "Hizo una pausa para calmarse tras un error y después completó la conexión.",
         "textoCierre": "Tomar aire te ayudó a volver con calma. La señal se estabiliza. Aris sonríe: «Saber parar también es avanzar». Los fallos eran del sistema, no tuyos.",
-        "modificadores": {
-          "resiliencia": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_03_relevo",
+        "id": "esc_02_relevo",
         "clave": "relevo",
         "descripcion": "Pidió relevo a Aris tras los errores del sistema.",
         "textoCierre": "Aris toma el relevo y, juntos, reconectáis la señal. «El sistema estaba fallando solo: has hecho bien en pedir ayuda», te dice.",
-        "modificadores": {
-          "comunicacion": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_04_escotilla"
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       }
     ]
   },
   {
-    "id": "esc_04_escotilla",
-    "tipo": "minijuego",
-    "mecanica": "cableado",
-    "titulo": "La escotilla atascada",
-    "imagen": "/img/base.webp",
-    "altImagen": "Sala de control en penumbra junto a la escotilla bloqueada; un panel abierto con cuatro cables sueltos.",
-    "textoNarrativo": "La energía vuelve a medias, pero la escotilla de la sala de control sigue bloqueada: el temblor ha soltado los cables del panel. Lisa está a tu lado y puede ayudarte si lo necesitas.",
-    "personajes": [
-      "leo",
-      "lisa"
-    ],
-    "instruccion": "Conecta cada cable con su terminal. Puedes consultar el esquema y pedir ayuda a Lisa cuando quieras.",
-    "resultados": [
-      {
-        "id": "esc_04_colaborativo",
-        "clave": "colaborativo",
-        "descripcion": "Pidió ayuda a Lisa durante la reparación.",
-        "textoCierre": "Con las indicaciones de Lisa, el último cable encaja. La escotilla se abre con un siseo. «Buen trabajo en equipo», sonríe ella.",
-        "modificadores": {
-          "comunicacion": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_05_pasillo"
-      },
-      {
-        "id": "esc_04_persistente",
-        "clave": "persistente",
-        "descripcion": "Volvió a intentarlo tras uno o más fallos, sin pedir ayuda.",
-        "textoCierre": "Al fin, el panel se ilumina en verde. Te ha costado varios intentos, pero no te has rendido. La escotilla se desliza hacia un lado.",
-        "modificadores": {
-          "resiliencia": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_05_pasillo"
-      },
-      {
-        "id": "esc_04_metodico",
-        "clave": "metodico",
-        "descripcion": "Consultó el esquema antes de conectar y resolvió al primer intento.",
-        "textoCierre": "Siguiendo el esquema paso a paso, todo encaja a la primera. La escotilla se abre y una corriente de aire frío entra desde el pasillo.",
-        "modificadores": {
-          "logica": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_05_pasillo"
-      },
-      {
-        "id": "esc_04_experimental",
-        "clave": "experimental",
-        "descripcion": "Resolvió probando directamente, sin consultar el esquema.",
-        "textoCierre": "Te has fiado de tu intuición y ha funcionado. Saltan unas chispas, el panel se pone verde y la escotilla se abre.",
-        "modificadores": {
-          "creatividad": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_05_pasillo"
-      }
-    ]
-  },
-  {
-    "id": "esc_05_pasillo",
-    "tipo": "minijuego",
-    "mecanica": "conversacion",
-    "titulo": "El pasillo inundado",
-    "imagen": "/img/esc_03_pasillo.svg",
-    "altImagen": "Leo, sentado en un escalón al fondo del pasillo, abraza sus rodillas. La luz de emergencia tiñe el agua de rojo.",
-    "textoNarrativo": "Reyes y Aris se quedan coordinando la evacuación. En el pasillo hacia el hangar, el agua llega a las rodillas. Leo se sienta en un escalón y no quiere seguir: tiene miedo. Lisa te pide que hables con él.",
-    "personajes": [
-      "leo",
-      "lisa"
-    ],
-    "instruccion": "Conversa con Leo. No hay respuestas correctas: elige lo que tú dirías.",
-    "resultados": [
-      {
-        "id": "esc_05_escucha",
-        "clave": "escucha",
-        "descripcion": "Priorizó escuchar y validar las emociones de Leo.",
-        "textoCierre": "Leo respira hondo y se levanta. «Gracias por no meterme prisa», dice. Los tres seguís hacia el hangar.",
-        "modificadores": {
-          "comunicacion": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_06_hangar"
-      },
-      {
-        "id": "esc_05_plan",
-        "clave": "plan",
-        "descripcion": "Ofreció a Leo un plan concreto y un papel claro.",
-        "textoCierre": "Con un plan claro, Leo parece otra persona. «Vale. Yo llevo el sonar», dice, y encabeza la marcha hacia el hangar.",
-        "modificadores": {
-          "liderazgo": 2,
-          "comunicacion": 1
-        },
-        "siguienteEscena": "esc_06_hangar"
-      },
-      {
-        "id": "esc_05_ingenio",
-        "clave": "ingenio",
-        "descripcion": "Usó el humor y las ideas inesperadas para rebajar la tensión.",
-        "textoCierre": "Leo suelta una carcajada nerviosa. «Vale, vale, vamos». Por primera vez en toda la noche, sonríe.",
-        "modificadores": {
-          "creatividad": 2,
-          "comunicacion": 1
-        },
-        "siguienteEscena": "esc_06_hangar"
-      }
-    ]
-  },
-  {
-    "id": "esc_06_hangar",
-    "tipo": "minijuego",
-    "mecanica": "sonar",
-    "titulo": "El hangar a oscuras",
-    "imagen": "/img/esc_05_hangar.svg",
-    "altImagen": "Hangar enorme y oscuro con cajas volcadas. Un haz de sonar dibuja círculos verdes en la penumbra.",
-    "textoNarrativo": "El hangar del dron está a oscuras y lleno de cajas desplazadas por el temblor. El dron tiene la batería que necesitáis. Leo lleva un sonar portátil.",
-    "personajes": [
-      "leo"
-    ],
-    "instruccion": "Usa el sonar para localizar el dron. Cuando creas saber dónde está, ve hacia allí.",
-    "resultados": [
-      {
-        "id": "esc_06_coordinado",
-        "clave": "coordinado",
-        "descripcion": "Organizó una búsqueda repartida con Leo.",
-        "textoCierre": "Al dividir el hangar en dos, Leo y tú lo encontráis enseguida. «¡Aquí!», grita Leo, iluminando el casco amarillo del dron.",
-        "modificadores": {
-          "liderazgo": 2,
-          "comunicacion": 1
-        },
-        "siguienteEscena": "esc_07_radio"
-      },
-      {
-        "id": "esc_06_constante",
-        "clave": "constante",
-        "descripcion": "No encontró el dron a la primera y siguió buscando.",
-        "textoCierre": "Varias pistas falsas después, ahí está: el dron, intacto bajo una lona. Merecía la pena seguir buscando.",
-        "modificadores": {
-          "resiliencia": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_07_radio"
-      },
-      {
-        "id": "esc_06_explorador",
-        "clave": "explorador",
-        "descripcion": "Exploró a fondo con el sonar antes de moverse.",
-        "textoCierre": "Con el mapa de ecos en la cabeza, vas directo al dron. Leo silba: «Ni un paso de más».",
-        "modificadores": {
-          "logica": 2,
-          "creatividad": 1
-        },
-        "siguienteEscena": "esc_07_radio"
-      },
-      {
-        "id": "esc_06_intuitivo",
-        "clave": "intuitivo",
-        "descripcion": "Se movió con poca información y acertó.",
-        "textoCierre": "Algo te dice que está allí… y aciertas. El dron descansa entre dos cajas, con la batería intacta.",
-        "modificadores": {
-          "creatividad": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_07_radio"
-      }
-    ]
-  },
-  {
-    "id": "esc_07_radio",
+    "id": "esc_03_ascenso",
     "tipo": "decision",
-    "titulo": "Voces desde la superficie",
-    "imagen": "/img/esc_06_radio.svg",
-    "altImagen": "Sala de radio con pantallas verdes llenas de interferencias, auriculares colgando y un micrófono sobre la mesa.",
-    "textoNarrativo": "Con el dron a cuestas llegáis a la sala de radio. Se oye la superficie entre interferencias: «...cápsula... cuarenta minutos... confirmad...». Lisa quiere responder ya; Leo cree que falta información.",
+    "titulo": "Rumbo a la superficie",
+    "imagen": "/img/fondos/equipo.webp",
+    "altImagen": "El equipo en la sala de control: la Dra. Aris en una silla con un portátil, Lisa y Leo junto a las consolas y el Comandante Reyes mirando por la ventana.",
+    "textoNarrativo": "El batiscafo de rescate se acopla a la estación. Mientras el equipo recoge, Lisa se acerca: «Hoy has tomado muchas decisiones difíciles. ¿Qué te llevas de esta experiencia?».",
     "personajes": [
       "leo",
-      "lisa"
+      "lisa",
+      "reyes",
+      "aris"
     ],
+    "spritesEnFondo": true,
+    "sinPuntuacion": true,
     "opciones": [
       {
-        "id": "esc_07_a",
-        "textoBoton": "Descifrar el mensaje con la tabla de frecuencias antes de responder",
-        "modificadores": {
-          "logica": 2,
-          "comunicacion": 1
-        },
-        "siguienteEscena": "esc_08_generador"
-      },
-      {
-        "id": "esc_07_b",
-        "textoBoton": "Responder con un mensaje breve y claro con lo que sabéis seguro",
-        "modificadores": {
-          "comunicacion": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_08_generador"
-      },
-      {
-        "id": "esc_07_c",
-        "textoBoton": "Proponer un código de golpes en las tuberías por si la radio se corta",
-        "modificadores": {
-          "creatividad": 2,
-          "comunicacion": 1
-        },
-        "siguienteEscena": "esc_08_generador"
-      }
-    ]
-  },
-  {
-    "id": "esc_08_generador",
-    "tipo": "minijuego",
-    "mecanica": "secuencia",
-    "titulo": "El manual desordenado",
-    "imagen": "/img/esc_07_generador.svg",
-    "altImagen": "Sala del generador con una gran máquina apagada. Sobre una mesa hay páginas de un manual esparcidas y una pizarra con notas.",
-    "textoNarrativo": "En la sala del generador encontráis el manual de reinicio, pero el temblor ha desordenado sus páginas. Leo dejó notas en la pizarra antes del apagón.",
-    "personajes": [
-      "leo",
-      "lisa"
-    ],
-    "instruccion": "Ordena los pasos del reinicio. Puedes leer las notas de Leo en cualquier momento.",
-    "resultados": [
-      {
-        "id": "esc_08_consulta",
-        "clave": "consulta",
-        "descripcion": "Consultó las notas del equipo para ordenar los pasos.",
-        "textoCierre": "Las notas de Leo encajan con las páginas y el procedimiento queda completo. «Para eso las dejé», dice él, orgulloso.",
-        "modificadores": {
-          "comunicacion": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_09_fallo"
-      },
-      {
-        "id": "esc_08_persistente",
-        "clave": "persistente",
-        "descripcion": "Ajustó el orden tras uno o más intentos fallidos.",
-        "textoCierre": "Cada intento te enseñó algo nuevo sobre la máquina. Por fin, todos los indicadores se encienden en orden.",
-        "modificadores": {
-          "resiliencia": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_09_fallo"
-      },
-      {
-        "id": "esc_08_analitico",
-        "clave": "analitico",
-        "descripcion": "Dedujo el orden correcto al primer intento, sin ayuda.",
-        "textoCierre": "Has deducido el orden pieza a pieza. Leo te mira: «¿Cómo lo has sabido?». Los indicadores se encienden uno tras otro.",
-        "modificadores": {
-          "logica": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_09_fallo"
-      }
-    ]
-  },
-  {
-    "id": "esc_09_fallo",
-    "tipo": "decision",
-    "titulo": "El corazón de la estación",
-    "imagen": "/img/esc_07_generador.svg",
-    "altImagen": "Sala del generador con una gran máquina que echa chispas, un dron submarino en el suelo y un manual abierto sobre una mesa.",
-    "textoNarrativo": "El generador arranca… y se para a los pocos segundos: no hay potencia suficiente. Lisa propone usar la batería del dron, nunca probada para esto. Leo ha encontrado otra página del manual, pero está medio borrosa.",
-    "personajes": [
-      "leo",
-      "lisa"
-    ],
-    "opciones": [
-      {
-        "id": "esc_09_a",
-        "textoBoton": "Volver a intentarlo, ajustando el procedimiento tras cada fallo",
-        "modificadores": {
-          "resiliencia": 2,
-          "logica": 1
-        },
-        "siguienteEscena": "esc_10_energia"
-      },
-      {
-        "id": "esc_09_b",
-        "textoBoton": "Conectar la batería del dron y asumir el riesgo de probar algo nuevo",
-        "modificadores": {
-          "creatividad": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_10_energia"
-      },
-      {
-        "id": "esc_09_c",
-        "textoBoton": "Reunir al equipo, poner en común lo que sabe cada uno y decidir juntos",
-        "modificadores": {
-          "comunicacion": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_10_energia"
-      }
-    ]
-  },
-  {
-    "id": "esc_10_energia",
-    "tipo": "minijuego",
-    "mecanica": "energia",
-    "titulo": "Preparar la cápsula",
-    "imagen": "/img/esc_09_energia.svg",
-    "altImagen": "Consola de distribución de energía con cuatro barras luminosas. Al fondo, la escotilla de una cápsula de ascenso.",
-    "textoNarrativo": "El generador vuelve a la vida, aunque con poca potencia. Tenéis 8 unidades de energía para preparar la cápsula de ascenso.",
-    "personajes": [
-      "leo",
-      "lisa"
-    ],
-    "instruccion": "Reparte las 8 unidades. La cápsula necesita al menos 2 de oxígeno y 3 de motores; el resto lo decides tú.",
-    "resultados": [
-      {
-        "id": "esc_10_adaptable",
-        "clave": "adaptable",
-        "descripcion": "Reajustó el reparto varias veces hasta que el sistema lo aceptó.",
-        "textoCierre": "Tras varios ajustes, el sistema da luz verde. «Lo importante es no rendirse con el primer plan», dice Lisa.",
-        "modificadores": {
-          "resiliencia": 2,
-          "creatividad": 1
-        },
-        "siguienteEscena": "esc_11_capsula"
-      },
-      {
-        "id": "esc_10_conectado",
-        "clave": "conectado",
-        "descripcion": "Reservó energía para las comunicaciones con la superficie.",
-        "textoCierre": "La radio de la cápsula se enciende: la superficie os escucha alto y claro y confirma que os esperan arriba.",
-        "modificadores": {
-          "comunicacion": 2,
-          "liderazgo": 1
-        },
-        "siguienteEscena": "esc_11_capsula"
-      },
-      {
-        "id": "esc_10_equipo",
-        "clave": "equipo",
-        "descripcion": "Reservó energía para la iluminación y la seguridad del equipo.",
-        "textoCierre": "La cápsula se ilumina por dentro. Leo suspira aliviado: «Mucho mejor que a oscuras». Todos subís a bordo.",
-        "modificadores": {
-          "liderazgo": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_11_capsula"
-      },
-      {
-        "id": "esc_10_prudente",
-        "clave": "prudente",
-        "descripcion": "Reforzó los sistemas vitales o repartió el margen de forma equilibrada.",
-        "textoCierre": "Con margen de sobra en oxígeno y motores, la cápsula está lista. Lisa revisa los números y asiente.",
-        "modificadores": {
-          "logica": 2,
-          "resiliencia": 1
-        },
-        "siguienteEscena": "esc_11_capsula"
-      }
-    ]
-  },
-  {
-    "id": "esc_11_capsula",
-    "tipo": "decision",
-    "titulo": "El ascenso",
-    "imagen": "/img/esc_10_capsula.svg",
-    "altImagen": "Interior de una cápsula de ascenso. Por la ventanilla redonda, las luces de la estación se alejan hacia el fondo oscuro.",
-    "textoNarrativo": "Reyes pilota la cápsula, que se suelta del anclaje y sube con los cinco a bordo. Por la ventanilla, las luces de la estación se hacen pequeñas. Lisa te mira: «¿Qué te llevas de esta noche?».",
-    "personajes": [
-      "leo",
-      "lisa"
-    ],
-    "opciones": [
-      {
-        "id": "esc_11_a",
+        "id": "esc_03_a",
         "textoBoton": "«Que pedir ayuda también es ser valiente.»",
-        "modificadores": {
-          "comunicacion": 2,
-          "resiliencia": 1
-        },
+        "modificadores": {},
         "siguienteEscena": "FIN"
       },
       {
-        "id": "esc_11_b",
+        "id": "esc_03_b",
         "textoBoton": "«Que un plan claro ayuda a que todos estén tranquilos.»",
-        "modificadores": {
-          "liderazgo": 2,
-          "logica": 1
-        },
+        "modificadores": {},
         "siguienteEscena": "FIN"
       },
       {
-        "id": "esc_11_c",
+        "id": "esc_03_c",
         "textoBoton": "«Que siempre hay otra forma de intentarlo.»",
-        "modificadores": {
-          "creatividad": 2,
-          "resiliencia": 1
-        },
+        "modificadores": {},
         "siguienteEscena": "FIN"
       }
     ]

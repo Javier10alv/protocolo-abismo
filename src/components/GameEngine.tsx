@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { sonido } from '../audio/sonido';
-import { TOTAL_ETAPAS, eleccionesDe, escenasPorId, etapaDe } from '../data/guion';
+import { escenasPorId, progresoDe, siguientesDe } from '../data/guion';
 import { COMPONENTES_MECANICA } from '../mecanicas';
 import { useAjustesStore } from '../store/useAjustesStore';
 import { useCinematicasStore } from '../store/useCinematicasStore';
@@ -16,9 +16,10 @@ import {
 } from '../types/game';
 import Cinematica from './Cinematica';
 import Escenario from './Escenario';
-import Icono from './Iconos';
+import { BarraSuperior, Burbujas } from './Marco';
+import PantallaHub from './PantallaHub';
 import Retrato, { NOMBRE_PERSONAJE, ROL_PERSONAJE } from './Retrato';
-import { Boton, Etiqueta, Panel, TextoAnimado, useLector } from './ui';
+import { Boton, Etiqueta, Panel, TextoAnimado } from './ui';
 
 export type EstadoEnvio = 'enviando' | 'enviado' | 'error';
 
@@ -74,116 +75,58 @@ export default function GameEngine({ onPartidaFinalizada, onSalir }: GameEngineP
   return <EscenaConCinematica key={escena.id} escena={escena} partidaId={partidaId} onSalir={onSalir} />;
 }
 
-/** Si la escena tiene cinemática y aún no se ha visto en esta partida, la muestra antes. */
+/** Reproduce, en orden, las cinemáticas de la escena que aún no se han visto en esta partida. */
 function EscenaConCinematica({ escena, partidaId, onSalir }: { escena: Scene; partidaId: string; onSalir?: () => void }) {
-  const clave = `${partidaId}:${escena.id}`;
-  const vista = useCinematicasStore((s) => s.vistas.includes(clave));
+  const vistas = useCinematicasStore((s) => s.vistas);
   const marcar = useCinematicasStore((s) => s.marcar);
+  const lista = escena.cinematicas ?? [];
+  const pendiente = lista.findIndex((_, i) => !vistas.includes(`${partidaId}:${escena.id}:${i}`));
+  const hayVideo = pendiente >= 0;
 
   useEffect(() => {
-    if (!escena.cinematica || vista) return;
+    if (!hayVideo) return;
     // El zumbido ambiente se pausa mientras suena el vídeo.
     sonido.detenerAmbiente();
     return () => sonido.iniciarAmbiente();
-  }, [escena.cinematica, vista]);
+  }, [hayVideo]);
 
-  if (escena.cinematica && !vista) return <Cinematica cinematica={escena.cinematica} onTerminar={() => marcar(clave)} />;
+  if (hayVideo) {
+    return (
+      <Cinematica
+        key={pendiente}
+        cinematica={lista[pendiente]}
+        onTerminar={() => marcar(`${partidaId}:${escena.id}:${pendiente}`)}
+      />
+    );
+  }
+  if (escena.tipo === 'hub') return <PantallaHub escena={escena} onSalir={onSalir} />;
   return <PantallaEscena escena={escena} onSalir={onSalir} />;
 }
 
 /* -------------------------------------------------------------------------- */
-
-/** Burbujas decorativas que suben (solo si el usuario no pide reducir movimiento). */
-function Burbujas() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden motion-reduce:hidden">
-      {Array.from({ length: 14 }, (_, i) => (
-        <span
-          key={i}
-          className="absolute bottom-[-20px] rounded-full border border-cyan-200/30 bg-cyan-200/5 animate-[subir_linear_infinite]"
-          style={{
-            left: `${(i * 37) % 100}%`,
-            width: 6 + ((i * 7) % 14),
-            height: 6 + ((i * 7) % 14),
-            animationDuration: `${9 + ((i * 5) % 11)}s`,
-            animationDelay: `${(i * 1.7) % 9}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function BarraSuperior({ etapa, texto, onSalir }: { etapa: number; texto?: string; onSalir?: () => void }) {
-  const { sonido: sonidoOn, textoGrande, animarTexto, alternar } = useAjustesStore();
-  const lector = useLector();
-  const pct = Math.round((etapa / TOTAL_ETAPAS) * 100);
-
-  const boton = 'flex h-10 w-10 aria-pressed:border-cyan-300/70 aria-pressed:bg-cyan-400/25 items-center justify-center rounded-lg border border-cyan-400/25 bg-black/40 text-base text-cyan-100 backdrop-blur transition-colors hover:bg-cyan-400/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300';
-
-  return (
-    <header className="relative z-10 flex flex-wrap items-center gap-3 px-4 pt-4 sm:px-8 sm:pt-6">
-      <div className="min-w-0 flex-1 font-mono text-[11px] uppercase tracking-[0.25em] text-cyan-300/70">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.9)] motion-safe:animate-pulse" />
-          <span className="truncate">Estación Abismo · -3.000 m</span>
-        </div>
-        <div
-          className="mt-2 h-1 w-full max-w-56 overflow-hidden rounded-full bg-cyan-950"
-          role="progressbar"
-          aria-label="Progreso del protocolo de emergencia"
-          aria-valuemin={0}
-          aria-valuemax={TOTAL_ETAPAS}
-          aria-valuenow={etapa}
-          aria-valuetext={`Etapa ${etapa} de ${TOTAL_ETAPAS}`}
-        >
-          <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-200 transition-[width] duration-700" style={{ width: `${pct}%` }} />
-        </div>
-      </div>
-      <nav aria-label="Ajustes" className="flex gap-2">
-        {lector.disponible && texto && (
-          <button type="button" className={boton} onClick={() => lector.leer(texto)} aria-pressed={lector.leyendo} title="Leer en voz alta" aria-label={lector.leyendo ? 'Detener lectura' : 'Leer en voz alta'}>
-            <Icono nombre={lector.leyendo ? 'parar' : 'leer'} />
-          </button>
-        )}
-        <button type="button" className={boton} onClick={() => alternar('textoGrande')} aria-pressed={textoGrande} title="Texto grande" aria-label="Texto grande">
-          <Icono nombre="texto" />
-        </button>
-        <button type="button" className={boton} onClick={() => alternar('animarTexto')} aria-pressed={!animarTexto} title="Mostrar el texto de golpe" aria-label="Mostrar el texto de golpe">
-          <Icono nombre="saltar" />
-        </button>
-        <button type="button" className={boton} onClick={() => alternar('sonido')} aria-pressed={sonidoOn} title={sonidoOn ? 'Silenciar' : 'Activar sonido'} aria-label={sonidoOn ? 'Silenciar' : 'Activar sonido'}>
-          <Icono nombre={sonidoOn ? 'sonido' : 'silencio'} />
-        </button>
-        {onSalir && (
-          <button type="button" className={boton} onClick={onSalir} title="Pausar y salir" aria-label="Pausar y salir (la partida se guarda)">
-            <Icono nombre="pausa" />
-          </button>
-        )}
-      </nav>
-    </header>
-  );
-}
 
 const LETRAS = ['A', 'B', 'C', 'D', 'E'];
 
 /** Precarga los vídeos de las escenas a las que se puede llegar desde esta, para que la transición sea fluida. */
 function PrecargarCinematicas({ escena }: { escena: Scene }) {
   const srcs = new Set<string>();
-  for (const e of eleccionesDe(escena)) {
-    const siguiente = escenasPorId.get(e.siguienteEscena);
-    if (siguiente?.cinematica) srcs.add(siguiente.cinematica.src);
+  for (const id of siguientesDe(escena)) {
+    const siguiente = escenasPorId.get(id);
+    if (siguiente?.cinematicas?.[0]) srcs.add(siguiente.cinematicas[0].src);
+    // Precarga también el fondo, para que la transición no muestre un hueco negro.
+    if (siguiente) srcs.add(siguiente.imagen);
   }
   return (
     <>
       {[...srcs].map((src) => (
-        <link key={src} rel="prefetch" href={src} as="video" />
+        <link key={src} rel="prefetch" href={src} as={src.endsWith('.mp4') ? 'video' : 'image'} />
       ))}
     </>
   );
 }
 
-function PantallaEscena({ escena, onSalir }: { escena: Scene; onSalir?: () => void }) {
+function PantallaEscena({ escena, onSalir }: { escena: EscenaDecision | EscenaMinijuego; onSalir?: () => void }) {
+  const progreso = useGameStore((s) => progresoDe(s));
   const [visible, setVisible] = useState(false);
   const [textoListo, setTextoListo] = useState(false);
   const animarTexto = useAjustesStore((s) => s.animarTexto);
@@ -208,7 +151,7 @@ function PantallaEscena({ escena, onSalir }: { escena: Scene; onSalir?: () => vo
       <Escenario escena={escena} visible={visible} />
       <Burbujas />
       <PrecargarCinematicas escena={escena} />
-      <BarraSuperior etapa={etapaDe(escena.id)} texto={textoLectura} onSalir={onSalir} />
+      <BarraSuperior progreso={progreso} texto={textoLectura} onSalir={onSalir} />
 
       <section className="relative z-10 flex min-h-[calc(100dvh-5rem)] flex-col justify-end px-4 pb-4 pt-6 sm:px-8 sm:pb-8">
         <Panel
@@ -227,7 +170,7 @@ function PantallaEscena({ escena, onSalir }: { escena: Scene; onSalir?: () => vo
               <ul className="flex shrink-0 -space-x-2" aria-label="Personajes presentes">
                 {escena.personajes.map((p) => (
                   <li key={p} title={`${NOMBRE_PERSONAJE[p]}, ${ROL_PERSONAJE[p]}`}>
-                    <Retrato personaje={p} tamano={44} expresion={escena.id.startsWith('esc_11') ? 'contento' : 'neutral'} />
+                    <Retrato personaje={p} tamano={44} expresion={escena.tipo === 'decision' ? 'contento' : 'neutral'} />
                     <span className="sr-only">
                       {NOMBRE_PERSONAJE[p]}, {ROL_PERSONAJE[p]}
                     </span>
@@ -376,14 +319,17 @@ function Cierre({ resultado, mecanica }: { resultado: Resultado; mecanica: Resul
 
 function PantallaFin({ envio, onReintentar, onSalir }: { envio: EstadoEnvio; onReintentar: () => void; onSalir?: () => void }) {
   const historial = useGameStore((s) => s.historial);
-  const alumnoCodigo = useGameStore((s) => s.alumnoCodigo);
+  const primerNombre = useGameStore((s) => s.alumnoNombre.split(' ')[0]);
   const tituloRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     tituloRef.current?.focus();
     sonido.exito();
   }, []);
 
-  const recorrido = historial.map((h) => escenasPorId.get(h.escenaId)?.titulo).filter(Boolean) as string[];
+  // Recorrido: los problemas que fue resolviendo, en el orden que eligió.
+  const recorrido = historial
+    .filter((h) => escenasPorId.get(h.escenaId)?.tipo === 'minijuego')
+    .map((h) => escenasPorId.get(h.escenaId)!.titulo);
 
   return (
     <main className="relative flex min-h-dvh w-full flex-col items-center justify-center gap-8 overflow-hidden bg-gradient-to-b from-sky-900 via-slate-950 to-slate-950 px-6 py-12 text-center text-slate-100">
@@ -398,10 +344,10 @@ function PantallaFin({ envio, onReintentar, onSalir }: { envio: EstadoEnvio; onR
       <div className="relative max-w-xl">
         <Etiqueta>Superficie alcanzada</Etiqueta>
         <h1 ref={tituloRef} tabIndex={-1} className="mt-3 text-3xl font-semibold text-white outline-none sm:text-4xl">
-          ¡Misión cumplida, {alumnoCodigo}!
+          ¡Misión cumplida, {primerNombre}!
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-slate-300">
-          La cápsula sale a la superficie al amanecer. Lisa, Leo y tú lo habéis conseguido juntos. Cada decisión que tomaste formó parte de la historia: no había respuestas buenas ni malas.
+          El batiscafo de rescate sale a la superficie al amanecer. Lisa, Leo, Reyes, Aris y tú lo habéis conseguido juntos. Cada decisión que tomaste formó parte de la historia: no había respuestas buenas ni malas.
         </p>
       </div>
 

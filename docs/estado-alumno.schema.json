@@ -9,6 +9,7 @@
     "version",
     "partidaId",
     "alumnoCodigo",
+    "alumnoNombre",
     "claseId",
     "escenaActual",
     "habilidades",
@@ -29,14 +30,20 @@
     },
     "alumnoCodigo": {
       "type": "string",
-      "description": "Código seudónimo asignado por el docente (p. ej. 'A7K2'). Nunca nombre real: son menores.",
+      "description": "ID único y seudónimo generado al entrar (p. ej. 'K7Q2-M4X9'). Es el que se usa en análisis y exportaciones.",
       "minLength": 3,
       "maxLength": 12,
       "pattern": "^[A-Z0-9-]+$"
     },
+    "alumnoNombre": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80,
+      "description": "Nombre completo del alumno. Dato personal de un menor: solo lo ve el docente y nunca se envía a la IA."
+    },
     "claseId": {
       "type": "string",
-      "description": "Código de la clase que agrupa partidas para un mismo docente.",
+      "description": "Código de verificación del docente con el que se entró (agrupa las partidas).",
       "pattern": "^[A-Z0-9-]+$",
       "minLength": 2,
       "maxLength": 20
@@ -47,7 +54,7 @@
     },
     "habilidades": {
       "type": "object",
-      "description": "Puntuación bruta acumulada. Todas empiezan en 0.",
+      "description": "Puntos por orden de elección en el hub (1.ª = 10, 2.ª = 7, 3.ª = 5, 4.ª = 3, 5.ª = 1).",
       "additionalProperties": false,
       "required": [
         "logica",
@@ -105,7 +112,7 @@
           "tiempoRespuestaMs": {
             "type": "integer",
             "minimum": 0,
-            "description": "Telemetría. No puntúa."
+            "description": "Tiempo en la escena (en un minijuego, su duración). Métrica: no suma puntos."
           },
           "conductas": {
             "type": "array",
@@ -124,6 +131,34 @@
           "ayudaRecibida": {
             "type": "boolean",
             "description": "Solo minijuegos: un personaje ayudó tras 3 intentos."
+          },
+          "precision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Solo minijuegos: eficiencia 0–100. Métrica descriptiva: no suma puntos."
+          },
+          "area": {
+            "type": "string",
+            "enum": [
+              "logica",
+              "creatividad",
+              "comunicacion",
+              "resiliencia",
+              "liderazgo"
+            ],
+            "description": "Solo elecciones del hub: área elegida."
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Solo elecciones del hub: posición en la que se eligió."
+          },
+          "puntos": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Solo elecciones del hub: puntos ganados por esa posición."
           }
         }
       }
@@ -145,11 +180,12 @@
   },
   "examples": [
     {
-      "version": "3.0.0",
+      "version": "4.0.0",
       "partidaId": "3f1c9a2e-8b4d-4e6a-9c1f-2a7b5d8e0f13",
-      "alumnoCodigo": "A7K2",
-      "claseId": "2ESO-B",
-      "escenaActual": "esc_01_despertar",
+      "alumnoCodigo": "K7Q2-M4X9",
+      "alumnoNombre": "Alumno de Prueba",
+      "claseId": "ABISMO2026",
+      "escenaActual": "esc_01_hub",
       "habilidades": {
         "logica": 0,
         "creatividad": 0,

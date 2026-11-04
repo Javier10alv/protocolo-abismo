@@ -24,13 +24,15 @@ export const ESPECIALIDAD_PERSONAJE: Record<Personaje, string> = {
   aris: 'Servidores, cifrado y bases de datos',
 };
 
-/** Sprite de cuerpo entero (fondo transparente). Reyes y Aris aún no tienen arte: usan un retrato provisional. */
+/** Sprite de cuerpo entero (fondo transparente) de cada personaje. */
 export const SPRITE_PERSONAJE: Partial<Record<Personaje, string>> = {
   lisa: '/img/personajes/lisa.webp',
   leo: '/img/personajes/leo.webp',
+  reyes: '/img/personajes/reyes.webp',
+  aris: '/img/personajes/aris.webp',
 };
 
-/** Retrato provisional para personajes sin sprite: iniciales sobre un color propio. */
+/** Retrato de reserva si falta el sprite de un personaje: iniciales sobre un color propio. */
 const PROVISIONAL: Record<Personaje, { iniciales: string; color: string }> = {
   lisa: { iniciales: 'LI', color: '#0e7490' },
   leo: { iniciales: 'LE', color: '#1d4ed8' },
@@ -45,12 +47,16 @@ const PROVISIONAL: Record<Personaje, { iniciales: string; color: string }> = {
 const CARA: Partial<Record<Personaje, { x: number; y: number; alto: number }>> = {
   leo: { x: 0.5, y: 0.083, alto: 0.15 },
   lisa: { x: 0.5, y: 0.078, alto: 0.15 },
+  reyes: { x: 0.52, y: 0.075, alto: 0.12 },
+  aris: { x: 0.44, y: 0.1, alto: 0.12 },
 };
 
 /** Proporción ancho/alto de cada sprite (para calcular el recorte). */
 const PROPORCION: Partial<Record<Personaje, number>> = {
-  leo: 447 / 1200,
-  lisa: 415 / 1200,
+  leo: 449 / 1200,
+  lisa: 417 / 1200,
+  reyes: 412 / 1200,
+  aris: 498 / 1200,
 };
 
 const TINTE: Record<Expresion, string> = {

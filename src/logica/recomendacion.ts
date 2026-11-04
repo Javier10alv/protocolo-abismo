@@ -48,7 +48,7 @@ export function recomendacionLocal(estado: EstadoAlumno): Recomendacion {
 
   const partes: string[] = [];
   partes.push(
-    `Durante la partida aparecen indicios de que ${estado.alumnoCodigo} se siente cómodo/a al ${FORTALEZA[fortalezas[0]]}, y también al ${FORTALEZA[fortalezas[1]]}.`,
+    `Durante la partida aparecen indicios de que ${estado.alumnoNombre.split(' ')[0] || 'el alumno o la alumna'} se siente cómodo/a al ${FORTALEZA[fortalezas[0]]}, y también al ${FORTALEZA[fortalezas[1]]}.`,
   );
   if (reintentos >= 2) {
     partes.push('Volvió a intentarlo varias veces cuando algo no salía, una señal positiva de perseverancia.');

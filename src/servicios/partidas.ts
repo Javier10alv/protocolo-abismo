@@ -52,6 +52,7 @@ export async function enviarPartida(estado: EstadoAlumno): Promise<void> {
       partida_id: estado.partidaId,
       clase_id: estado.claseId,
       alumno_codigo: estado.alumnoCodigo,
+      alumno_nombre: estado.alumnoNombre,
       version: estado.version,
       completada: estado.completada,
       estado,
@@ -129,11 +130,20 @@ export async function crearClase(id: string): Promise<void> {
   if (!r.ok) throw new Error(`Error ${r.status} al crear la clase`);
 }
 
-/** Solo modo local: añade partidas (p. ej. las de demostración). */
-export function importarPartidasLocales(partidas: EstadoAlumno[]) {
+/**
+ * Solo modo local: elimina datos simulados o de versiones anteriores al registro
+ * con nombre (las antiguas clases de ejemplo). Las partidas reales se conservan.
+ */
+export function limpiarPartidasAntiguas() {
   const datos = leerLocal();
-  for (const p of partidas) datos[p.partidaId] = p;
-  escribirLocal(datos);
+  let cambios = false;
+  for (const [id, p] of Object.entries(datos)) {
+    if (!p.alumnoNombre || p.claseId.startsWith('DEMO')) {
+      delete datos[id];
+      cambios = true;
+    }
+  }
+  if (cambios) escribirLocal(datos);
 }
 
 /** Solo modo local: borra todas las partidas guardadas en este dispositivo. */

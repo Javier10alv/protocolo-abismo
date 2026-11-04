@@ -1,7 +1,7 @@
 import { useState, type DragEvent } from 'react';
 import { sonido } from '../audio/sonido';
 import { Bocadillo, Boton } from '../components/ui';
-import { INTENTOS_ANTES_DE_AYUDA, type PropsMecanica } from './tipos';
+import { INTENTOS_ANTES_DE_AYUDA, precisionPorIntentos, type PropsMecanica } from './tipos';
 
 interface Paso {
   id: string;
@@ -60,7 +60,7 @@ export default function Secuencia({ onCompletar }: PropsMecanica) {
     if (ayudaRecibida) conductas.push('ayuda_automatica');
     if (!leyoNotas && fallosTotales === 0) conductas.push('dedujo_sin_ayuda');
     const clave = leyoNotas ? 'consulta' : fallosTotales > 0 ? 'persistente' : 'analitico';
-    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida }), 1200);
+    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallosTotales, ayudaRecibida, precision: precisionPorIntentos(fallosTotales, ayudaRecibida) }), 1200);
   };
 
   const probar = () => {

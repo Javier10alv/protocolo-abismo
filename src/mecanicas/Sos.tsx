@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { sonido } from '../audio/sonido';
 import { Bocadillo, Boton } from '../components/ui';
+import { BarraTiempo, useCuentaAtras } from './CuentaAtras';
 import { INTENTOS_ANTES_DE_AYUDA, type PropsMecanica } from './tipos';
 
 type Dato = 'donde' | 'cuantos' | 'que';
@@ -48,6 +49,15 @@ export default function Sos({ onCompletar }: PropsMecanica) {
   const [ayuda, setAyuda] = useState(false);
   const [estilosUsados, setEstilosUsados] = useState<Set<Estilo>>(new Set());
   const [terminado, setTerminado] = useState(false);
+  const [reservas, setReservas] = useState(0);
+  // Fragmentos enviados en total y cuántos aportaban información útil (para la precisión).
+  const [enviados, setEnviados] = useState({ total: 0, utiles: 0 });
+
+  // Bajo presión de tiempo: si la batería se agota, Reyes conecta la reserva (+30 s). Nunca se pierde.
+  const { restante, total } = useCuentaAtras(60, !terminado, () => {
+    setReservas((n) => n + 1);
+    return 30;
+  });
 
   const alternar = (id: string) => {
     if (terminado) return;
@@ -64,13 +74,15 @@ export default function Sos({ onCompletar }: PropsMecanica) {
     for (const f of elegidos) usados.add(f.estilo);
     setEstilosUsados(usados);
     const mensaje = elegidos.map((f) => f.texto).join(' ');
+    const acumulado = { total: enviados.total + elegidos.length, utiles: enviados.utiles + elegidos.filter((f) => f.datos.length > 0).length };
+    setEnviados(acumulado);
     const n = envios + 1;
     setEnvios(n);
 
     if (faltan.length === 0) {
       sonido.exito();
       setRespuestas((r) => [...r, { mensaje, respuesta: { ok: true, texto: 'Recibido: Sector C, cinco personas, rescate en camino. Aguantad.' } }]);
-      terminar(n - 1, usados, false);
+      terminar(n - 1, usados, false, acumulado);
       return;
     }
 
@@ -89,7 +101,7 @@ export default function Sos({ onCompletar }: PropsMecanica) {
     }
   };
 
-  const terminar = (fallos: number, usados: Set<Estilo>, ayudaRecibida: boolean) => {
+  const terminar = (fallos: number, usados: Set<Estilo>, ayudaRecibida: boolean, acumulado: { total: number; utiles: number }) => {
     setTerminado(true);
     const conductas: string[] = [];
     if (pidioConsejo) conductas.push('pidio_consejo');
@@ -98,12 +110,21 @@ export default function Sos({ onCompletar }: PropsMecanica) {
     if (usados.has('emocional')) conductas.push('incluyo_emocional');
     if (usados.has('tecnico')) conductas.push('incluyo_tecnico');
     if (ayudaRecibida || ayuda) conductas.push('ayuda_automatica');
+    if (reservas > 0) conductas.push('tiempo_agotado');
+    // Precisión: fragmentos con información útil sobre todos los enviados.
+    const precision = Math.round((acumulado.utiles / Math.max(1, acumulado.total)) * 100);
     const clave = pidioConsejo ? 'asesorado' : fallos === 0 ? 'directo' : 'ajustado';
-    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayudaRecibida || ayuda }), 1500);
+    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayudaRecibida || ayuda, precision }), 1500);
   };
 
   return (
     <div className="grid gap-4">
+      <BarraTiempo etiqueta="Batería de la antena" restante={restante} total={total} />
+      {reservas > 0 && !terminado && (
+        <Bocadillo personaje="reyes" expresion="pensativo">
+          He conectado la batería de reserva: tenemos algo más de tiempo. Sin prisa, piensa qué necesitan saber.
+        </Bocadillo>
+      )}
       <div className="flex items-center justify-between rounded-xl border border-cyan-400/25 bg-slate-900/70 px-4 py-2">
         <span className="text-sm text-slate-300">Ancho de banda</span>
         <span className="flex gap-1" aria-label={`${seleccion.length} de ${MAX} fragmentos`}>

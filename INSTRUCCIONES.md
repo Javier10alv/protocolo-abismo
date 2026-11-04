@@ -72,18 +72,21 @@ La próxima vez solo tendrás que repetir los pasos **3 y 5**.
 
 ### Alumnado — <http://localhost:5173>
 
-1. Escribe un **código de clase** (por ejemplo `2ESO-B`) y un **código de investigador/a** (por ejemplo `A7K2`, o pulsa 🎲). **Nunca nombres reales.**
+1. Escribe tu **nombre completo** y el **código de verificación del docente**: `ABISMO2026`. Si el código no es correcto, aparece un aviso y no se puede entrar.
 2. Pulsa **Comenzar la misión**. Mejor con sonido o auriculares.
-3. La partida dura unos 20 minutos y se guarda sola: se puede pausar con ⏸ y continuar más tarde escribiendo el mismo código.
+3. Tras los vídeos de llegada, Leo y Lisa explican la emergencia y hay que elegir qué problema atender primero. Después de cada minijuego se vuelve a la sala de control hasta resolver los cinco.
+4. La partida dura unos 15 minutos y se guarda sola: se puede pausar con ⏸ y continuar más tarde escribiendo el mismo nombre.
 
 En la barra superior hay ajustes de accesibilidad: lectura en voz alta, texto grande, texto sin animación y sonido.
 
 ### Docente — <http://localhost:5173/docente>
 
-- **Primera vez / demostración:** pulsa **«Cargar clase de ejemplo»** para ver 14 partidas simuladas.
-- **Clase:** perfil medio, mapa de calor por alumno, frente elegido tras el apagón y agrupamientos sugeridos.
-- **Alumnado:** radar de cada alumno comparado con la clase, recomendación pedagógica, recorrido de decisiones y botón de imprimir.
-- **Herramientas:** generar e imprimir códigos seudónimos, exportar a CSV y explicación de cada minijuego con su fundamento teórico.
+- **Empieza vacío:** mientras nadie haya terminado, solo verás una fila de **«Alumno de Prueba»** para hacerte una idea.
+- **Clase:** registro de cada alumno con su **secuencia de elecciones** (1.º Lógica → 2.º Liderazgo…), **tiempo total**, y por cada minijuego su **tiempo** y su **precisión**; además, prioridades medias, primera área elegida y agrupamientos sugeridos.
+- **Alumnado:** informe individual con radar de prioridades (1.ª elección = 10 puntos, 2.ª = 7, 3.ª = 5, 4.ª = 3, 5.ª = 1), tabla de desempeño, recomendación pedagógica e impresión.
+- **Herramientas:** el código de acceso para la clase, exportar a CSV (los nombres solo si marcas la casilla) y explicación de cada minijuego con su fundamento teórico.
+
+> **Para cambiar el código de verificación**, edita `src/config.ts` (constante `CODIGO_DOCENTE`) y vuelve a arrancar.
 
 > **Importante (modo demo):** sin configurar nada, las partidas se guardan **en el navegador del ordenador donde se juega**. El panel del docente solo ve las partidas jugadas **en ese mismo navegador**. Para una clase real con varios dispositivos, mira el apartado 8.
 

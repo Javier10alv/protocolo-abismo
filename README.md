@@ -11,9 +11,9 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-- `/` — entrada del alumno (código de clase + código seudónimo).
+- `/` — entrada del alumno: **nombre completo** y **código de verificación del docente** (`ABISMO2026`, en `src/config.ts`).
 - `/jugar` — el juego.
-- `/docente` — panel del docente. En modo demo pulsa **«Cargar clase de ejemplo»** para ver 14 partidas simuladas.
+- `/docente` — panel del docente. Empieza vacío: mientras no haya partidas reales muestra una sola fila de **«Alumno de Prueba»**.
 
 Otros comandos:
 
@@ -25,31 +25,34 @@ npx tsx scripts/generar-fondos.ts   # regenera las ilustraciones SVG de public/i
 
 ## Qué incluye
 
-**Juego (15 escenas, 5 caminos, ~20 min)**
+**Juego (novela visual con bucle central, ~15 min)**
 
-| Escena | Tipo | Qué observa |
-|---|---|---|
-| *Cinemática de llegada* (`intro.mp4`) | Vídeo | — |
-| La sala de control | Decisión | — |
-| *Cinemática de alarma* (`emergencia.mp4`) | Vídeo con subtítulos | — |
-| Apagón en el Abismo | Decisión con **5 ramas**, una por habilidad | Qué frente elige atender |
-| ↳ Refrigerar el motor | **Tuberías**: girar piezas para llevar el refrigerante | Planificación (funciones ejecutivas, Miyake et al., 2000) |
-| ↳ El invernadero hidropónico | **Cultivo**: combinar objetos inusuales para estabilizar el pH | Pensamiento divergente (Guilford, 1967; Stokes, 2005) |
-| ↳ La evacuación del Sector C | **Evacuación**: delegar 5 tareas entre Lisa, Leo, Reyes, Aris y tú | Liderazgo situacional y transformacional (Hersey y Blanchard, 1969; Bass, 1985) |
-| ↳ Protocolo S.O.S. | **S.O.S.**: mensaje de 3 fragmentos con la antena dañada | Máximas de cantidad y relevancia (Grice, 1975) |
-| ↳ La señal perdida | **Ondas**: sintonizar una señal que falla a propósito | Tolerancia a la frustración y *grit* (Rosenzweig, 1944; Duckworth, 2016) |
-| La escotilla atascada | **Cableado** (puzle lógico con esquema y pistas) | Consulta antes de actuar, pide ayuda, reintenta |
-| El pasillo inundado | **Conversación** de 3 turnos con Leo, que tiene miedo | Estilo comunicativo dominante |
-| El hangar a oscuras | **Sonar** en una cuadrícula para encontrar el dron | Explora antes de actuar, coordina, persiste |
-| Voces desde la superficie | Decisión | — |
-| El manual desordenado | **Secuencia**: ordenar pasos (arrastrar o ▲▼) | Consulta notas, reintenta, deduce |
-| El corazón de la estación | Decisión | — |
-| Preparar la cápsula | **Energía**: repartir recursos + imprevisto | Prioridades y adaptación al cambio |
-| El ascenso | Decisión metacognitiva | — |
+1. *Cinemáticas* `intro.mp4` (llegada) y `emergencia.mp4` (alarma), con subtítulos y botón «Saltar».
+2. **Sala de control (hub)** sobre `base.png`: Leo entra por la izquierda y explica el problema; Lisa entra por la derecha y pregunta por dónde empezar; aparece el menú con las 5 áreas.
+3. El alumno elige un área → fondo propio y minijuego → vuelve al hub. La opción hecha desaparece y Lisa vuelve a preguntar con una frase adaptada. Se repite hasta completar las 5.
+4. **Rumbo a la superficie**: escena de reflexión final (no puntúa) y fin.
 
-Equipo: **Lisa** (bióloga jefa), **Leo** (ingeniero mecánico en prácticas), **Comandante Reyes** (seguridad y piloto) y **Dra. Aris** (científica de datos). Reyes y Aris usan retratos provisionales hasta tener su arte.
+| Área | Fondo | Minijuego | Inspirado en |
+|---|---|---|---|
+| Lógica | `sala_tuberias` | **Tuberías**: girar piezas contrarreloj (90 s) | Funciones ejecutivas (Miyake et al., 2000) |
+| Creatividad | `hibernadero` | **Cultivo**: combinar objetos inusuales para estabilizar el pH | Pensamiento divergente (Guilford, 1967; Stokes, 2005) |
+| Liderazgo | `liderazgo_decision` | **Evacuación**: asignar 5 tareas entre Lisa, Leo, Reyes, Aris y tú | Liderazgo situacional y transformacional (Hersey y Blanchard, 1969; Bass, 1985) |
+| Comunicación | `sala_control_pantalla` | **S.O.S.**: elegir 3 frases clave con la batería agotándose (60 s) | Máximas de cantidad y relevancia (Grice, 1975) |
+| Resiliencia | `alerta_roja` | **Ondas**: alinear una señal que falla a propósito | Tolerancia a la frustración y *grit* (Rosenzweig, 1944; Duckworth, 2016) |
 
-Las mecánicas inspiradas en esas teorías se adaptan a las reglas del proyecto: ninguna respuesta resta, cada desenlace suma 2+1 según el comportamiento, el reloj de Tuberías es solo ambiental y la sobrecarga en Evacuación hace que el plan falle (hay que rehacerlo), sin penalizar. En Ondas los errores están provocados y se le explica al alumno al terminar.
+**Puntuación por orden de elección.** Cada área suma según la posición en la que el alumno decide atenderla: 1.ª = **10**, 2.ª = **7**, 3.ª = **5**, 4.ª = **3**, 5.ª = **1** (26 puntos por partida). Así se ven sus prioridades naturales ante una crisis. El radar las muestra en % sobre 10.
+
+**Métricas registradas** (solo para el docente; no cambian los puntos): secuencia de elecciones, tiempo de cada minijuego y de la sesión, y **precisión** (eficiencia 0–100) en cada minijuego:
+
+- Tuberías: 100 menos 20 por fuga (y menos 15 si pidió consejo).
+- Cultivo: soluciones válidas sobre combinaciones probadas.
+- Evacuación: especialistas en su tarea (hasta 80) más la tarea crítica asumida (20), menos 10 por cada plan que tuvo que rehacer.
+- S.O.S.: fragmentos con información útil sobre fragmentos enviados.
+- Ondas: 100 si persistió, 90 si hizo una pausa y 50 si pidió relevo.
+
+Si se agota el tiempo o falla, nunca pierde: un personaje da más tiempo o ayuda tras 3 intentos y la historia sigue. En Ondas los errores están provocados y se le explica al alumno al terminar.
+
+Equipo: **Lisa** (bióloga jefa), **Leo** (ingeniero mecánico en prácticas), **Comandante Reyes** (seguridad y piloto) y **Dra. Aris** (científica de datos), todos con sprite.
 
 - Nunca se puntúa velocidad ni precisión motora. Tras 3 intentos fallidos, un personaje ayuda y la historia sigue.
 - Accesibilidad: todo funciona con teclado, ratón y pantalla táctil; lectura en voz alta, texto grande, texto sin animación, `prefers-reduced-motion` y foco gestionado en cada escena.
@@ -82,9 +85,9 @@ Si cambian las proporciones del sprite, ajusta `CARA` y `PROPORCION` en `src/com
 
 **Panel del docente**
 
-- Vista de clase: perfil medio, mapa de calor alumno × habilidad, fortaleza principal, caminos elegidos y **agrupamientos sugeridos** con fortalezas complementarias.
-- Informe individual: radar normalizado (con la media de la clase), recomendación con plantilla local o **redactada con IA** (Claude), cronología de decisiones y comportamientos, e impresión.
-- Herramientas: generador de códigos seudónimos imprimibles, exportación a CSV, clase de ejemplo y explicación de cómo se evalúa.
+- Vista de clase: tiempo medio, precisión media, registro por alumno (secuencia de elecciones, tiempo total y tiempo y precisión por área), prioridades medias, primera área elegida y **agrupamientos sugeridos**.
+- Informe individual: nombre e ID, radar de prioridades (con la media de la clase), tabla de secuencia y desempeño, recomendación con plantilla local o **redactada con IA** (Claude), cronología y comportamientos, e impresión.
+- Herramientas: código de acceso del alumnado, exportación a CSV (nombres solo si el docente lo marca) y explicación de cómo se evalúa.
 
 ## Modo demo vs. Supabase
 
@@ -100,13 +103,15 @@ Para usarlo con una clase real:
    supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
    supabase functions deploy informe-docente
    ```
-5. Cada docente crea su clase desde **Panel → Herramientas → Nueva clase** y comparte el código.
+5. Crea la clase con el mismo código de verificación (`ABISMO2026` o el que pongas en `src/config.ts`) desde **Panel → Herramientas → Nueva clase**. Aplica también la migración `20261104020000_alumno_nombre.sql`.
 
 ## Privacidad
 
-- Solo códigos seudónimos; el juego nunca pide nombres.
+- El alumno se identifica con su **nombre completo** (dato personal de un menor: requiere informar a las familias y, según el centro, su consentimiento). Cada partida recibe además un **ID único seudónimo**.
+- El nombre solo aparece en el panel del docente; las exportaciones lo omiten salvo que el docente lo marque.
+- El código de verificación está en el frontend: evita accesos casuales, no protege datos. La protección real, con Supabase, la dan Auth y RLS.
 - El alumno nunca ve puntuaciones, ni en la interfaz ni en respuestas de red (`return=minimal`).
-- Al LLM solo se envían porcentajes y textos de decisiones; nunca código de alumno, clase ni partida.
+- Al LLM solo se envían porcentajes y textos de decisiones; nunca el nombre, el ID, la clase ni la partida.
 - La API key de Anthropic vive solo en la Edge Function.
 
 ## Estructura

@@ -3,9 +3,11 @@ import { Link } from 'react-router';
 import DetallePartida from '../components/docente/DetallePartida';
 import VistaClase, { mediaHabilidades } from '../components/docente/VistaClase';
 import { Boton, Etiqueta } from '../components/ui';
-import { VERSION_GUION, escenas } from '../data/guion';
-import { duracionMinutos, ordenarHabilidades, porcentajes } from '../logica/puntuacion';
-import { generarCodigo, generarPartidasDemo } from '../logica/simulacion';
+import { VERSION_GUION } from '../data/guion';
+import { duracionSegundos, ordenarHabilidades, porcentajes } from '../logica/puntuacion';
+import { CODIGO_DOCENTE } from '../config';
+import { metricasPorArea, textoSecuencia } from '../logica/metricas';
+import { partidaDePrueba } from '../logica/simulacion';
 import { MECANICAS_INFO } from '../mecanicas/registro';
 import {
   MODO,
@@ -13,7 +15,7 @@ import {
   cerrarSesion,
   crearClase,
   iniciarSesion,
-  importarPartidasLocales,
+  limpiarPartidasAntiguas,
   listarPartidas,
   sesionDocente,
 } from '../servicios/partidas';
@@ -80,14 +82,38 @@ function Login({ onEntrar }: { onEntrar: (s: ReturnType<typeof sesionDocente>) =
   );
 }
 
-function exportarCSV(partidas: EstadoAlumno[]) {
-  const cab = ['clase', 'codigo', 'version', 'inicio', 'minutos', 'completada', ...HABILIDADES.map((h) => `${h}_pct`), 'fortaleza_principal'];
+function exportarCSV(partidas: EstadoAlumno[], incluirNombres: boolean) {
+  const areas = [...HABILIDADES];
+  const cab = [
+    'clase',
+    'id_alumno',
+    ...(incluirNombres ? ['nombre'] : []),
+    'inicio',
+    'tiempo_total_s',
+    'completada',
+    'secuencia',
+    ...areas.map((h) => `${h}_puntos`),
+    ...areas.flatMap((h) => [`${h}_orden`, `${h}_tiempo_s`, `${h}_precision`]),
+    'prioridad_principal',
+  ];
   const filas = partidas.map((p) => {
-    const pct = porcentajes(p);
-    return [p.claseId, p.alumnoCodigo, p.version, p.iniciadaEn, duracionMinutos(p) ?? '', p.completada, ...HABILIDADES.map((h) => pct[h]), ordenarHabilidades(pct)[0]];
+    const m = metricasPorArea(p);
+    const de = (h: (typeof areas)[number]) => m.find((x) => x.area === h);
+    return [
+      p.claseId,
+      p.alumnoCodigo,
+      ...(incluirNombres ? [p.alumnoNombre] : []),
+      p.iniciadaEn,
+      duracionSegundos(p) ?? '',
+      p.completada,
+      textoSecuencia(p),
+      ...areas.map((h) => p.habilidades[h]),
+      ...areas.flatMap((h) => [de(h)?.orden ?? '', de(h)?.tiempoS ?? '', de(h)?.precision ?? '']),
+      ordenarHabilidades(porcentajes(p))[0],
+    ];
   });
   const csv = [cab, ...filas].map((f) => f.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-  const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+  const url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
   a.href = url;
   a.download = `protocolo-abismo-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -108,6 +134,8 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
     setCargando(true);
     setError('');
     try {
+      // El panel empieza limpio: se descartan datos simulados de versiones anteriores.
+      if (MODO === 'local') limpiarPartidasAntiguas();
       setPartidas(await listarPartidas());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al cargar');
@@ -124,9 +152,13 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
   const claseActiva = clase && clases.includes(clase) ? clase : (clases[0] ?? '');
   const deLaClase = partidas.filter((p) => p.claseId === claseActiva && p.version === VERSION_GUION);
   const otrasVersiones = partidas.filter((p) => p.claseId === claseActiva && p.version !== VERSION_GUION).length;
-  const media = mediaHabilidades(deLaClase);
-  const filtradas = deLaClase.filter((p) => p.alumnoCodigo.includes(busqueda.toUpperCase()));
-  const elegida = deLaClase.find((p) => p.partidaId === seleccion) ?? filtradas[0];
+  // Sin partidas reales se muestra una sola fila de ejemplo («Alumno de Prueba»), que no se guarda.
+  const esPrueba = deLaClase.length === 0;
+  const mostradas = useMemo(() => (esPrueba ? [partidaDePrueba(claseActiva || CODIGO_DOCENTE)] : deLaClase), [esPrueba, deLaClase, claseActiva]);
+  const media = mediaHabilidades(mostradas);
+  const termino = busqueda.trim().toLowerCase();
+  const filtradas = mostradas.filter((p) => !termino || p.alumnoNombre.toLowerCase().includes(termino) || p.alumnoCodigo.toLowerCase().includes(termino));
+  const elegida = mostradas.find((p) => p.partidaId === seleccion) ?? filtradas[0];
 
   const verAlumno = (id: string) => {
     setSeleccion(id);
@@ -191,11 +223,14 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
         {cargando ? (
           <p className="text-slate-400">Cargando partidas…</p>
         ) : pestana === 'clase' ? (
-          partidas.length === 0 ? (
-            <Vacio onDemo={() => { importarPartidasLocales(generarPartidasDemo()); void cargar(); }} />
-          ) : (
-            <VistaClase partidas={deLaClase} onElegir={verAlumno} />
-          )
+          <>
+            {esPrueba && (
+              <p className="rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-sm text-slate-300">
+                Todavía no hay partidas reales. Se muestra un <strong>Alumno de Prueba</strong> para que veas cómo se presentan los datos; desaparecerá en cuanto alguien termine la misión.
+              </p>
+            )}
+            <VistaClase partidas={mostradas} onElegir={verAlumno} esPrueba={esPrueba} />
+          </>
         ) : pestana === 'alumnado' ? (
           <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
             <aside className="no-imprimir grid content-start gap-2">
@@ -203,9 +238,9 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
                 type="search"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar código…"
-                aria-label="Buscar por código"
-                className="min-h-10 rounded-lg border border-slate-700 bg-slate-900 px-3 font-mono text-sm focus:border-cyan-300 focus:outline-none"
+                placeholder="Buscar por nombre o ID…"
+                aria-label="Buscar por nombre o ID"
+                className="min-h-10 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm focus:border-cyan-300 focus:outline-none"
               />
               <ul className="grid max-h-[70dvh] gap-1 overflow-auto" aria-label="Partidas">
                 {filtradas.map((p) => {
@@ -219,8 +254,8 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
                         aria-current={activa}
                         className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${activa ? 'bg-cyan-500/15 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
                       >
-                        <span className="font-mono">{p.alumnoCodigo}</span>
-                        <span className="text-xs text-slate-500">{p.completada ? NOMBRE_HABILIDAD[f] : 'en curso'}</span>
+                        <span className="min-w-0 truncate">{p.alumnoNombre}</span>
+                        <span className="shrink-0 text-xs text-slate-500">{p.completada ? NOMBRE_HABILIDAD[f] : 'en curso'}</span>
                       </button>
                     </li>
                   );
@@ -228,26 +263,12 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
                 {filtradas.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">Sin resultados.</li>}
               </ul>
             </aside>
-            {elegida ? <DetallePartida key={elegida.partidaId} partida={elegida} mediaClase={media} /> : <p className="text-slate-500">Elige una partida.</p>}
+            {elegida ? <DetallePartida key={elegida.partidaId} partida={elegida} mediaClase={esPrueba ? undefined : media} esPrueba={esPrueba} /> : <p className="text-slate-500">Elige una partida.</p>}
           </div>
         ) : (
           <Herramientas partidas={partidas} onCambio={() => void cargar()} />
         )}
       </main>
-    </div>
-  );
-}
-
-function Vacio({ onDemo }: { onDemo: () => void }) {
-  return (
-    <div className="grid justify-items-center gap-4 rounded-2xl border border-dashed border-slate-700 p-10 text-center">
-      <p className="text-lg text-slate-300">Todavía no hay partidas.</p>
-      <p className="max-w-md text-sm text-slate-500">Cuando tu alumnado termine la misión, sus perfiles aparecerán aquí. Para ver cómo funciona el panel, puedes cargar una clase de ejemplo simulada.</p>
-      {MODO === 'local' && (
-        <Boton variante="primario" onClick={onDemo}>
-          Cargar clase de ejemplo
-        </Boton>
-      )}
     </div>
   );
 }
@@ -286,60 +307,43 @@ function NuevaClase() {
 }
 
 function Herramientas({ partidas, onCambio }: { partidas: EstadoAlumno[]; onCambio: () => void }) {
-  const [cantidad, setCantidad] = useState(25);
-  const [codigos, setCodigos] = useState<string[]>([]);
-
-  const generar = () => {
-    const set = new Set<string>();
-    while (set.size < Math.min(60, Math.max(1, cantidad))) set.add(generarCodigo());
-    setCodigos([...set]);
-  };
+  const [incluirNombres, setIncluirNombres] = useState(false);
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {MODO === 'supabase' && <NuevaClase />}
       <section className="grid content-start gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-        <h2 className="text-lg font-semibold">Códigos seudónimos para la clase</h2>
-        <p className="text-sm text-slate-400">Reparte un código a cada estudiante y guarda tú la correspondencia en papel. El juego nunca pide nombres.</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-sm">
-            Cantidad
-            <input type="number" min={1} max={60} value={cantidad} onChange={(e) => setCantidad(Number(e.target.value))} className="min-h-10 w-20 rounded-lg border border-slate-700 bg-slate-950 px-2 focus:border-cyan-300 focus:outline-none" />
-          </label>
-          <Boton onClick={generar}>Generar</Boton>
-          {codigos.length > 0 && <Boton variante="fantasma" onClick={() => window.print()}>🖨 Imprimir</Boton>}
-        </div>
-        {codigos.length > 0 && (
-          <ol className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {codigos.map((c, i) => (
-              <li key={c} className="rounded-lg border border-dashed border-slate-600 px-2 py-3 text-center">
-                <span className="block text-[10px] text-slate-500">#{i + 1}</span>
-                <span className="font-mono text-lg tracking-widest">{c}</span>
-              </li>
-            ))}
-          </ol>
-        )}
+        <h2 className="text-lg font-semibold">Acceso del alumnado</h2>
+        <p className="text-sm text-slate-400">Para jugar, cada estudiante escribe su nombre completo y este código de verificación:</p>
+        <p className="w-fit rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 font-mono text-2xl tracking-widest text-cyan-100">{CODIGO_DOCENTE}</p>
+        <p className="text-xs text-slate-500">
+          Se cambia en <code className="font-mono">src/config.ts</code>. Ojo: al estar en el navegador, sirve para evitar accesos casuales en el aula, no como protección real de datos.
+        </p>
       </section>
 
       <section className="grid content-start gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
         <h2 className="text-lg font-semibold">Datos</h2>
+        <label className="flex items-start gap-3 text-sm text-slate-300">
+          <input type="checkbox" checked={incluirNombres} onChange={() => setIncluirNombres((v) => !v)} className="mt-0.5 h-5 w-5 accent-cyan-400" />
+          <span>
+            Incluir nombres en la exportación
+            <span className="block text-xs text-slate-500">Son datos personales de menores: guarda el archivo en un lugar seguro.</span>
+          </span>
+        </label>
         <div className="flex flex-wrap gap-2">
-          <Boton onClick={() => exportarCSV(partidas)} disabled={partidas.length === 0}>⬇ Exportar CSV</Boton>
+          <Boton onClick={() => exportarCSV(partidas, incluirNombres)} disabled={partidas.length === 0}>⬇ Exportar CSV</Boton>
           {MODO === 'local' && (
-            <>
-              <Boton onClick={() => { importarPartidasLocales(generarPartidasDemo(14, 'DEMO-2ESO', Date.now() % 100000)); onCambio(); }}>+ Clase de ejemplo</Boton>
-              <Boton
-                variante="peligro"
-                onClick={() => {
-                  if (window.confirm('¿Borrar todas las partidas guardadas en este navegador? No se puede deshacer.')) {
-                    borrarPartidasLocales();
-                    onCambio();
-                  }
-                }}
-              >
-                Borrar datos locales
-              </Boton>
-            </>
+            <Boton
+              variante="peligro"
+              onClick={() => {
+                if (window.confirm('¿Borrar todas las partidas guardadas en este navegador? No se puede deshacer.')) {
+                  borrarPartidasLocales();
+                  onCambio();
+                }
+              }}
+            >
+              Borrar datos locales
+            </Boton>
           )}
         </div>
         <p className="text-sm text-slate-400">{partidas.length} partida(s) en total · guion v{VERSION_GUION}</p>
@@ -348,10 +352,10 @@ function Herramientas({ partidas, onCambio }: { partidas: EstadoAlumno[]; onCamb
       <section className="grid content-start gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
         <h2 className="text-lg font-semibold">Cómo se evalúa</h2>
         <ul className="grid gap-2 text-sm text-slate-300">
-          <li>· {escenas.length} escenas y 5 caminos: tras el apagón, cada alumno elige qué frente atender y juega el minijuego de esa habilidad. Cada decisión suma 2 puntos a una habilidad y 1 a otra; ninguna opción es «la buena».</li>
-          <li>· El radar muestra el porcentaje sobre el máximo que el alumno podía alcanzar en su propio camino.</li>
-          <li>· En los minijuegos se observan <strong>comportamientos</strong> (pedir ayuda, reintentar, explorar antes de actuar), nunca velocidad ni precisión. Tras 3 intentos, un personaje ayuda y la historia sigue.</li>
-          <li>· El tiempo de respuesta se registra como telemetría, pero no puntúa.</li>
+          <li>· Tras el apagón, el alumno atiende los 5 problemas en el orden que quiera. Cada área suma puntos según su posición: 1.ª = 10, 2.ª = 7, 3.ª = 5, 4.ª = 3 y 5.ª = 1. Así se ven sus prioridades naturales ante una crisis.</li>
+          <li>· El radar muestra esos puntos en % sobre 10. Ninguna prioridad es «la buena»: son indicios para conversar, no un diagnóstico.</li>
+          <li>· En cada minijuego se registran el <strong>tiempo</strong> y la <strong>precisión</strong> (eficiencia), además de los comportamientos (pedir ayuda, reintentar, explorar antes de actuar). Son métricas descriptivas: no cambian los puntos.</li>
+          <li>· Agotar el tiempo o fallar nunca hace perder: un personaje da más tiempo o ayuda tras 3 intentos y la historia sigue.</li>
         </ul>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {Object.values(MECANICAS_INFO).map((m) => (

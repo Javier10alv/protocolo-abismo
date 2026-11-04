@@ -96,10 +96,12 @@ export default function Evacuacion({ onCompletar }: PropsMecanica) {
     if (ayuda) conductas.push('ayuda_automatica');
     const clave = critica === 'tu' ? 'ejemplo' : optimos >= 3 ? 'situacional' : pregunto ? 'consenso' : 'improvisado';
     if (clave === 'improvisado') conductas.push('reparto_no_convencional');
+    // Precisión: especialistas en su tarea (hasta 80) + tarea crítica asumida (20), menos 10 por plan rehecho.
+    const precision = Math.max(0, Math.round((optimos / 4) * 80 + (critica === 'tu' ? 20 : 0) - fallos * 10));
     if (critica && critica !== 'tu') {
       setAviso({ persona: critica, texto: 'Vale… me meto en el agua. Ojalá no tarde mucho en volver la luz.' });
     }
-    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayuda }), critica && critica !== 'tu' ? 2600 : 900);
+    window.setTimeout(() => onCompletar({ clave, conductas, intentos: fallos, ayudaRecibida: ayuda, precision }), critica && critica !== 'tu' ? 2600 : 900);
   };
 
   const completo = TAREAS.every((t) => plan[t.id]);

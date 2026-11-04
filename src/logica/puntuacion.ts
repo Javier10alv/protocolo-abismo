@@ -28,11 +28,26 @@ export function sumarModificadores(
   return total;
 }
 
+/**
+ * Puntos del hub según el orden de elección: la 1.ª área elegida suma 10, la 2.ª 7,
+ * la 3.ª 5, la 4.ª 3 y la 5.ª 1. Mide las prioridades naturales ante una crisis.
+ */
+export const PESOS_ORDEN = [10, 7, 5, 3, 1] as const;
+
+export function puntosPorOrden(orden: number): number {
+  return PESOS_ORDEN[orden - 1] ?? 0;
+}
+
 /** Puntos máximos que una escena puede aportar a cada habilidad. */
 export function maximoPorEscena(escenaId: string): Habilidades {
   const max = habilidadesACero();
   const escena = escenasPorId.get(escenaId);
   if (!escena) return max;
+  if (escena.tipo === 'hub') {
+    // Cualquier área puede elegirse la primera: su máximo es el peso de la 1.ª posición.
+    for (const o of escena.opciones) max[o.area] = Math.max(max[o.area], PESOS_ORDEN[0]);
+    return max;
+  }
   for (const e of eleccionesDe(escena) as (Opcion | Resultado)[]) {
     for (const h of HABILIDADES) max[h] = Math.max(max[h], e.modificadores[h] ?? 0);
   }
@@ -66,7 +81,26 @@ export function ordenarHabilidades(pct: Habilidades): Habilidad[] {
 
 /** Duración de una partida en minutos (o null si no ha terminado). */
 export function duracionMinutos(estado: EstadoAlumno): number | null {
+  const s = duracionSegundos(estado);
+  return s === null ? null : Math.round(s / 60);
+}
+
+/** Duración total de la sesión en segundos (o null si no ha terminado). */
+export function duracionSegundos(estado: EstadoAlumno): number | null {
   if (!estado.finalizadaEn) return null;
-  const ms = Date.parse(estado.finalizadaEn) - Date.parse(estado.iniciadaEn);
-  return Math.max(0, Math.round(ms / 60000));
+  return Math.max(0, Math.round((Date.parse(estado.finalizadaEn) - Date.parse(estado.iniciadaEn)) / 1000));
+}
+
+/** Formatea segundos como «4 min 05 s» o «38 s». */
+export function formatearSegundos(segundos: number): string {
+  const m = Math.floor(segundos / 60);
+  const s = Math.round(segundos % 60);
+  return m > 0 ? `${m} min ${String(s).padStart(2, '0')} s` : `${s} s`;
+}
+
+/** Secuencia de áreas elegidas en el hub, en orden, con sus puntos. */
+export function secuenciaElecciones(estado: Pick<EstadoAlumno, 'historial'>): { area: Habilidad; orden: number; puntos: number }[] {
+  return estado.historial
+    .filter((r): r is typeof r & { area: Habilidad; orden: number } => r.area !== undefined && r.orden !== undefined)
+    .map((r) => ({ area: r.area, orden: r.orden, puntos: r.puntos ?? puntosPorOrden(r.orden) }));
 }

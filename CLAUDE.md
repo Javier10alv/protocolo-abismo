@@ -76,7 +76,7 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 - **Puntuación por orden (hub):** el área elegida en 1.ª posición suma 10, la 2.ª 7, la 3.ª 5, la 4.ª 3 y la 5.ª 1 (`PESOS_ORDEN`). Ninguna prioridad es "la buena". Los minijuegos del hub no suman puntos (resultados con `modificadores: {}`).
 - Las escenas de decisión fuera del hub siguen la regla de 3 puntos: 2 a una habilidad principal y 1 a una secundaria.
-- Estructura (guion 5.2.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, especie, liderazgo, mensaje roto, ondas) → `esc_03_compuerta` (Frecuencias enlazadas, `sinPuntuacion`) → `esc_04_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas siguen en el código, sin usarse.
+- Estructura (guion 5.3.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, especie, liderazgo, mensaje roto, ondas) → `esc_03_compuerta` (Frecuencias enlazadas, `sinPuntuacion`) → `esc_04_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas siguen en el código, sin usarse.
 - **Retirada estratégica:** desde cualquier reto del hub se puede volver a la sala de control (`aplicarRetirada`, registro con `retirada: true`). El reto queda aplazado; al retomarlo (`reanudacion: true`) no vuelve a sumar puntos: puntúa el orden de la **primera** elección. Retirarse nunca resta.
 - **Inventario:** cada sala tiene objetos (`data/objetos.ts`) que se recogen con «Explorar la sala». Todo reto del hub debe tener al menos un uso con un objeto de la sala de control (lo comprueba el validador).
 - Ids: escenas `esc_NN_nombre`, opciones `esc_NN_a|b|c|d|e`, resultados `esc_NN_clave`. Las ramas comparten `NN` (p. ej. `esc_03_tuberias`, `esc_03_sos`); los ids de opción/resultado son únicos en todo el guion.

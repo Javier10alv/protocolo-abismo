@@ -285,12 +285,12 @@
     "titulo": "Mensaje roto",
     "imagen": "/img/fondos/sala_control_pantalla.webp",
     "altImagen": "Puesto de comunicaciones con un radar en la pantalla central y consolas a los lados.",
-    "textoNarrativo": "La superficie ha enviado las instrucciones del rescate, pero las interferencias se han comido parte del mensaje. Un malentendido aquí abajo puede salir muy caro.",
+    "textoNarrativo": "La superficie ha enviado las instrucciones del rescate y, un minuto después, una corrección. Las interferencias se han comido parte de los dos mensajes.",
     "personajes": [
       "reyes",
       "aris"
     ],
-    "instruccion": "Interpreta cada punto del mensaje. Puedes hacer preguntas a la superficie, pero hay pocas transmisiones. Cuando lo tengas, decide si lo confirmas por radio o actúas ya.",
+    "instruccion": "Interpreta cada punto teniendo en cuenta los dos mensajes. Solo hay dos transmisiones para preguntar: úsalas para lo que no se pueda deducir. Después, avisa a cada miembro del equipo de lo que necesita.",
     "resultados": [
       {
         "id": "esc_02_riguroso",

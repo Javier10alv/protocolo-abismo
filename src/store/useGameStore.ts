@@ -1,46 +1,21 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { ESCENA_INICIAL, VERSION_GUION, escenasPorId } from '../data/guion';
-import {
-  FIN,
-  HABILIDADES,
-  type EstadoAlumno,
-  type Habilidades,
-  type Opcion,
-} from '../types/game';
+import { VERSION_GUION } from '../data/guion';
+import { aplicarMinijuego, aplicarOpcion, crearEstadoInicial } from '../logica/partida';
+import type { EstadoAlumno, Opcion, ResultadoMecanica } from '../types/game';
 
-const habilidadesACero = (): Habilidades => ({
-  logica: 0,
-  creatividad: 0,
-  comunicacion: 0,
-  resiliencia: 0,
-  liderazgo: 0,
-});
-
-export function crearEstadoInicial(alumnoCodigo = 'ANON', claseId = 'DEMO'): EstadoAlumno {
-  return {
-    version: VERSION_GUION,
-    partidaId: crypto.randomUUID(),
-    alumnoCodigo,
-    claseId,
-    escenaActual: ESCENA_INICIAL,
-    habilidades: habilidadesACero(),
-    historial: [],
-    completada: false,
-    iniciadaEn: new Date().toISOString(),
-    finalizadaEn: null,
-  };
-}
+export { crearEstadoInicial };
 
 interface GameStore extends EstadoAlumno {
   /** Interno: cuándo se mostró la escena actual. No se persiste ni se envía. */
   escenaMostradaEn: number;
   seleccionarOpcion: (opcionSeleccionada: Opcion) => void;
+  completarMinijuego: (resultado: ResultadoMecanica) => void;
   reiniciarPartida: (alumnoCodigo?: string, claseId?: string) => void;
 }
 
 /** Extrae del store solo los campos del esquema (lo que se persiste y se envía al backend). */
-export const seleccionarEstadoAlumno = (s: GameStore): EstadoAlumno => ({
+export const seleccionarEstadoAlumno = (s: EstadoAlumno): EstadoAlumno => ({
   version: s.version,
   partidaId: s.partidaId,
   alumnoCodigo: s.alumnoCodigo,
@@ -54,44 +29,30 @@ export const seleccionarEstadoAlumno = (s: GameStore): EstadoAlumno => ({
 });
 
 export const useGameStore = create<GameStore>()(
-  persist(
+  persist<GameStore, [], [], EstadoAlumno>(
     (set, get) => ({
       ...crearEstadoInicial(),
       escenaMostradaEn: Date.now(),
 
       seleccionarOpcion: (opcionSeleccionada) => {
         const estado = get();
-        if (estado.completada) return;
+        // aplicarOpcion ignora opciones que no son de la escena actual (p. ej. doble clic).
+        const siguiente = aplicarOpcion(
+          seleccionarEstadoAlumno(estado),
+          opcionSeleccionada.id,
+          Date.now() - estado.escenaMostradaEn,
+        );
+        if (siguiente) set({ ...siguiente, escenaMostradaEn: Date.now() });
+      },
 
-        // Ignora opciones que no pertenecen a la escena actual (p. ej. un doble clic
-        // sobre un botón de la escena anterior).
-        const escena = escenasPorId.get(estado.escenaActual);
-        if (!escena?.opciones.some((o) => o.id === opcionSeleccionada.id)) return;
-
-        const ahora = Date.now();
-        const habilidades = { ...estado.habilidades };
-        for (const h of HABILIDADES) {
-          habilidades[h] += opcionSeleccionada.modificadores[h] ?? 0;
-        }
-
-        const esFinal = opcionSeleccionada.siguienteEscena === FIN;
-
-        set({
-          habilidades,
-          historial: [
-            ...estado.historial,
-            {
-              escenaId: estado.escenaActual,
-              opcionId: opcionSeleccionada.id,
-              timestamp: new Date(ahora).toISOString(),
-              tiempoRespuestaMs: Math.max(0, ahora - estado.escenaMostradaEn),
-            },
-          ],
-          escenaActual: opcionSeleccionada.siguienteEscena,
-          completada: esFinal,
-          finalizadaEn: esFinal ? new Date(ahora).toISOString() : null,
-          escenaMostradaEn: ahora,
-        });
+      completarMinijuego: (resultado) => {
+        const estado = get();
+        const siguiente = aplicarMinijuego(
+          seleccionarEstadoAlumno(estado),
+          resultado,
+          Date.now() - estado.escenaMostradaEn,
+        );
+        if (siguiente) set({ ...siguiente, escenaMostradaEn: Date.now() });
       },
 
       reiniciarPartida: (alumnoCodigo, claseId) => {
@@ -110,7 +71,7 @@ export const useGameStore = create<GameStore>()(
       merge: (persistido, actual) => {
         const p = persistido as Partial<EstadoAlumno> | undefined;
         if (!p || p.version !== VERSION_GUION) return actual;
-        return { ...actual, ...p };
+        return { ...actual, ...p, escenaMostradaEn: Date.now() };
       },
     },
   ),

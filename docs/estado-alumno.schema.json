@@ -31,11 +31,15 @@
       "type": "string",
       "description": "Código seudónimo asignado por el docente (p. ej. 'A7K2'). Nunca nombre real: son menores.",
       "minLength": 3,
-      "maxLength": 12
+      "maxLength": 12,
+      "pattern": "^[A-Z0-9-]+$"
     },
     "claseId": {
       "type": "string",
-      "description": "Código de la clase que agrupa partidas para un mismo docente."
+      "description": "Código de la clase que agrupa partidas para un mismo docente.",
+      "pattern": "^[A-Z0-9-]+$",
+      "minLength": 2,
+      "maxLength": 20
     },
     "escenaActual": {
       "type": "string",
@@ -45,13 +49,34 @@
       "type": "object",
       "description": "Puntuación bruta acumulada. Todas empiezan en 0.",
       "additionalProperties": false,
-      "required": ["logica", "creatividad", "comunicacion", "resiliencia", "liderazgo"],
+      "required": [
+        "logica",
+        "creatividad",
+        "comunicacion",
+        "resiliencia",
+        "liderazgo"
+      ],
       "properties": {
-        "logica": { "type": "integer", "minimum": 0 },
-        "creatividad": { "type": "integer", "minimum": 0 },
-        "comunicacion": { "type": "integer", "minimum": 0 },
-        "resiliencia": { "type": "integer", "minimum": 0 },
-        "liderazgo": { "type": "integer", "minimum": 0 }
+        "logica": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "creatividad": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "comunicacion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resiliencia": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "liderazgo": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "historial": {
@@ -60,29 +85,67 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["escenaId", "opcionId", "timestamp"],
+        "required": [
+          "escenaId",
+          "opcionId",
+          "timestamp"
+        ],
         "properties": {
-          "escenaId": { "type": "string" },
-          "opcionId": { "type": "string" },
-          "timestamp": { "type": "string", "format": "date-time" },
+          "escenaId": {
+            "type": "string"
+          },
+          "opcionId": {
+            "type": "string",
+            "description": "id de la opción elegida (escena de decisión) o del resultado (minijuego)."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
           "tiempoRespuestaMs": {
             "type": "integer",
             "minimum": 0,
-            "description": "Telemetría opcional. No puntúa en el MVP."
+            "description": "Telemetría. No puntúa."
+          },
+          "conductas": {
+            "type": "array",
+            "description": "Solo minijuegos: comportamientos observados (claves de ETIQUETAS_CONDUCTA).",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z_]+$"
+            },
+            "uniqueItems": true
+          },
+          "intentos": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Solo minijuegos: intentos fallidos antes de resolver. Fallar no penaliza."
+          },
+          "ayudaRecibida": {
+            "type": "boolean",
+            "description": "Solo minijuegos: un personaje ayudó tras 3 intentos."
           }
         }
       }
     },
-    "completada": { "type": "boolean" },
-    "iniciadaEn": { "type": "string", "format": "date-time" },
+    "completada": {
+      "type": "boolean"
+    },
+    "iniciadaEn": {
+      "type": "string",
+      "format": "date-time"
+    },
     "finalizadaEn": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     }
   },
   "examples": [
     {
-      "version": "1.0.0",
+      "version": "2.0.0",
       "partidaId": "3f1c9a2e-8b4d-4e6a-9c1f-2a7b5d8e0f13",
       "alumnoCodigo": "A7K2",
       "claseId": "2ESO-B",

@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  background: #020617;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ajuste "texto grande": escala todo el rem. */
+:root.texto-grande {
+  font-size: 118.75%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: #020617;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sonar {
+  from { transform: scale(0.2); opacity: 1; }
+  to { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes subir {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translateY(-55vh) translateX(12px); }
+  100% { transform: translateY(-110vh) translateX(-8px); opacity: 0; }
+}
+
+@keyframes deriva {
+  from { transform: scale(1.02) translate(0, 0); }
+  to { transform: scale(1.08) translate(-1.5%, -1%); }
+}
+
+@media print {
+  .no-imprimir { display: none !important; }
+  body, :root { background: white; color: black; }
+}

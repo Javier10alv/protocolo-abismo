@@ -1,19 +1,94 @@
-# Protocolo Abismo — MVP hack4edu
+# Protocolo Abismo — hack4edu
 
-Juego narrativo que evalúa de forma invisible habilidades blandas (lógica, creatividad, comunicación, resiliencia y liderazgo).
+Aventura narrativa submarina que **evalúa de forma invisible** cinco habilidades blandas (lógica, creatividad, comunicación, resiliencia y liderazgo) de estudiantes de 10 a 18 años. El alumno juega; el docente ve un radar de fortalezas, el recorrido de decisiones y una recomendación pedagógica.
 
 ## Arrancar
 
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
 ```
+
+- `/` — entrada del alumno (código de clase + código seudónimo).
+- `/jugar` — el juego.
+- `/docente` — panel del docente. En modo demo pulsa **«Cargar clase de ejemplo»** para ver 14 partidas simuladas.
+
+Otros comandos:
+
+```bash
+npm run validar    # valida el guion (también se ejecuta en build)
+npm run build      # validar + tsc + vite build
+npx tsx scripts/generar-fondos.ts   # regenera las ilustraciones SVG de public/img
+```
+
+## Qué incluye
+
+**Juego (12 escenas, 3 caminos, ~15–20 min)**
+
+| Escena | Tipo | Qué observa |
+|---|---|---|
+| El despertar | Decisión | — |
+| La puerta atascada | **Cableado** (puzle lógico con esquema y pistas) | Consulta antes de actuar, pide ayuda, reintenta |
+| El pasillo inundado | Decisión con **bifurcación** | — |
+| Hablar con Leo | **Conversación** de 3 turnos con un compañero asustado | Estilo comunicativo dominante |
+| Repartir tareas | **Reparto** de tareas entre 3 personas | Consulta al equipo, asume riesgos, reparte por perfiles |
+| Cuarto de mantenimiento | **Inventario**: combinar objetos (varias soluciones) | Busca alternativas, pide ideas, persiste |
+| El hangar a oscuras | **Sonar** en una cuadrícula para encontrar el dron | Explora antes de actuar, coordina, persiste |
+| Voces desde la superficie | Decisión | — |
+| El manual desordenado | **Secuencia**: ordenar pasos (arrastrar o ▲▼) | Consulta notas, reintenta, deduce |
+| El corazón de la estación | Decisión | — |
+| Preparar la cápsula | **Energía**: repartir recursos + imprevisto | Prioridades y adaptación al cambio |
+| El ascenso | Decisión metacognitiva | — |
+
+- Nunca se puntúa velocidad ni precisión motora. Tras 3 intentos fallidos, un personaje ayuda y la historia sigue.
+- Accesibilidad: todo funciona con teclado, ratón y pantalla táctil; lectura en voz alta, texto grande, texto sin animación, `prefers-reduced-motion` y foco gestionado en cada escena.
+- Sonido sintetizado con Web Audio (sin archivos), con botón para silenciarlo.
+- La partida se guarda sola y se puede pausar y continuar.
+
+**Panel del docente**
+
+- Vista de clase: perfil medio, mapa de calor alumno × habilidad, fortaleza principal, caminos elegidos y **agrupamientos sugeridos** con fortalezas complementarias.
+- Informe individual: radar normalizado (con la media de la clase), recomendación con plantilla local o **redactada con IA** (Claude), cronología de decisiones y comportamientos, e impresión.
+- Herramientas: generador de códigos seudónimos imprimibles, exportación a CSV, clase de ejemplo y explicación de cómo se evalúa.
+
+## Modo demo vs. Supabase
+
+Sin configuración, todo funciona en **modo demo local**: las partidas se guardan en el `localStorage` del navegador y el panel no pide contraseña.
+
+Para usarlo con una clase real:
+
+1. Crea un proyecto en Supabase y aplica `supabase/migrations/20261104000000_partidas.sql` (tablas `clases` y `partidas` con RLS: el alumnado solo inserta y cada docente solo lee sus clases).
+2. Crea usuarios docentes en Supabase Auth (correo y contraseña).
+3. Copia `.env.example` a `.env.local` y rellena `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+4. Informe con IA:
+   ```bash
+   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+   supabase functions deploy informe-docente
+   ```
+5. Cada docente crea su clase desde **Panel → Herramientas → Nueva clase** y comparte el código.
+
+## Privacidad
+
+- Solo códigos seudónimos; el juego nunca pide nombres.
+- El alumno nunca ve puntuaciones, ni en la interfaz ni en respuestas de red (`return=minimal`).
+- Al LLM solo se envían porcentajes y textos de decisiones; nunca código de alumno, clase ni partida.
+- La API key de Anthropic vive solo en la Edge Function.
 
 ## Estructura
 
-- `src/data/escenas.json` — guion del juego. Si lo cambias, sube `VERSION_GUION` en `src/data/guion.ts`.
-- `src/store/useGameStore.ts` — store de Zustand (estado del alumno y `seleccionarOpcion`).
-- `src/components/GameEngine.tsx` — motor visual (escena, opciones y pantalla FIN).
-- `src/types/game.ts` — tipos compartidos.
-- `docs/estado-alumno.schema.json` — JSON Schema del estado que se envía al backend.
-- `public/img/` — fondos de las escenas (provisionales: sustituir por las ilustraciones reales con el mismo nombre).
+```
+src/
+├── types/game.ts              Tipos compartidos (escenas, mecánicas, estado)
+├── data/escenas.json          Guion (contenido, sin lógica)
+├── data/guion.ts              VERSION_GUION, índices y utilidades del guion
+├── logica/                    Funciones puras: partida, puntuación, recomendación, simulación
+├── mecanicas/                 Las 7 mecánicas + registro (claves y conductas) para el docente
+├── store/                     Zustand: partida del alumno y ajustes de accesibilidad
+├── servicios/partidas.ts      Envío y lectura de partidas (local o Supabase) + informe IA
+├── components/                Motor del juego, UI común, retratos, iconos y panel docente
+├── paginas/                   Entrada, Jugar y Docente (React Router)
+└── audio/sonido.ts            Efectos con Web Audio
+scripts/                       validar-guion.ts y generar-fondos.ts
+supabase/                      Migración SQL y Edge Function informe-docente
+docs/estado-alumno.schema.json JSON Schema del estado que se envía al backend
+```

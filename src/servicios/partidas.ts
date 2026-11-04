@@ -10,8 +10,19 @@ import type { AjusteDocente } from '../logica/evaluacion';
 import { resumenParaLLM } from '../logica/recomendacion';
 import type { EstadoAlumno, Habilidad } from '../types/game';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+/**
+ * Devuelve la variable solo si parece un valor real. Si alguien copia
+ * `.env.example` tal cual, los valores de relleno (`xxxxxxxx`, `eyJ...`) no
+ * deben activar el modo Supabase, o el panel pediría una contraseña imposible.
+ */
+function variableReal(valor: string | undefined): string | undefined {
+  const v = valor?.trim();
+  if (!v || v.includes('xxxxxxxx') || v.endsWith('...')) return undefined;
+  return v;
+}
+
+const SUPABASE_URL = variableReal(import.meta.env.VITE_SUPABASE_URL);
+const SUPABASE_ANON_KEY = variableReal(import.meta.env.VITE_SUPABASE_ANON_KEY);
 
 export const MODO: 'supabase' | 'local' = SUPABASE_URL && SUPABASE_ANON_KEY ? 'supabase' : 'local';
 

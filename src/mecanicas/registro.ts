@@ -155,6 +155,18 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
       delegador: [],
     },
   },
+  mensaje: {
+    nombre: 'Mensaje roto',
+    queObserva: 'Si interpreta por el contexto lo que se puede deducir, si detecta lo ambiguo y pregunta solo lo necesario, si confirma lo entendido antes de actuar (bucle cerrado) y si transmite al equipo la información completa.',
+    fundamento: 'Inferencia pragmática (Grice, 1975; Sperber y Wilson, 1986) y comunicación en bucle cerrado (Salas, Sims y Burke, 2005).',
+    claves: ['riguroso', 'intuitivo', 'rectificador', 'asesorado'],
+    conductasTipicas: {
+      riguroso: ['cerro_bucle', 'detecto_ambiguedad'],
+      intuitivo: ['actuo_sin_confirmar'],
+      rectificador: ['actuo_sin_confirmar', 'reintento'],
+      asesorado: ['pidio_consejo'],
+    },
+  },
   frecuencias: {
     nombre: 'Frecuencias enlazadas',
     queObserva: 'Si encuentra la palabra que une tres conceptos alejados (asociación remota), cuánta ayuda necesita y si la respuesta le llega de golpe o paso a paso.',
@@ -218,6 +230,11 @@ export const ETIQUETAS_CONDUCTA: Record<string, string> = {
   ignoro_aviso: 'No atendió al aviso de error antes de sincronizar',
   adapto_estilo: 'Cambió su forma de guiar cuando cambió el estado de las personas',
   repitio_estilo: 'Repitió con alguien el estilo que le funcionó antes, aunque ya no encajaba',
+  detecto_ambiguedad: 'Detectó una frase ambigua y la aclaró con una pregunta concreta',
+  pregunta_innecesaria: 'Gastó transmisiones en preguntas deducibles o vagas',
+  cerro_bucle: 'Confirmó lo entendido antes de actuar',
+  actuo_sin_confirmar: 'Actuó sin confirmar lo que había entendido',
+  transmitio_completo: 'Transmitió al equipo la información completa',
   insight_subito: 'Las respuestas le llegaron sobre todo de golpe (insight)',
   insight_analitico: 'Las respuestas le llegaron sobre todo paso a paso',
 };

@@ -36,6 +36,7 @@ export const MECANICAS = [
   'especie',
   'frecuencias',
   'guiar',
+  'mensaje',
 ] as const;
 
 export type Mecanica = (typeof MECANICAS)[number];

@@ -54,7 +54,7 @@
     "introduccion": [
       {
         "personaje": "leo",
-        "texto": "¡Menos mal que has llegado! El temblor ha tumbado la red eléctrica: el motor se recalienta, algo extraño se mueve en el invernadero, la antena está rota y el sistema central no responde."
+        "texto": "¡Menos mal que has llegado! El temblor ha tumbado la red eléctrica: el motor se recalienta, algo extraño se mueve en el invernadero, llega un mensaje cortado de la superficie y el sistema central no responde."
       },
       {
         "personaje": "leo",
@@ -109,8 +109,8 @@
       {
         "id": "esc_01_d",
         "area": "comunicacion",
-        "textoBoton": "¡La antena está medio rota! Solo tenemos batería para enviar un mensaje súper corto a la superficie. Tengo que elegir las palabras exactas para pedir rescate sin perder el tiempo.",
-        "escena": "esc_02_sos"
+        "textoBoton": "¡Ha llegado un mensaje de la superficie, pero la antena está medio rota y llega cortado! Tengo que entender bien qué nos dicen, aclarar lo dudoso y avisar al equipo antes de que sea tarde.",
+        "escena": "esc_02_mensaje"
       },
       {
         "id": "esc_01_e",
@@ -279,40 +279,48 @@
     ]
   },
   {
-    "id": "esc_02_sos",
+    "id": "esc_02_mensaje",
     "tipo": "minijuego",
-    "mecanica": "sos",
-    "titulo": "Protocolo S.O.S.",
+    "mecanica": "mensaje",
+    "titulo": "Mensaje roto",
     "imagen": "/img/fondos/sala_control_pantalla.webp",
     "altImagen": "Puesto de comunicaciones con un radar en la pantalla central y consolas a los lados.",
-    "textoNarrativo": "La antena está dañada y el ancho de banda es mínimo. Lo que transmitas tiene que servir a la superficie para venir a buscaros, sin desperdiciar ni un hueco.",
+    "textoNarrativo": "La superficie ha enviado las instrucciones del rescate, pero las interferencias se han comido parte del mensaje. Un malentendido aquí abajo puede salir muy caro.",
     "personajes": [
       "reyes",
       "aris"
     ],
-    "instruccion": "Elige fragmentos para formar el mensaje (los largos ocupan dos huecos) y transmítelo. La superficie te dirá si le falta algo.",
+    "instruccion": "Interpreta cada punto del mensaje. Puedes hacer preguntas a la superficie, pero hay pocas transmisiones. Cuando lo tengas, decide si lo confirmas por radio o actúas ya.",
     "resultados": [
       {
-        "id": "esc_02_directo",
-        "clave": "directo",
-        "descripcion": "Su primer mensaje ya incluía dónde, cuántos, qué necesitan y cuánto pueden aguantar.",
-        "textoCierre": "«Recibido: Sector C, cinco personas, batiscafo, seis horas de oxígeno». Reyes levanta el pulgar: «Claro y al grano».",
+        "id": "esc_02_riguroso",
+        "clave": "riguroso",
+        "descripcion": "Confirmó lo entendido por radio antes de actuar (comunicación en bucle cerrado).",
+        "textoCierre": "La superficie confirma cada punto y el equipo se pone en marcha sin dudas. Reyes asiente: «Así se habla por radio: entender, confirmar y actuar».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_02_ajustado",
-        "clave": "ajustado",
-        "descripcion": "Reformuló el mensaje a partir de la respuesta de la superficie.",
-        "textoCierre": "Con cada respuesta afinaste el mensaje. Al final, la superficie lo tiene claro: «Recibido. Vamos para allá».",
+        "id": "esc_02_intuitivo",
+        "clave": "intuitivo",
+        "descripcion": "Actuó sin confirmar, pero había interpretado bien el mensaje.",
+        "textoCierre": "Lo habías entendido bien y el equipo se pone en marcha. Reyes comenta: «Esta vez ha salido. La próxima, confírmalo antes».",
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
+      },
+      {
+        "id": "esc_02_rectificador",
+        "clave": "rectificador",
+        "descripcion": "Actuó sin confirmar, descubrió un malentendido y lo corrigió confirmando con la superficie.",
+        "textoCierre": "El malentendido os ha costado un susto, pero lo has arreglado confirmando con la superficie. Aris dice: «Ahora ya sabemos por qué en radio se repite todo».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
       {
         "id": "esc_02_asesorado",
         "clave": "asesorado",
-        "descripcion": "Pidió consejo al Comandante Reyes sobre qué incluir.",
-        "textoCierre": "Con el consejo de Reyes, el mensaje sale perfecto. «Saber a quién preguntar también es saber comunicar», dice.",
+        "descripcion": "Pidió consejo al Comandante Reyes sobre cómo manejar el mensaje.",
+        "textoCierre": "Con el consejo de Reyes, el mensaje queda claro y el equipo sabe qué hacer. «Saber a quién preguntar también es comunicar», dice.",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       }

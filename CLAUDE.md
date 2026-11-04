@@ -43,7 +43,7 @@ src/
 ├── logica/simulacion.ts        Partidas simuladas (validador) y la fila «Alumno de Prueba» del panel
 ├── config.ts                   CODIGO_DOCENTE y normalización de nombres
 ├── mecanicas/registro.ts       Claves de desenlace de cada mecánica y etiquetas de conducta
-├── mecanicas/*.tsx             En uso: Tuberias, Especie, Guiar (liderazgo situacional), Sos, Ondas, Frecuencias. Antiguas sin usar: Cableado, Conversacion, Sonar, Secuencia, Energia, Cultivo, Evacuacion
+├── mecanicas/*.tsx             En uso: Tuberias, Especie, Guiar (liderazgo situacional), Mensaje (mensaje roto), Ondas, Frecuencias. Antiguas sin usar: Cableado, Conversacion, Sonar, Secuencia, Energia, Cultivo, Evacuacion, Sos
 ├── mecanicas/Inventario.tsx    Barra de inventario dentro de un reto (cada mecánica decide si un objeto le sirve)
 ├── store/                      useGameStore (partida) y useAjustesStore (sonido, texto grande…)
 ├── servicios/partidas.ts       Envío/lectura (local o Supabase), sesión docente, informe IA
@@ -76,7 +76,7 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 - **Puntuación por orden (hub):** el área elegida en 1.ª posición suma 10, la 2.ª 7, la 3.ª 5, la 4.ª 3 y la 5.ª 1 (`PESOS_ORDEN`). Ninguna prioridad es "la buena". Los minijuegos del hub no suman puntos (resultados con `modificadores: {}`).
 - Las escenas de decisión fuera del hub siguen la regla de 3 puntos: 2 a una habilidad principal y 1 a una secundaria.
-- Estructura (guion 5.1.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, especie, liderazgo, S.O.S., ondas) → `esc_03_compuerta` (Frecuencias enlazadas, `sinPuntuacion`) → `esc_04_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas siguen en el código, sin usarse.
+- Estructura (guion 5.2.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, especie, liderazgo, mensaje roto, ondas) → `esc_03_compuerta` (Frecuencias enlazadas, `sinPuntuacion`) → `esc_04_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas siguen en el código, sin usarse.
 - **Retirada estratégica:** desde cualquier reto del hub se puede volver a la sala de control (`aplicarRetirada`, registro con `retirada: true`). El reto queda aplazado; al retomarlo (`reanudacion: true`) no vuelve a sumar puntos: puntúa el orden de la **primera** elección. Retirarse nunca resta.
 - **Inventario:** cada sala tiene objetos (`data/objetos.ts`) que se recogen con «Explorar la sala». Todo reto del hub debe tener al menos un uso con un objeto de la sala de control (lo comprueba el validador).
 - Ids: escenas `esc_NN_nombre`, opciones `esc_NN_a|b|c|d|e`, resultados `esc_NN_clave`. Las ramas comparten `NN` (p. ej. `esc_03_tuberias`, `esc_03_sos`); los ids de opción/resultado son únicos en todo el guion.
@@ -93,7 +93,7 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 - **El alumno nunca ve puntuaciones**: ni en la UI, ni en mensajes, ni en respuestas de red que pueda inspeccionar.
 - **El radar se normaliza** como porcentaje del máximo alcanzable de cada habilidad sobre las escenas que el alumno visitó (`maximosAlcanzables` en `logica/puntuacion.ts`). El máximo se calcula desde el guion, no se escribe a mano.
 - `tiempoRespuestaMs` (duración de cada minijuego) y `precision` (0–100) son **métricas para el docente**: no cambian los puntos.
-- Tuberías (150 s) y S.O.S. (75 s) tienen cuenta atrás (`useCuentaAtras`). Al agotarse, un personaje da más tiempo: nunca se pierde.
+- Tuberías (150 s) tiene cuenta atrás (`useCuentaAtras`). Al agotarse, un personaje da más tiempo: nunca se pierde.
 - Las mecánicas inspiradas en tests con «respuesta óptima» se adaptan: lo óptimo se registra como conducta para el docente, nunca resta. Un plan inviable (p. ej. sobrecargar a una persona) se trata como intento fallido que se rehace. Si una mecánica provoca errores a propósito (Ondas), debe explicárselo al alumno en el cierre.
 - Mecánicas: se puntúan **comportamientos** (reintentar, pedir pista, explorar antes de actuar), nunca velocidad ni precisión motora. Fallar no penaliza: la dificultad es adaptativa (pista tras 2 fallos) y tras 3 intentos (`INTENTOS_ANTES_DE_AYUDA`) un personaje ayuda y la historia sigue.
 - Ondas tiene dos fallos provocados: uno **previsible** (ERR-47, evitable con el condensador) y uno **imprevisible** para todos. Ambos se explican en el cierre (`notaCierre`).

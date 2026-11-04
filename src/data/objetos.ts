@@ -43,7 +43,7 @@ export const OBJETOS: Objeto[] = [
     sala: 'esc_01_hub',
     usos: [
       { mecanica: 'tuberias', efecto: 'Sella la tubería agrietada y permite un recorrido más corto.' },
-      { mecanica: 'sos', efecto: 'Repara el cable de la antena: un hueco más de ancho de banda.' },
+      { mecanica: 'mensaje', efecto: 'Repara el cable de la antena: una transmisión más para aclarar el mensaje.' },
     ],
   },
   {
@@ -64,7 +64,7 @@ export const OBJETOS: Objeto[] = [
     icono: '📻',
     pista: 'Colgado de una tubería hay un walkie-talkie con la batería a medias.',
     sala: 'esc_02_tuberias',
-    usos: [{ mecanica: 'sos', efecto: 'Reyes retransmite un fragmento por otra frecuencia: un hueco más.' }],
+    usos: [{ mecanica: 'mensaje', efecto: 'Reyes lo usa como repetidor: una transmisión más.' }],
   },
   {
     id: 'gel',
@@ -87,7 +87,7 @@ export const OBJETOS: Objeto[] = [
     nombre: 'Manual de averías',
     icono: '📘',
     pista: 'En la estantería de comunicaciones hay un manual de averías con las esquinas dobladas.',
-    sala: 'esc_02_sos',
+    sala: 'esc_02_mensaje',
     usos: [{ mecanica: 'ondas', efecto: 'Explica el código ERR-47: indica que el fallo está en el condensador del monitor.' }],
   },
   {

@@ -46,7 +46,7 @@ export const JUICIO: Partial<Record<Mecanica, PreguntaJuicio>> = {
       { texto: 'Le explico que la culpa fue de las circunstancias.', valor: 0.15 },
     ],
   },
-  sos: {
+  mensaje: {
     habilidad: 'logica',
     personaje: 'reyes',
     pregunta: 'La superficie os envía dos datos que se contradicen sobre la hora del rescate. ¿Qué haces?',

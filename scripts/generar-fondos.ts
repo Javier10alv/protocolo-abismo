@@ -1,4 +1,5 @@
 // Genera las ilustraciones vectoriales de las escenas en public/img/*.svg.
+// (La sala de control usa la ilustración public/img/base.webp, que no se genera aquí.)
 // Son fondos estilizados (flat, sci-fi submarino) pensados para quedar por detrás
 // de la caja de diálogo: el contenido importante va en la mitad superior.
 //
@@ -53,47 +54,14 @@ function luzEmergencia(id: string, x: number, y: number, r = 180): string {
   return `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#${id}-red)"/><rect x="${x - 22}" y="${y - 10}" width="44" height="20" rx="6" fill="#ef4444"/>`;
 }
 
-function silueta(x: number, y: number, escala: number, color: string, casco = '#22d3ee'): string {
-  return `<g transform="translate(${x} ${y}) scale(${escala})">
-<ellipse cx="0" cy="-150" rx="38" ry="42" fill="${color}"/>
-<path d="M-38 -165 a38 38 0 0 1 76 0" fill="none" stroke="${casco}" stroke-width="6" opacity="0.8"/>
-<path d="M-60 -100 q60 -30 120 0 l10 130 h-140 z" fill="${color}"/>
-<rect x="-50" y="30" width="38" height="120" rx="12" fill="${color}"/>
-<rect x="12" y="30" width="38" height="120" rx="12" fill="${color}"/>
-</g>`;
-}
-
 const fondos: Record<string, string> = {
-  esc_01_despertar: base('a', '#0b1530', '#020617', `
-${sala('a')}
-<circle cx="800" cy="440" r="150" fill="#06243a" stroke="#64748b" stroke-width="18"/>
-<circle cx="800" cy="440" r="150" fill="url(#a-glow)" opacity="0.6"/>
-<path d="M690 520 q40 -50 90 -10 q50 -60 120 10" fill="none" stroke="#155e75" stroke-width="10"/>
-<g transform="translate(250 330)"><rect width="200" height="260" rx="14" fill="#111c33" stroke="#334155" stroke-width="6"/>
-${Array.from({ length: 6 }, (_, i) => `<rect x="30" y="${30 + i * 36}" width="${60 + ((i * 37) % 80)}" height="14" rx="4" fill="${i % 3 === 0 ? '#f87171' : '#22d3ee'}" opacity="0.8"/>`).join('')}
-<circle cx="160" cy="220" r="14" fill="#facc15"/></g>
-<g transform="translate(1150 380)"><rect width="260" height="70" rx="10" fill="#1e293b"/><rect x="20" y="70" width="18" height="160" fill="#1e293b"/><rect x="222" y="70" width="18" height="160" fill="#1e293b"/>
-<rect x="40" y="-60" width="50" height="60" rx="6" fill="#0e7490" opacity="0.8"/><rect x="120" y="-40" width="30" height="40" rx="6" fill="#a5f3fc" opacity="0.5"/></g>
-${luzEmergencia('a', 800, 70, 260)}${luzEmergencia('a', 180, 120)}${luzEmergencia('a', 1420, 120)}`, 1),
-
-  esc_02_puerta: base('b', '#0b1530', '#020617', `
-${sala('b')}
-<rect x="600" y="250" width="400" height="420" rx="20" fill="#1e293b" stroke="#475569" stroke-width="10"/>
-<rect x="790" y="250" width="20" height="420" fill="#0f172a"/>
-<path d="M600 460 h400" stroke="#facc15" stroke-width="12" stroke-dasharray="40 30" opacity="0.6"/>
-<g transform="translate(1080 300)"><rect width="230" height="300" rx="14" fill="#0f172a" stroke="#22d3ee" stroke-width="4" opacity="0.95"/>
-${['#ef4444', '#3b82f6', '#22c55e', '#eab308'].map((c, i) => `<path d="M40 ${60 + i * 60} q60 ${i % 2 ? 50 : -30} 80 ${80 - i * 10}" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round"/><circle cx="190" cy="${60 + i * 60}" r="12" fill="#334155" stroke="#94a3b8" stroke-width="3"/>`).join('')}
-</g>
-<circle cx="1200" cy="300" r="160" fill="url(#b-glow)" opacity="0.5"/>
-${luzEmergencia('b', 800, 200, 220)}`, 2),
-
   esc_03_pasillo: base('c', '#0a1a33', '#03101f', `
 ${sala('c')}
 <rect x="0" y="640" width="${W}" height="360" fill="#0c4a6e" opacity="0.55"/>
 ${Array.from({ length: 8 }, (_, i) => `<path d="M${i * 220 - 40} ${680 + (i % 3) * 30} q55 -18 110 0 t110 0" fill="none" stroke="#67e8f9" stroke-width="4" opacity="0.35"/>`).join('')}
 <g transform="rotate(-12 420 640)"><rect x="330" y="580" width="180" height="90" rx="8" fill="#475569"/><rect x="345" y="595" width="70" height="12" fill="#1e293b"/></g>
 <g transform="rotate(9 1180 660)"><rect x="1090" y="610" width="200" height="90" rx="8" fill="#475569"/><rect x="1105" y="625" width="70" height="12" fill="#1e293b"/></g>
-${silueta(650, 520, 1.15, '#1e3a5f', '#f59e0b')}${silueta(930, 540, 1, '#1f3b4d')}
+
 ${luzEmergencia('c', 800, 60, 240)}
 <polygon points="700,0 900,0 1100,700 500,700" fill="url(#c-ray)"/>`, 3),
 

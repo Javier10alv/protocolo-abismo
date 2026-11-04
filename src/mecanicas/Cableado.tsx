@@ -33,7 +33,7 @@ const PISTAS = [
   'El amarillo nunca va a una forma con punta.',
 ];
 
-const AYUDAS_IRENE: Record<Cable, string> = {
+const AYUDAS_LISA: Record<Cable, string> = {
   rojo: 'Empieza por lo seguro: el rojo siempre va al rayo. Te lo marco.',
   verde: 'El verde, al círculo. Es la única forma redonda.',
   amarillo: 'Piensa en qué formas tienen punta… el amarillo va al cuadrado.',
@@ -50,7 +50,7 @@ export default function Cableado({ onCompletar }: PropsMecanica) {
   const [haProbado, setHaProbado] = useState(false);
   const [pidioAyuda, setPidioAyuda] = useState(false);
   const [fallos, setFallos] = useState(0);
-  const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'irene' | 'sistema' } | null>(null);
+  const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'lisa' | 'sistema' } | null>(null);
   const [resuelto, setResuelto] = useState(false);
 
   const conectar = (cable: Cable, terminal: Terminal) => {
@@ -92,11 +92,11 @@ export default function Cableado({ onCompletar }: PropsMecanica) {
     setPidioAyuda(true);
     const pendiente = CABLES.map((c) => c.id).find((c) => conexiones[c] !== SOLUCION[c]);
     if (!pendiente) {
-      setMensaje({ tipo: 'irene', texto: '¡Parece que lo tienes todo bien! Prueba la conexión.' });
+      setMensaje({ tipo: 'lisa', texto: '¡Parece que lo tienes todo bien! Prueba la conexión.' });
       return;
     }
     conectar(pendiente, SOLUCION[pendiente]);
-    setMensaje({ tipo: 'irene', texto: AYUDAS_IRENE[pendiente] });
+    setMensaje({ tipo: 'lisa', texto: AYUDAS_LISA[pendiente] });
   };
 
   const terminar = (ayudaRecibida: boolean, fallosTotales: number) => {
@@ -126,8 +126,8 @@ export default function Cableado({ onCompletar }: PropsMecanica) {
     if (nuevosFallos >= INTENTOS_ANTES_DE_AYUDA) {
       setConexiones({ ...SOLUCION });
       setMensaje({
-        tipo: 'irene',
-        texto: 'Has estado muy cerca. Te guío por el intercomunicador: rojo al rayo, verde al círculo, amarillo al cuadrado y azul al triángulo.',
+        tipo: 'lisa',
+        texto: 'Has estado muy cerca. Mira, te lo enseño: rojo al rayo, verde al círculo, amarillo al cuadrado y azul al triángulo.',
       });
       terminar(true, nuevosFallos);
       return;
@@ -148,7 +148,7 @@ export default function Cableado({ onCompletar }: PropsMecanica) {
           📋 {esquemaAbierto ? 'Cerrar esquema' : 'Ver esquema'}
         </Boton>
         <Boton onClick={pedirAyuda} disabled={resuelto}>
-          🎧 Pedir ayuda a Irene
+          🎧 Pedir ayuda a Lisa
         </Boton>
       </div>
 
@@ -240,8 +240,8 @@ export default function Cableado({ onCompletar }: PropsMecanica) {
       </p>
 
       {mensaje &&
-        (mensaje.tipo === 'irene' ? (
-          <Bocadillo personaje="irene" expresion={resuelto ? 'contento' : 'pensativo'}>
+        (mensaje.tipo === 'lisa' ? (
+          <Bocadillo personaje="lisa" expresion={resuelto ? 'contento' : 'pensativo'}>
             {mensaje.texto}
           </Bocadillo>
         ) : (

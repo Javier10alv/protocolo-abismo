@@ -64,11 +64,11 @@ export default function Energia({ onCompletar }: PropsMecanica) {
       const nuevos = fallos + 1;
       setFallos(nuevos);
       if (nuevos >= INTENTOS_ANTES_DE_AYUDA) {
-        // Irene propone un reparto válido y la historia sigue.
+        // Lisa propone un reparto válido y la historia sigue.
         const propuesta: Reparto = { oxigeno: 2, motores: 3, luces: Math.ceil((total - 5) / 2), comunicaciones: Math.floor((total - 5) / 2) };
         setReparto(propuesta);
         setAyuda(true);
-        setMensaje({ tipo: 'ok', texto: 'Irene ajusta los mandos contigo y el sistema da luz verde.' });
+        setMensaje({ tipo: 'ok', texto: 'Lisa ajusta los mandos contigo y el sistema da luz verde.' });
         finalizar(propuesta, nuevos, true);
         return;
       }
@@ -166,12 +166,12 @@ export default function Energia({ onCompletar }: PropsMecanica) {
         </p>
       )}
       {fase === 'imprevisto' && (
-        <Bocadillo personaje="irene" expresion="preocupado">
+        <Bocadillo personaje="lisa" expresion="preocupado">
           Tranquilidad: los planes cambian. Decide qué es lo que menos falta nos hace.
         </Bocadillo>
       )}
       {ayuda && (
-        <Bocadillo personaje="irene" expresion="contento">
+        <Bocadillo personaje="lisa" expresion="contento">
           Lo hemos ajustado juntos. Así funcionan los equipos de verdad.
         </Bocadillo>
       )}

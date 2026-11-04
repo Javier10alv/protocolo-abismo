@@ -97,7 +97,7 @@ export default function Secuencia({ onCompletar }: PropsMecanica) {
         aria-expanded={notasAbiertas}
         disabled={resuelto}
       >
-        📝 {notasAbiertas ? 'Ocultar notas de Irene' : 'Leer las notas de Irene en la pizarra'}
+        📝 {notasAbiertas ? 'Ocultar notas de Lisa' : 'Leer las notas de Lisa en la pizarra'}
       </Boton>
 
       {notasAbiertas && (

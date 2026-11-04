@@ -29,6 +29,24 @@ for (const e of escenas) {
   }
   if (e.textoNarrativo.length > 280) avisos.push(`${e.id}: textoNarrativo largo (${e.textoNarrativo.length} car.); máx. ~3 líneas`);
   if (!existsSync(new URL(`../public${e.imagen}`, import.meta.url))) error(`${e.id}: no existe la imagen public${e.imagen}`);
+  const existe = (ruta: string) => existsSync(new URL(`../public${ruta}`, import.meta.url));
+  for (const p of e.personajes ?? []) {
+    if (p !== 'lisa' && p !== 'leo') error(`${e.id}: personaje desconocido "${p}"`);
+    else if (!existe(`/img/personajes/${p}.webp`)) error(`${e.id}: falta el sprite de ${p}`);
+  }
+  if (e.cinematica) {
+    if (!existe(e.cinematica.src)) error(`${e.id}: no existe el vídeo public${e.cinematica.src}`);
+    if (!e.cinematica.descripcion?.trim()) error(`${e.id}: la cinemática necesita "descripcion" (accesibilidad)`);
+    let anterior = 0;
+    for (const sub of e.cinematica.subtitulos ?? []) {
+      if (!(sub.desde >= anterior && sub.hasta > sub.desde)) error(`${e.id}: subtítulo fuera de orden o con tiempos no válidos: "${sub.texto}"`);
+      anterior = sub.hasta;
+    }
+  }
+  if (e.fondoVideo) {
+    if (!existe(e.fondoVideo.src)) error(`${e.id}: no existe el vídeo de fondo public${e.fondoVideo.src}`);
+    if (!(e.fondoVideo.bucleDesde >= 0)) error(`${e.id}: fondoVideo.bucleDesde no válido`);
+  }
 
   if (e.tipo === 'decision') {
     if (e.opciones.length !== 3) error(`${e.id}: debe tener exactamente 3 opciones (tiene ${e.opciones.length})`);

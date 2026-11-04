@@ -1,8 +1,9 @@
 import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { sonido } from '../audio/sonido';
-import { TOTAL_ETAPAS, escenasPorId, etapaDe } from '../data/guion';
+import { TOTAL_ETAPAS, eleccionesDe, escenasPorId, etapaDe } from '../data/guion';
 import { COMPONENTES_MECANICA } from '../mecanicas';
 import { useAjustesStore } from '../store/useAjustesStore';
+import { useCinematicasStore } from '../store/useCinematicasStore';
 import { seleccionarEstadoAlumno, useGameStore } from '../store/useGameStore';
 import {
   FIN,
@@ -13,6 +14,8 @@ import {
   type ResultadoMecanica,
   type Scene,
 } from '../types/game';
+import Cinematica from './Cinematica';
+import Escenario from './Escenario';
 import Icono from './Iconos';
 import Retrato, { NOMBRE_PERSONAJE, ROL_PERSONAJE } from './Retrato';
 import { Boton, Etiqueta, Panel, TextoAnimado, useLector } from './ui';
@@ -68,34 +71,27 @@ export default function GameEngine({ onPartidaFinalizada, onSalir }: GameEngineP
   if (!escena) return <PantallaError escenaId={escenaActual} />;
 
   // `key` fuerza el remontaje en cada escena: reinicia animaciones, foco y estado de la mecánica.
-  return <PantallaEscena key={escena.id} escena={escena} onSalir={onSalir} />;
+  return <EscenaConCinematica key={escena.id} escena={escena} partidaId={partidaId} onSalir={onSalir} />;
+}
+
+/** Si la escena tiene cinemática y aún no se ha visto en esta partida, la muestra antes. */
+function EscenaConCinematica({ escena, partidaId, onSalir }: { escena: Scene; partidaId: string; onSalir?: () => void }) {
+  const clave = `${partidaId}:${escena.id}`;
+  const vista = useCinematicasStore((s) => s.vistas.includes(clave));
+  const marcar = useCinematicasStore((s) => s.marcar);
+
+  useEffect(() => {
+    if (!escena.cinematica || vista) return;
+    // El zumbido ambiente se pausa mientras suena el vídeo.
+    sonido.detenerAmbiente();
+    return () => sonido.iniciarAmbiente();
+  }, [escena.cinematica, vista]);
+
+  if (escena.cinematica && !vista) return <Cinematica cinematica={escena.cinematica} onTerminar={() => marcar(clave)} />;
+  return <PantallaEscena escena={escena} onSalir={onSalir} />;
 }
 
 /* -------------------------------------------------------------------------- */
-
-function Fondo({ escena, visible }: { escena: Scene; visible: boolean }) {
-  return (
-    <>
-      <div
-        role="img"
-        aria-label={escena.altImagen}
-        className={`fixed inset-0 bg-cover bg-center transition-[opacity,transform] duration-1000 ease-out motion-reduce:transition-none ${
-          visible ? 'scale-100 opacity-100' : 'scale-105 opacity-0'
-        } motion-safe:animate-[deriva_40s_ease-in-out_infinite_alternate]`}
-        style={{ backgroundImage: `url(${escena.imagen})` }}
-      />
-      <div
-        aria-hidden="true"
-        className="fixed inset-0"
-        style={{
-          background:
-            'linear-gradient(to top, rgba(2,6,23,0.97) 0%, rgba(2,6,23,0.78) 45%, rgba(8,20,45,0.3) 100%)',
-        }}
-      />
-      <Burbujas />
-    </>
-  );
-}
 
 /** Burbujas decorativas que suben (solo si el usuario no pide reducir movimiento). */
 function Burbujas() {
@@ -171,6 +167,22 @@ function BarraSuperior({ etapa, texto, onSalir }: { etapa: number; texto?: strin
 
 const LETRAS = ['A', 'B', 'C', 'D'];
 
+/** Precarga los vídeos de las escenas a las que se puede llegar desde esta, para que la transición sea fluida. */
+function PrecargarCinematicas({ escena }: { escena: Scene }) {
+  const srcs = new Set<string>();
+  for (const e of eleccionesDe(escena)) {
+    const siguiente = escenasPorId.get(e.siguienteEscena);
+    if (siguiente?.cinematica) srcs.add(siguiente.cinematica.src);
+  }
+  return (
+    <>
+      {[...srcs].map((src) => (
+        <link key={src} rel="prefetch" href={src} as="video" />
+      ))}
+    </>
+  );
+}
+
 function PantallaEscena({ escena, onSalir }: { escena: Scene; onSalir?: () => void }) {
   const [visible, setVisible] = useState(false);
   const [textoListo, setTextoListo] = useState(false);
@@ -193,7 +205,9 @@ function PantallaEscena({ escena, onSalir }: { escena: Scene; onSalir?: () => vo
 
   return (
     <main className="relative min-h-dvh w-full overflow-x-hidden bg-slate-950 text-slate-100">
-      <Fondo escena={escena} visible={visible} />
+      <Escenario escena={escena} visible={visible} />
+      <Burbujas />
+      <PrecargarCinematicas escena={escena} />
       <BarraSuperior etapa={etapaDe(escena.id)} texto={textoLectura} onSalir={onSalir} />
 
       <section className="relative z-10 flex min-h-[calc(100dvh-5rem)] flex-col justify-end px-4 pb-4 pt-6 sm:px-8 sm:pb-8">
@@ -387,7 +401,7 @@ function PantallaFin({ envio, onReintentar, onSalir }: { envio: EstadoEnvio; onR
           ¡Misión cumplida, {alumnoCodigo}!
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-slate-300">
-          La cápsula sale a la superficie al amanecer. Irene, Leo y tú lo habéis conseguido juntos. Cada decisión que tomaste formó parte de la historia: no había respuestas buenas ni malas.
+          La cápsula sale a la superficie al amanecer. Lisa, Leo y tú lo habéis conseguido juntos. Cada decisión que tomaste formó parte de la historia: no había respuestas buenas ni malas.
         </p>
       </div>
 

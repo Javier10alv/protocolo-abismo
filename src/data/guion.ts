@@ -2,7 +2,7 @@ import escenasJson from './escenas.json';
 import type { Opcion, Resultado, Scene } from '../types/game';
 
 /** Versión del guion. Súbela cada vez que cambies escenas.json. */
-export const VERSION_GUION = '2.0.0';
+export const VERSION_GUION = '2.1.0';
 
 // El JSON no conserva los tipos literales ('decision' | 'minijuego'); `npm run validar`
 // comprueba en tiempo de ejecución que el contenido cumple estos tipos.

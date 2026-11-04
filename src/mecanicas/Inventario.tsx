@@ -130,7 +130,7 @@ export default function Inventario({ onCompletar }: PropsMecanica) {
       </div>
 
       {pidioIdeas && (
-        <Bocadillo personaje="irene" expresion="pensativo">
+        <Bocadillo personaje="lisa" expresion="pensativo">
           {inventos.includes(clavePar('bidon', 'cinta'))
             ? 'Y si tensamos algo para agarrarnos… ¿la cuerda con los tubos?'
             : 'Los bidones vacíos flotan muy bien. Si los unimos con algo…'}

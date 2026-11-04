@@ -63,7 +63,7 @@ export default function Entrada() {
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-slate-950 text-slate-100">
-      <div aria-hidden="true" className="fixed inset-0 bg-cover bg-center opacity-50 motion-safe:animate-[deriva_40s_ease-in-out_infinite_alternate]" style={{ backgroundImage: 'url(/img/esc_10_capsula.svg)' }} />
+      <div aria-hidden="true" className="fixed inset-0 bg-cover bg-center opacity-50 motion-safe:animate-[deriva_40s_ease-in-out_infinite_alternate]" style={{ backgroundImage: 'url(/img/base.webp)' }} />
       <div aria-hidden="true" className="fixed inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/80 to-slate-950" />
 
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-8 px-4 py-10">
@@ -170,9 +170,9 @@ export default function Entrada() {
             </ul>
             <div className="grid gap-2 rounded-xl border border-slate-700 bg-slate-900/60 p-3">
               <div className="flex items-center gap-3">
-                <Retrato personaje="irene" tamano={40} />
+                <Retrato personaje="lisa" tamano={40} />
                 <p className="text-sm">
-                  <strong className="text-white">Irene</strong> <span className="text-slate-400">· Ingeniera jefa. Sabe muchísimo y está agotada.</span>
+                  <strong className="text-white">Lisa</strong> <span className="text-slate-400">· Ingeniera jefa. Sabe muchísimo y está agotada.</span>
                 </p>
               </div>
               <div className="flex items-center gap-3">

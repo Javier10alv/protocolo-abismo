@@ -20,7 +20,7 @@ const TURNOS: Turno[] = [
     orden: ['plan', 'ingenio', 'escucha'],
     respuestas: {
       escucha: 'Es normal tener miedo. ¿Qué es lo que más te preocupa?',
-      plan: 'Te entiendo. Irene ha revisado la presión: tenemos tiempo si vamos juntos.',
+      plan: 'Te entiendo. Lisa ha revisado la presión: tenemos tiempo si vamos juntos.',
       ingenio: 'Mira el lado bueno: nunca habías tenido una piscina en el pasillo.',
     },
     reacciones: {

@@ -2,7 +2,7 @@
 
 MVP para el hackathon **hack4edu**. Juego narrativo tipo "elige tu propia aventura" que evalúa de forma **invisible** las habilidades blandas de estudiantes de 10 a 18 años de contextos vulnerables, sin exámenes. El alumno juega; el docente ve un radar de fortalezas y una recomendación pedagógica.
 
-Premisa: una estación de investigación submarina a 3.000 m sufre un sismo. El alumno es un investigador que debe restaurar la energía y cooperar con los supervivientes (Irene, ingeniera jefa; Leo, técnico en prácticas).
+Premisa: el alumno llega en submarino a la estación de investigación Abismo, a 3.000 m, en su primer día. Un sismo la daña y debe cooperar con Lisa (ingeniera jefa) y Leo (técnico en prácticas, asustadizo) para volver a la superficie.
 
 ## Comandos
 
@@ -47,7 +47,10 @@ src/
 scripts/                        validar-guion.ts, generar-fondos.ts
 supabase/                       migrations/ (tablas + RLS) y functions/informe-docente
 docs/estado-alumno.schema.json  JSON Schema del estado que se envía al backend
-public/img/*.svg                Ilustraciones generadas por scripts/generar-fondos.ts
+public/img/base.webp            Sala de control (ilustración real)
+public/img/personajes/*.webp    Sprites de Leo y Lisa con fondo transparente
+public/video/*.mp4              Cinemáticas: intro (llegada) y emergencia (alarma)
+public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-fondos.ts
 ```
 
 ## Modelo de datos
@@ -56,6 +59,7 @@ public/img/*.svg                Ilustraciones generadas por scripts/generar-fond
 - **Scene** = `EscenaDecision | EscenaMinijuego` (campo `tipo`). Comunes: `id`, `titulo`, `imagen`, `altImagen`, `textoNarrativo` (máx. 3 líneas), `personajes?`.
   - Decisión: `opciones` (3). **Opcion**: `id`, `textoBoton`, `modificadores`, `siguienteEscena` (id o `'FIN'`).
   - Minijuego: `mecanica`, `instruccion`, `resultados`. **Resultado**: `id`, `clave`, `descripcion` (para el docente), `textoCierre` (para el alumno), `modificadores`, `siguienteEscena`.
+- Opcionales en cualquier escena: `cinematica` (`src`, `descripcion` para lectores de pantalla, `subtitulos` con `desde`/`hasta`/`texto`/`personaje?`) se ve una vez por partida antes de la escena (`useCinematicasStore`); `fondoVideo` (`src`, `bucleDesde`) sustituye la imagen por un vídeo silencioso en bucle y oculta los sprites, porque los personajes ya salen en el vídeo.
 - Una mecánica devuelve `ResultadoMecanica` (`clave`, `conductas`, `intentos`, `ayudaRecibida`). Las claves posibles de cada mecánica están en `mecanicas/registro.ts` y deben coincidir con las del guion (lo comprueba `npm run validar`).
 - El historial guarda, en minijuegos, `conductas`, `intentos` y `ayudaRecibida`.
 - **EstadoAlumno** debe validar contra `docs/estado-alumno.schema.json` (`additionalProperties: false`). Si añades un campo al estado, actualiza a la vez el esquema, `types/game.ts` y `seleccionarEstadoAlumno` del store.
@@ -94,6 +98,8 @@ public/img/*.svg                Ilustraciones generadas por scripts/generar-fond
 - El fondo de la escena lleva `role="img"` y `aria-label={altImagen}`.
 - Al cambiar de escena, el foco pasa al título.
 - Ajustes del alumno (`useAjustesStore`): sonido, texto grande (clase `texto-grande` en `<html>`), texto sin animación, lectura en voz alta (`useLector`).
+- Personajes: `components/Escenario.tsx` dibuja fondo + sprites (decorativos, `pointer-events-none`); `Retrato` recorta la cara del sprite con `CARA`/`PROPORCION`. Leo siempre a la izquierda y Lisa a la derecha, como en los vídeos.
+- Vídeos: con sonido si el ajuste lo permite; si el navegador bloquea el autoplay, se reproducen silenciados con botón «Activar sonido». El zumbido ambiente se pausa durante las cinemáticas.
 - Iconos de la interfaz con `components/Iconos.tsx` (SVG); los emoji se ven distintos en cada sistema.
 - Colores de gráficos validados con la skill dataviz: alumno `#0891b2`, media de la clase `#d97706` (discontinua).
 - Animaciones con `motion-safe:` o con `motion-reduce:transition-none`.
@@ -109,6 +115,6 @@ public/img/*.svg                Ilustraciones generadas por scripts/generar-fond
 ## Próximos pasos
 
 1. Probar el despliegue real con Supabase (migración, Auth, Edge Function) y un grupo piloto.
-2. Ilustraciones definitivas (sustituir los SVG generados manteniendo los nombres de archivo).
+2. Ilustraciones definitivas para el resto de escenas (sustituir los SVG generados) y más cinemáticas (p. ej. el ascenso final).
 3. Comparar varias partidas del mismo alumno a lo largo del curso.
 4. Traducciones (catalán, euskera, gallego, inglés) separando los textos del guion.

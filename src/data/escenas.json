@@ -2,27 +2,56 @@
   {
     "id": "esc_01_despertar",
     "tipo": "decision",
-    "titulo": "El despertar",
-    "imagen": "/img/esc_01_despertar.svg",
-    "altImagen": "Laboratorio submarino a oscuras, iluminado por luces rojas de emergencia. Un panel parpadea en la pared y por el ojo de buey se ve el fondo marino.",
-    "textoNarrativo": "Un temblor te despierta en el laboratorio de la estación Abismo. Las luces rojas de emergencia parpadean y el intercomunicador crepita con una voz entrecortada. La puerta al pasillo está medio atascada.",
+    "titulo": "La sala de control",
+    "imagen": "/img/base.webp",
+    "altImagen": "Sala de control circular de la estación, llena de pantallas azules y consolas. Al fondo, grandes ventanales al mar profundo; a la izquierda, un pasillo con luz roja.",
+    "textoNarrativo": "Es tu primer día en la estación Abismo. Lisa, la ingeniera jefa, y Leo, técnico en prácticas, te enseñan la sala de control. De pronto, un temblor sacude el suelo y las pantallas parpadean.",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
+    "cinematica": {
+      "src": "/video/intro.mp4",
+      "descripcion": "Un submarino se acerca a la estación Abismo en el fondo del mar y entra hasta la sala de control.",
+      "subtitulos": [
+        {
+          "desde": 0.3,
+          "hasta": 2.6,
+          "texto": "Estación de investigación Abismo"
+        },
+        {
+          "desde": 2.6,
+          "hasta": 5.0,
+          "texto": "3.000 metros bajo el mar · Tu primer día"
+        }
+      ]
+    },
     "opciones": [
       {
         "id": "esc_01_a",
         "textoBoton": "Revisar el panel de energía para entender qué ha fallado",
-        "modificadores": { "logica": 2, "resiliencia": 1 },
+        "modificadores": {
+          "logica": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_02_puerta"
       },
       {
         "id": "esc_01_b",
-        "textoBoton": "Responder por el intercomunicador y preguntar quién más está despierto",
-        "modificadores": { "comunicacion": 2, "liderazgo": 1 },
+        "textoBoton": "Preguntar a Lisa y Leo qué ha pasado y si están bien",
+        "modificadores": {
+          "comunicacion": 2,
+          "liderazgo": 1
+        },
         "siguienteEscena": "esc_02_puerta"
       },
       {
         "id": "esc_01_c",
-        "textoBoton": "Fabricar una linterna con piezas del laboratorio antes de salir",
-        "modificadores": { "creatividad": 2, "resiliencia": 1 },
+        "textoBoton": "Improvisar una linterna con piezas de la consola por si se va la luz",
+        "modificadores": {
+          "creatividad": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_02_puerta"
       }
     ]
@@ -31,43 +60,85 @@
     "id": "esc_02_puerta",
     "tipo": "minijuego",
     "mecanica": "cableado",
-    "titulo": "La puerta atascada",
-    "imagen": "/img/esc_02_puerta.svg",
-    "altImagen": "Panel de control abierto junto a una puerta metálica. Cuatro cables de colores cuelgan sueltos frente a cuatro terminales con símbolos.",
-    "textoNarrativo": "La puerta del laboratorio no responde: el temblor ha soltado los cables del panel. Por el intercomunicador, Irene dice que puede ayudarte si lo necesitas.",
-    "personajes": ["irene"],
-    "instruccion": "Conecta cada cable con su terminal. Puedes consultar el esquema y pedir ayuda a Irene cuando quieras.",
+    "titulo": "La escotilla atascada",
+    "imagen": "/img/base.webp",
+    "altImagen": "Sala de control bañada en luz roja de alarma. Leo y Lisa, con trajes de buceo, junto a una escotilla bloqueada y un panel con cables sueltos.",
+    "textoNarrativo": "Salta la alarma: la escotilla de la sala de control se ha bloqueado y el temblor ha soltado los cables del panel. Lisa está a tu lado y puede ayudarte si lo necesitas.",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
+    "cinematica": {
+      "src": "/video/emergencia.mp4",
+      "descripcion": "Las luces de la sala de control se vuelven rojas y suena la alarma. Leo y Lisa corren hacia la escotilla, que no se abre.",
+      "subtitulos": [
+        {
+          "desde": 3.4,
+          "hasta": 5.9,
+          "texto": "⚠ ALERTA SÍSMICA · Escotilla principal bloqueada"
+        },
+        {
+          "desde": 6.0,
+          "hasta": 8.1,
+          "personaje": "leo",
+          "texto": "¡La escotilla no se abre! ¡Estamos atrapados!"
+        },
+        {
+          "desde": 8.1,
+          "hasta": 10.4,
+          "personaje": "lisa",
+          "texto": "Tranquilo. El temblor ha soltado los cables del panel. Lo arreglamos juntos."
+        }
+      ]
+    },
+    "fondoVideo": {
+      "src": "/video/emergencia.mp4",
+      "bucleDesde": 6.2
+    },
+    "instruccion": "Conecta cada cable con su terminal. Puedes consultar el esquema y pedir ayuda a Lisa cuando quieras.",
     "resultados": [
       {
         "id": "esc_02_colaborativo",
         "clave": "colaborativo",
-        "descripcion": "Pidió ayuda a Irene durante la reparación.",
-        "textoCierre": "Con las indicaciones de Irene, el último cable encaja. La puerta se abre con un siseo. «Buen trabajo en equipo», dice por el intercomunicador.",
-        "modificadores": { "comunicacion": 2, "logica": 1 },
+        "descripcion": "Pidió ayuda a Lisa durante la reparación.",
+        "textoCierre": "Con las indicaciones de Lisa, el último cable encaja. La escotilla se abre con un siseo. «Buen trabajo en equipo», sonríe ella.",
+        "modificadores": {
+          "comunicacion": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_03_pasillo"
       },
       {
         "id": "esc_02_persistente",
         "clave": "persistente",
         "descripcion": "Volvió a intentarlo tras uno o más fallos, sin pedir ayuda.",
-        "textoCierre": "Al fin, el panel se ilumina en verde. Te ha costado varios intentos, pero no te has rendido. La puerta se desliza hacia un lado.",
-        "modificadores": { "resiliencia": 2, "logica": 1 },
+        "textoCierre": "Al fin, el panel se ilumina en verde. Te ha costado varios intentos, pero no te has rendido. La escotilla se desliza hacia un lado.",
+        "modificadores": {
+          "resiliencia": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_03_pasillo"
       },
       {
         "id": "esc_02_metodico",
         "clave": "metodico",
         "descripcion": "Consultó el esquema antes de conectar y resolvió al primer intento.",
-        "textoCierre": "Siguiendo el esquema paso a paso, todo encaja a la primera. La puerta se abre y una corriente de aire frío entra desde el pasillo.",
-        "modificadores": { "logica": 2, "resiliencia": 1 },
+        "textoCierre": "Siguiendo el esquema paso a paso, todo encaja a la primera. La escotilla se abre y una corriente de aire frío entra desde el pasillo.",
+        "modificadores": {
+          "logica": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_03_pasillo"
       },
       {
         "id": "esc_02_experimental",
         "clave": "experimental",
         "descripcion": "Resolvió probando directamente, sin consultar el esquema.",
-        "textoCierre": "Te has fiado de tu intuición y ha funcionado. Saltan unas chispas, el panel se pone verde y la puerta se abre.",
-        "modificadores": { "creatividad": 2, "resiliencia": 1 },
+        "textoCierre": "Te has fiado de tu intuición y ha funcionado. Saltan unas chispas, el panel se pone verde y la escotilla se abre.",
+        "modificadores": {
+          "creatividad": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_03_pasillo"
       }
     ]
@@ -77,26 +148,38 @@
     "tipo": "decision",
     "titulo": "El pasillo inundado",
     "imagen": "/img/esc_03_pasillo.svg",
-    "altImagen": "Pasillo metálico con agua hasta las rodillas. Dos personas con monos de trabajo esperan junto a unas taquillas que flotan.",
-    "textoNarrativo": "El pasillo hacia el hangar tiene agua hasta las rodillas. Allí te encuentras con Irene, la ingeniera jefa, y con Leo, un técnico en prácticas. Leo tiene miedo y no quiere seguir.",
-    "personajes": ["irene", "leo"],
+    "altImagen": "Pasillo metálico con agua hasta las rodillas y taquillas flotando. Leo, asustado, se ha quedado quieto junto a la pared.",
+    "textoNarrativo": "Al otro lado, el pasillo hacia el hangar tiene agua hasta las rodillas. Leo se detiene en seco: tiene miedo y no quiere seguir. Lisa te mira, esperando a ver qué propones.",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
     "opciones": [
       {
         "id": "esc_03_a",
         "textoBoton": "Quedarte con Leo y escucharle hasta que se sienta preparado",
-        "modificadores": { "comunicacion": 2, "resiliencia": 1 },
+        "modificadores": {
+          "comunicacion": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_04_leo"
       },
       {
         "id": "esc_03_b",
         "textoBoton": "Repartir tareas para avanzar los tres a la vez",
-        "modificadores": { "liderazgo": 2, "logica": 1 },
+        "modificadores": {
+          "liderazgo": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_04_reparto"
       },
       {
         "id": "esc_03_c",
         "textoBoton": "Buscar una forma de cruzar el agua sin mojaros",
-        "modificadores": { "creatividad": 2, "logica": 1 },
+        "modificadores": {
+          "creatividad": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_04_taller"
       }
     ]
@@ -108,8 +191,10 @@
     "titulo": "Hablar con Leo",
     "imagen": "/img/esc_03_pasillo.svg",
     "altImagen": "Leo, sentado en un escalón al fondo del pasillo, abraza sus rodillas. La luz de emergencia tiñe el agua de rojo.",
-    "textoNarrativo": "Leo se sienta en un escalón, lejos del agua. Respira rápido y evita mirarte. Irene te hace un gesto: «Habla tú con él, yo reviso la presión».",
-    "personajes": ["leo"],
+    "textoNarrativo": "Leo se sienta en un escalón, lejos del agua. Respira rápido y evita mirarte. Lisa te hace un gesto: «Habla tú con él, yo reviso la presión».",
+    "personajes": [
+      "leo"
+    ],
     "instruccion": "Conversa con Leo. No hay respuestas correctas: elige lo que tú dirías.",
     "resultados": [
       {
@@ -117,7 +202,10 @@
         "clave": "escucha",
         "descripcion": "Priorizó escuchar y validar las emociones de Leo.",
         "textoCierre": "Leo respira hondo y se levanta. «Gracias por no meterme prisa», dice. Los tres seguís hacia el hangar.",
-        "modificadores": { "comunicacion": 2, "resiliencia": 1 },
+        "modificadores": {
+          "comunicacion": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       },
       {
@@ -125,7 +213,10 @@
         "clave": "plan",
         "descripcion": "Ofreció a Leo un plan concreto y un papel claro.",
         "textoCierre": "Con un plan claro, Leo parece otra persona. «Vale. Yo llevo el sonar», dice, y encabeza la marcha hacia el hangar.",
-        "modificadores": { "liderazgo": 2, "comunicacion": 1 },
+        "modificadores": {
+          "liderazgo": 2,
+          "comunicacion": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       },
       {
@@ -133,7 +224,10 @@
         "clave": "ingenio",
         "descripcion": "Usó el humor y las ideas inesperadas para rebajar la tensión.",
         "textoCierre": "Leo suelta una carcajada nerviosa. «Vale, vale, vamos». Por primera vez en toda la noche, sonríe.",
-        "modificadores": { "creatividad": 2, "comunicacion": 1 },
+        "modificadores": {
+          "creatividad": 2,
+          "comunicacion": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       }
     ]
@@ -145,16 +239,22 @@
     "titulo": "Repartir tareas",
     "imagen": "/img/esc_03_pasillo.svg",
     "altImagen": "Pasillo inundado con un panel de presión, una compuerta atascada y una linterna de casco sobre una taquilla.",
-    "textoNarrativo": "Hay tres tareas urgentes antes de llegar al hangar, y sois tres. Irene está cansada tras horas de guardia; Leo está nervioso, pero tiene buen ojo para los detalles.",
-    "personajes": ["irene", "leo"],
+    "textoNarrativo": "Hay tres tareas urgentes antes de llegar al hangar, y sois tres. Lisa está cansada tras horas de guardia; Leo está nervioso, pero tiene buen ojo para los detalles.",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
     "instruccion": "Asigna una tarea a cada persona. Puedes preguntar al equipo antes de decidir.",
     "resultados": [
       {
         "id": "esc_04_consenso",
         "clave": "consenso",
         "descripcion": "Preguntó al equipo y tuvo en cuenta sus preferencias.",
-        "textoCierre": "Cada uno hace lo que mejor se le da y el pasillo queda despejado en poco tiempo. Irene asiente: «Así da gusto».",
-        "modificadores": { "comunicacion": 2, "liderazgo": 1 },
+        "textoCierre": "Cada uno hace lo que mejor se le da y el pasillo queda despejado en poco tiempo. Lisa asiente: «Así da gusto».",
+        "modificadores": {
+          "comunicacion": 2,
+          "liderazgo": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       },
       {
@@ -162,15 +262,21 @@
         "clave": "ejemplo",
         "descripcion": "Asumió personalmente la tarea más arriesgada.",
         "textoCierre": "Te metes en el agua para abrir la compuerta. Al verte, Leo se anima a sujetar la linterna sin temblar. El camino queda libre.",
-        "modificadores": { "liderazgo": 2, "resiliencia": 1 },
+        "modificadores": {
+          "liderazgo": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       },
       {
         "id": "esc_04_estrategia",
         "clave": "estrategia",
         "descripcion": "Repartió las tareas según lo que sabía de cada persona, sin consultar.",
-        "textoCierre": "El reparto funciona como un reloj. Irene comenta: «Te has fijado en lo que sabe hacer cada uno. Eso es liderar».",
-        "modificadores": { "liderazgo": 2, "logica": 1 },
+        "textoCierre": "El reparto funciona como un reloj. Lisa comenta: «Te has fijado en lo que sabe hacer cada uno. Eso es liderar».",
+        "modificadores": {
+          "liderazgo": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       }
     ]
@@ -183,23 +289,32 @@
     "imagen": "/img/esc_04_taller.svg",
     "altImagen": "Cuarto de mantenimiento con estanterías: cuerdas, cinta, bidones vacíos, tubos y una taquilla flotando en la puerta.",
     "textoNarrativo": "Las taquillas flotan, pero no bastan para cruzar la zona más honda del pasillo. En el cuarto de mantenimiento hay material: quizá combinando dos objetos encuentres cómo pasar.",
-    "personajes": ["irene", "leo"],
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
     "instruccion": "Elige dos objetos y combínalos. Hay más de una solución.",
     "resultados": [
       {
         "id": "esc_04_equipo",
         "clave": "equipo",
-        "descripcion": "Pidió ideas a Irene y Leo antes de construir.",
+        "descripcion": "Pidió ideas a Lisa y Leo antes de construir.",
         "textoCierre": "Entre los tres dais forma a la idea y cruzáis el tramo hondo sin problemas. «Tres cabezas piensan mejor que una», dice Leo.",
-        "modificadores": { "comunicacion": 2, "creatividad": 1 },
+        "modificadores": {
+          "comunicacion": 2,
+          "creatividad": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       },
       {
         "id": "esc_04_inventor",
         "clave": "inventor",
         "descripcion": "Buscó y encontró más de una solución antes de cruzar.",
-        "textoCierre": "Con varias ideas funcionando, elegís la más segura y cruzáis. Irene te mira sorprendida: «¿Se te ocurre algo más? Lo apunto para el manual».",
-        "modificadores": { "creatividad": 2, "logica": 1 },
+        "textoCierre": "Con varias ideas funcionando, elegís la más segura y cruzáis. Lisa te mira sorprendida: «¿Se te ocurre algo más? Lo apunto para el manual».",
+        "modificadores": {
+          "creatividad": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       },
       {
@@ -207,7 +322,10 @@
         "clave": "tenaz",
         "descripcion": "Siguió probando combinaciones tras varios intentos sin éxito.",
         "textoCierre": "No todas las ideas funcionaron, pero seguiste probando. Al final, el invento aguanta y cruzáis los tres.",
-        "modificadores": { "resiliencia": 2, "creatividad": 1 },
+        "modificadores": {
+          "resiliencia": 2,
+          "creatividad": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       },
       {
@@ -215,7 +333,10 @@
         "clave": "practico",
         "descripcion": "Encontró una solución funcional y la puso en marcha enseguida.",
         "textoCierre": "Sencillo y eficaz: el invento funciona y cruzáis el tramo hondo sin perder tiempo.",
-        "modificadores": { "logica": 2, "creatividad": 1 },
+        "modificadores": {
+          "logica": 2,
+          "creatividad": 1
+        },
         "siguienteEscena": "esc_05_hangar"
       }
     ]
@@ -228,7 +349,9 @@
     "imagen": "/img/esc_05_hangar.svg",
     "altImagen": "Hangar enorme y oscuro con cajas volcadas. Un haz de sonar dibuja círculos verdes en la penumbra.",
     "textoNarrativo": "El hangar del dron está a oscuras y lleno de cajas desplazadas por el temblor. El dron tiene la batería que necesitáis. Leo lleva un sonar portátil.",
-    "personajes": ["leo"],
+    "personajes": [
+      "leo"
+    ],
     "instruccion": "Usa el sonar para localizar el dron. Cuando creas saber dónde está, ve hacia allí.",
     "resultados": [
       {
@@ -236,7 +359,10 @@
         "clave": "coordinado",
         "descripcion": "Organizó una búsqueda repartida con Leo.",
         "textoCierre": "Al dividir el hangar en dos, Leo y tú lo encontráis enseguida. «¡Aquí!», grita Leo, iluminando el casco amarillo del dron.",
-        "modificadores": { "liderazgo": 2, "comunicacion": 1 },
+        "modificadores": {
+          "liderazgo": 2,
+          "comunicacion": 1
+        },
         "siguienteEscena": "esc_06_radio"
       },
       {
@@ -244,7 +370,10 @@
         "clave": "constante",
         "descripcion": "No encontró el dron a la primera y siguió buscando.",
         "textoCierre": "Varias pistas falsas después, ahí está: el dron, intacto bajo una lona. Merecía la pena seguir buscando.",
-        "modificadores": { "resiliencia": 2, "logica": 1 },
+        "modificadores": {
+          "resiliencia": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_06_radio"
       },
       {
@@ -252,7 +381,10 @@
         "clave": "explorador",
         "descripcion": "Exploró a fondo con el sonar antes de moverse.",
         "textoCierre": "Con el mapa de ecos en la cabeza, vas directo al dron. Leo silba: «Ni un paso de más».",
-        "modificadores": { "logica": 2, "creatividad": 1 },
+        "modificadores": {
+          "logica": 2,
+          "creatividad": 1
+        },
         "siguienteEscena": "esc_06_radio"
       },
       {
@@ -260,7 +392,10 @@
         "clave": "intuitivo",
         "descripcion": "Se movió con poca información y acertó.",
         "textoCierre": "Algo te dice que está allí… y aciertas. El dron descansa entre dos cajas, con la batería intacta.",
-        "modificadores": { "creatividad": 2, "resiliencia": 1 },
+        "modificadores": {
+          "creatividad": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_06_radio"
       }
     ]
@@ -271,25 +406,37 @@
     "titulo": "Voces desde la superficie",
     "imagen": "/img/esc_06_radio.svg",
     "altImagen": "Sala de radio con pantallas verdes llenas de interferencias, auriculares colgando y un micrófono sobre la mesa.",
-    "textoNarrativo": "Con el dron a cuestas llegáis a la sala de radio. Se oye la superficie entre interferencias: «...cápsula... cuarenta minutos... confirmad...». Irene quiere responder ya; Leo cree que falta información.",
-    "personajes": ["irene", "leo"],
+    "textoNarrativo": "Con el dron a cuestas llegáis a la sala de radio. Se oye la superficie entre interferencias: «...cápsula... cuarenta minutos... confirmad...». Lisa quiere responder ya; Leo cree que falta información.",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
     "opciones": [
       {
         "id": "esc_06_a",
         "textoBoton": "Descifrar el mensaje con la tabla de frecuencias antes de responder",
-        "modificadores": { "logica": 2, "comunicacion": 1 },
+        "modificadores": {
+          "logica": 2,
+          "comunicacion": 1
+        },
         "siguienteEscena": "esc_07_generador"
       },
       {
         "id": "esc_06_b",
         "textoBoton": "Responder con un mensaje breve y claro con lo que sabéis seguro",
-        "modificadores": { "comunicacion": 2, "liderazgo": 1 },
+        "modificadores": {
+          "comunicacion": 2,
+          "liderazgo": 1
+        },
         "siguienteEscena": "esc_07_generador"
       },
       {
         "id": "esc_06_c",
         "textoBoton": "Proponer un código de golpes en las tuberías por si la radio se corta",
-        "modificadores": { "creatividad": 2, "comunicacion": 1 },
+        "modificadores": {
+          "creatividad": 2,
+          "comunicacion": 1
+        },
         "siguienteEscena": "esc_07_generador"
       }
     ]
@@ -301,16 +448,22 @@
     "titulo": "El manual desordenado",
     "imagen": "/img/esc_07_generador.svg",
     "altImagen": "Sala del generador con una gran máquina apagada. Sobre una mesa hay páginas de un manual esparcidas y una pizarra con notas.",
-    "textoNarrativo": "En la sala del generador encontráis el manual de reinicio, pero el temblor ha desordenado sus páginas. Irene dejó notas en la pizarra antes del apagón.",
-    "personajes": ["irene", "leo"],
-    "instruccion": "Ordena los pasos del reinicio. Puedes leer las notas de Irene en cualquier momento.",
+    "textoNarrativo": "En la sala del generador encontráis el manual de reinicio, pero el temblor ha desordenado sus páginas. Lisa dejó notas en la pizarra antes del apagón.",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
+    "instruccion": "Ordena los pasos del reinicio. Puedes leer las notas de Lisa en cualquier momento.",
     "resultados": [
       {
         "id": "esc_07_consulta",
         "clave": "consulta",
         "descripcion": "Consultó las notas del equipo para ordenar los pasos.",
-        "textoCierre": "Las notas de Irene encajan con las páginas y el procedimiento queda completo. «Para eso las dejé», sonríe ella.",
-        "modificadores": { "comunicacion": 2, "logica": 1 },
+        "textoCierre": "Las notas de Lisa encajan con las páginas y el procedimiento queda completo. «Para eso las dejé», sonríe ella.",
+        "modificadores": {
+          "comunicacion": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_08_fallo"
       },
       {
@@ -318,7 +471,10 @@
         "clave": "persistente",
         "descripcion": "Ajustó el orden tras uno o más intentos fallidos.",
         "textoCierre": "Cada intento te enseñó algo nuevo sobre la máquina. Por fin, todos los indicadores se encienden en orden.",
-        "modificadores": { "resiliencia": 2, "logica": 1 },
+        "modificadores": {
+          "resiliencia": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_08_fallo"
       },
       {
@@ -326,7 +482,10 @@
         "clave": "analitico",
         "descripcion": "Dedujo el orden correcto al primer intento, sin ayuda.",
         "textoCierre": "Has deducido el orden pieza a pieza. Leo te mira: «¿Cómo lo has sabido?». Los indicadores se encienden uno tras otro.",
-        "modificadores": { "logica": 2, "resiliencia": 1 },
+        "modificadores": {
+          "logica": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_08_fallo"
       }
     ]
@@ -337,25 +496,37 @@
     "titulo": "El corazón de la estación",
     "imagen": "/img/esc_07_generador.svg",
     "altImagen": "Sala del generador con una gran máquina que echa chispas, un dron submarino en el suelo y un manual abierto sobre una mesa.",
-    "textoNarrativo": "El generador arranca… y se para a los pocos segundos: no hay potencia suficiente. Irene propone usar la batería del dron, nunca probada para esto. Leo ha encontrado otra página del manual, pero está medio borrosa.",
-    "personajes": ["irene", "leo"],
+    "textoNarrativo": "El generador arranca… y se para a los pocos segundos: no hay potencia suficiente. Lisa propone usar la batería del dron, nunca probada para esto. Leo ha encontrado otra página del manual, pero está medio borrosa.",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
     "opciones": [
       {
         "id": "esc_08_a",
         "textoBoton": "Volver a intentarlo, ajustando el procedimiento tras cada fallo",
-        "modificadores": { "resiliencia": 2, "logica": 1 },
+        "modificadores": {
+          "resiliencia": 2,
+          "logica": 1
+        },
         "siguienteEscena": "esc_09_energia"
       },
       {
         "id": "esc_08_b",
         "textoBoton": "Conectar la batería del dron y asumir el riesgo de probar algo nuevo",
-        "modificadores": { "creatividad": 2, "liderazgo": 1 },
+        "modificadores": {
+          "creatividad": 2,
+          "liderazgo": 1
+        },
         "siguienteEscena": "esc_09_energia"
       },
       {
         "id": "esc_08_c",
         "textoBoton": "Reunir al equipo, poner en común lo que sabe cada uno y decidir juntos",
-        "modificadores": { "comunicacion": 2, "liderazgo": 1 },
+        "modificadores": {
+          "comunicacion": 2,
+          "liderazgo": 1
+        },
         "siguienteEscena": "esc_09_energia"
       }
     ]
@@ -368,15 +539,21 @@
     "imagen": "/img/esc_09_energia.svg",
     "altImagen": "Consola de distribución de energía con cuatro barras luminosas. Al fondo, la escotilla de una cápsula de ascenso.",
     "textoNarrativo": "El generador vuelve a la vida, aunque con poca potencia. Tenéis 8 unidades de energía para preparar la cápsula de ascenso.",
-    "personajes": ["irene", "leo"],
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
     "instruccion": "Reparte las 8 unidades. La cápsula necesita al menos 2 de oxígeno y 3 de motores; el resto lo decides tú.",
     "resultados": [
       {
         "id": "esc_09_adaptable",
         "clave": "adaptable",
         "descripcion": "Reajustó el reparto varias veces hasta que el sistema lo aceptó.",
-        "textoCierre": "Tras varios ajustes, el sistema da luz verde. «Lo importante es no rendirse con el primer plan», dice Irene.",
-        "modificadores": { "resiliencia": 2, "creatividad": 1 },
+        "textoCierre": "Tras varios ajustes, el sistema da luz verde. «Lo importante es no rendirse con el primer plan», dice Lisa.",
+        "modificadores": {
+          "resiliencia": 2,
+          "creatividad": 1
+        },
         "siguienteEscena": "esc_10_capsula"
       },
       {
@@ -384,7 +561,10 @@
         "clave": "conectado",
         "descripcion": "Reservó energía para las comunicaciones con la superficie.",
         "textoCierre": "La radio de la cápsula se enciende: la superficie os escucha alto y claro y confirma que os esperan arriba.",
-        "modificadores": { "comunicacion": 2, "liderazgo": 1 },
+        "modificadores": {
+          "comunicacion": 2,
+          "liderazgo": 1
+        },
         "siguienteEscena": "esc_10_capsula"
       },
       {
@@ -392,15 +572,21 @@
         "clave": "equipo",
         "descripcion": "Reservó energía para la iluminación y la seguridad del equipo.",
         "textoCierre": "La cápsula se ilumina por dentro. Leo suspira aliviado: «Mucho mejor que a oscuras». Todos subís a bordo.",
-        "modificadores": { "liderazgo": 2, "resiliencia": 1 },
+        "modificadores": {
+          "liderazgo": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_10_capsula"
       },
       {
         "id": "esc_09_prudente",
         "clave": "prudente",
         "descripcion": "Reforzó los sistemas vitales o repartió el margen de forma equilibrada.",
-        "textoCierre": "Con margen de sobra en oxígeno y motores, la cápsula está lista. Irene revisa los números y asiente.",
-        "modificadores": { "logica": 2, "resiliencia": 1 },
+        "textoCierre": "Con margen de sobra en oxígeno y motores, la cápsula está lista. Lisa revisa los números y asiente.",
+        "modificadores": {
+          "logica": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "esc_10_capsula"
       }
     ]
@@ -411,25 +597,37 @@
     "titulo": "El ascenso",
     "imagen": "/img/esc_10_capsula.svg",
     "altImagen": "Interior de una cápsula de ascenso. Por la ventanilla redonda, las luces de la estación se alejan hacia el fondo oscuro.",
-    "textoNarrativo": "La cápsula se suelta del anclaje y empieza a subir. Por la ventanilla, las luces de la estación se hacen pequeñas. Irene te mira: «¿Qué te llevas de esta noche?».",
-    "personajes": ["irene", "leo"],
+    "textoNarrativo": "La cápsula se suelta del anclaje y empieza a subir. Por la ventanilla, las luces de la estación se hacen pequeñas. Lisa te mira: «¿Qué te llevas de esta noche?».",
+    "personajes": [
+      "leo",
+      "lisa"
+    ],
     "opciones": [
       {
         "id": "esc_10_a",
         "textoBoton": "«Que pedir ayuda también es ser valiente.»",
-        "modificadores": { "comunicacion": 2, "resiliencia": 1 },
+        "modificadores": {
+          "comunicacion": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "FIN"
       },
       {
         "id": "esc_10_b",
         "textoBoton": "«Que un plan claro ayuda a que todos estén tranquilos.»",
-        "modificadores": { "liderazgo": 2, "logica": 1 },
+        "modificadores": {
+          "liderazgo": 2,
+          "logica": 1
+        },
         "siguienteEscena": "FIN"
       },
       {
         "id": "esc_10_c",
         "textoBoton": "«Que siempre hay otra forma de intentarlo.»",
-        "modificadores": { "creatividad": 2, "resiliencia": 1 },
+        "modificadores": {
+          "creatividad": 2,
+          "resiliencia": 1
+        },
         "siguienteEscena": "FIN"
       }
     ]

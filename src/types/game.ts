@@ -34,7 +34,7 @@ export const MECANICAS = [
 
 export type Mecanica = (typeof MECANICAS)[number];
 
-export type Personaje = 'irene' | 'leo';
+export type Personaje = 'lisa' | 'leo';
 
 /** Una opción de una escena de decisión. */
 export interface Opcion {
@@ -60,6 +60,30 @@ export interface Resultado {
   siguienteEscena: string;
 }
 
+export interface Subtitulo {
+  /** Segundos desde el inicio del vídeo. */
+  desde: number;
+  hasta: number;
+  texto: string;
+  /** Si lo dice un personaje; si no, es un rótulo del sistema. */
+  personaje?: Personaje;
+}
+
+/** Vídeo que se reproduce una vez antes de mostrar la escena. */
+export interface Cinematica {
+  src: string;
+  /** Descripción para lectores de pantalla. */
+  descripcion: string;
+  subtitulos?: Subtitulo[];
+}
+
+/** Vídeo silencioso en bucle que sustituye a la imagen de fondo. */
+export interface FondoVideo {
+  src: string;
+  /** Segundo desde el que se repite el bucle (p. ej. el final de la cinemática). */
+  bucleDesde: number;
+}
+
 interface EscenaBase {
   id: string;
   titulo: string;
@@ -67,7 +91,10 @@ interface EscenaBase {
   altImagen: string;
   /** Máximo 3 líneas. */
   textoNarrativo: string;
+  /** Personajes presentes: se dibujan como sprites sobre el fondo. */
   personajes?: Personaje[];
+  cinematica?: Cinematica;
+  fondoVideo?: FondoVideo;
 }
 
 export interface EscenaDecision extends EscenaBase {

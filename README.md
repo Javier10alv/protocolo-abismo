@@ -27,8 +27,10 @@ npx tsx scripts/generar-fondos.ts   # regenera las ilustraciones SVG de public/i
 
 | Escena | Tipo | Qué observa |
 |---|---|---|
-| El despertar | Decisión | — |
-| La puerta atascada | **Cableado** (puzle lógico con esquema y pistas) | Consulta antes de actuar, pide ayuda, reintenta |
+| *Cinemática de llegada* (`intro.mp4`) | Vídeo | — |
+| La sala de control | Decisión | — |
+| *Cinemática de alarma* (`emergencia.mp4`) | Vídeo con subtítulos | — |
+| La escotilla atascada | **Cableado** (puzle lógico con esquema y pistas) | Consulta antes de actuar, pide ayuda, reintenta |
 | El pasillo inundado | Decisión con **bifurcación** | — |
 | Hablar con Leo | **Conversación** de 3 turnos con un compañero asustado | Estilo comunicativo dominante |
 | Repartir tareas | **Reparto** de tareas entre 3 personas | Consulta al equipo, asume riesgos, reparte por perfiles |
@@ -44,6 +46,30 @@ npx tsx scripts/generar-fondos.ts   # regenera las ilustraciones SVG de public/i
 - Accesibilidad: todo funciona con teclado, ratón y pantalla táctil; lectura en voz alta, texto grande, texto sin animación, `prefers-reduced-motion` y foco gestionado en cada escena.
 - Sonido sintetizado con Web Audio (sin archivos), con botón para silenciarlo.
 - La partida se guarda sola y se puede pausar y continuar.
+- Cinemáticas con subtítulos, botón «Saltar» (o Escape) y fundidos; cada una se ve una sola vez por partida. La escena de la escotilla usa el final del vídeo de alarma como fondo en bucle, sin sonido.
+- Personajes como sprites de cuerpo entero sobre los fondos (Leo a la izquierda y Lisa a la derecha); los retratos circulares se recortan del mismo sprite.
+
+## Assets gráficos
+
+| Archivo | Uso |
+|---|---|
+| `public/img/base.webp` | Sala de control (escenas 1 y 2 y fondo de la entrada) |
+| `public/img/personajes/leo.webp`, `lisa.webp` | Sprites con fondo transparente (recortados de los PNG originales) |
+| `public/video/intro.mp4` | Llegada del submarino, antes de la sala de control |
+| `public/video/emergencia.mp4` | Alarma y escotilla bloqueada, antes del cableado; su tramo final (desde 6,2 s) es el fondo en bucle |
+| `public/img/esc_*.svg` | Resto de escenas (`npx tsx scripts/generar-fondos.ts`) |
+
+Para sustituir un sprite, se le quita el fondo blanco con ImageMagick (incluidos los huecos cerrados, como entre brazos y torso):
+
+```bash
+magick leo.png -fuzz 9% -fill black +opaque white -fill white -opaque white \
+  -define connected-components:area-threshold=2500 -define connected-components:mean-color=true \
+  -connected-components 8 -negate -morphology Erode Disk:1.5 -blur 0x0.7 alpha.png
+magick leo.png alpha.png -alpha off -compose CopyOpacity -composite -trim +repage \
+  -resize x1200 -quality 86 public/img/personajes/leo.webp
+```
+
+Si cambian las proporciones del sprite, ajusta `CARA` y `PROPORCION` en `src/components/Retrato.tsx`.
 
 **Panel del docente**
 

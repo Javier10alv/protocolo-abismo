@@ -4,7 +4,7 @@ import Retrato from '../components/Retrato';
 import { Bocadillo, Boton } from '../components/ui';
 import type { PropsMecanica } from './tipos';
 
-type Persona = 'irene' | 'leo' | 'tu';
+type Persona = 'lisa' | 'leo' | 'tu';
 type Tarea = 'presion' | 'luz' | 'compuerta';
 
 const TAREAS: { id: Tarea; titulo: string; detalle: string; icono: string; riesgo: string }[] = [
@@ -14,7 +14,7 @@ const TAREAS: { id: Tarea; titulo: string; detalle: string; icono: string; riesg
 ];
 
 const PERSONAS: { id: Persona; nombre: string; rasgo: string }[] = [
-  { id: 'irene', nombre: 'Irene', rasgo: 'Experta, pero cansada' },
+  { id: 'lisa', nombre: 'Lisa', rasgo: 'Experta, pero cansada' },
   { id: 'leo', nombre: 'Leo', rasgo: 'Nervioso, buen ojo para los detalles' },
   { id: 'tu', nombre: 'Tú', rasgo: 'Lleno/a de energía' },
 ];
@@ -80,7 +80,7 @@ export default function Reparto({ onCompletar }: PropsMecanica) {
         </Boton>
       ) : (
         <div className="grid gap-2">
-          <Bocadillo personaje="irene" expresion="pensativo">
+          <Bocadillo personaje="lisa" expresion="pensativo">
             Puedo con la compuerta si hace falta, pero estoy agotada. El panel de presión me lo sé de memoria.
           </Bocadillo>
           <Bocadillo personaje="leo" expresion="preocupado">

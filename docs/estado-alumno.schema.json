@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://protocolo-abismo.local/schemas/estado-alumno.schema.json",
+  "title": "EstadoAlumno",
+  "description": "Estado de una partida de Protocolo Abismo. El alumno nunca ve este objeto; solo lo consume el Dashboard del docente.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "partidaId",
+    "alumnoCodigo",
+    "claseId",
+    "escenaActual",
+    "habilidades",
+    "historial",
+    "completada",
+    "iniciadaEn",
+    "finalizadaEn"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Versión del guion con el que se jugó. Permite comparar partidas solo si usan el mismo guion.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "partidaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "alumnoCodigo": {
+      "type": "string",
+      "description": "Código seudónimo asignado por el docente (p. ej. 'A7K2'). Nunca nombre real: son menores.",
+      "minLength": 3,
+      "maxLength": 12
+    },
+    "claseId": {
+      "type": "string",
+      "description": "Código de la clase que agrupa partidas para un mismo docente."
+    },
+    "escenaActual": {
+      "type": "string",
+      "description": "id de la escena en curso, o 'FIN' al terminar."
+    },
+    "habilidades": {
+      "type": "object",
+      "description": "Puntuación bruta acumulada. Todas empiezan en 0.",
+      "additionalProperties": false,
+      "required": ["logica", "creatividad", "comunicacion", "resiliencia", "liderazgo"],
+      "properties": {
+        "logica": { "type": "integer", "minimum": 0 },
+        "creatividad": { "type": "integer", "minimum": 0 },
+        "comunicacion": { "type": "integer", "minimum": 0 },
+        "resiliencia": { "type": "integer", "minimum": 0 },
+        "liderazgo": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "historial": {
+      "type": "array",
+      "description": "Traza de decisiones, en orden. Sirve para auditar la puntuación y para el análisis cualitativo.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["escenaId", "opcionId", "timestamp"],
+        "properties": {
+          "escenaId": { "type": "string" },
+          "opcionId": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "tiempoRespuestaMs": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Telemetría opcional. No puntúa en el MVP."
+          }
+        }
+      }
+    },
+    "completada": { "type": "boolean" },
+    "iniciadaEn": { "type": "string", "format": "date-time" },
+    "finalizadaEn": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "examples": [
+    {
+      "version": "1.0.0",
+      "partidaId": "3f1c9a2e-8b4d-4e6a-9c1f-2a7b5d8e0f13",
+      "alumnoCodigo": "A7K2",
+      "claseId": "2ESO-B",
+      "escenaActual": "esc_01_despertar",
+      "habilidades": {
+        "logica": 0,
+        "creatividad": 0,
+        "comunicacion": 0,
+        "resiliencia": 0,
+        "liderazgo": 0
+      },
+      "historial": [],
+      "completada": false,
+      "iniciadaEn": "2026-11-14T10:00:00Z",
+      "finalizadaEn": null
+    }
+  ]
+}

@@ -41,10 +41,10 @@ export default function VistaClase({ partidas, onElegir }: Props) {
   const duraciones = completas.map(duracionMinutos).filter((d): d is number => d !== null);
   const mediaMin = duraciones.length ? Math.round(duraciones.reduce((a, b) => a + b, 0) / duraciones.length) : null;
 
-  // Qué camino eligió cada alumno en la bifurcación (escenas esc_04_*).
+  // Qué camino eligió cada alumno tras el apagón (escenas esc_03_*).
   const ramas = new Map<string, number>();
   for (const p of completas) {
-    const r = p.historial.find((h) => h.escenaId.startsWith('esc_04_'));
+    const r = p.historial.find((h) => h.escenaId.startsWith('esc_03_'));
     if (r) ramas.set(r.escenaId, (ramas.get(r.escenaId) ?? 0) + 1);
   }
 
@@ -139,7 +139,7 @@ export default function VistaClase({ partidas, onElegir }: Props) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Caminos elegidos en el pasillo inundado</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Frente elegido tras el apagón</h3>
           <ul className="mt-3 grid gap-2">
             {[...ramas.entries()].map(([id, n]) => (
               <li key={id} className="grid grid-cols-[1fr_auto] gap-2 text-sm">

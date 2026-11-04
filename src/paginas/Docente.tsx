@@ -348,7 +348,7 @@ function Herramientas({ partidas, onCambio }: { partidas: EstadoAlumno[]; onCamb
       <section className="grid content-start gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
         <h2 className="text-lg font-semibold">Cómo se evalúa</h2>
         <ul className="grid gap-2 text-sm text-slate-300">
-          <li>· {escenas.length} escenas, 3 caminos posibles. Cada decisión suma 2 puntos a una habilidad y 1 a otra; ninguna opción es «la buena».</li>
+          <li>· {escenas.length} escenas y 5 caminos: tras el apagón, cada alumno elige qué frente atender y juega el minijuego de esa habilidad. Cada decisión suma 2 puntos a una habilidad y 1 a otra; ninguna opción es «la buena».</li>
           <li>· El radar muestra el porcentaje sobre el máximo que el alumno podía alcanzar en su propio camino.</li>
           <li>· En los minijuegos se observan <strong>comportamientos</strong> (pedir ayuda, reintentar, explorar antes de actuar), nunca velocidad ni precisión. Tras 3 intentos, un personaje ayuda y la historia sigue.</li>
           <li>· El tiempo de respuesta se registra como telemetría, pero no puntúa.</li>
@@ -358,6 +358,7 @@ function Herramientas({ partidas, onCambio }: { partidas: EstadoAlumno[]; onCamb
             <div key={m.nombre} className="rounded-xl border border-slate-700 p-3">
               <p className="font-medium text-white">{m.nombre}</p>
               <p className="mt-1 text-xs text-slate-400">{m.queObserva}</p>
+              {m.fundamento && <p className="mt-1 text-[11px] italic text-slate-500">{m.fundamento}</p>}
             </div>
           ))}
         </div>

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { sonido } from '../audio/sonido';
-import Retrato from '../components/Retrato';
+import Retrato, { NOMBRE_PERSONAJE } from '../components/Retrato';
 import { Boton, Etiqueta, Panel } from '../components/ui';
 import { escenasPorId } from '../data/guion';
 import { generarCodigo } from '../logica/simulacion';
@@ -165,23 +165,26 @@ export default function Entrada() {
               </li>
               <li className="flex gap-3">
                 <span aria-hidden="true">⏸</span>
-                <span>Tu partida se guarda sola. Dura unos 15–20 minutos.</span>
+                <span>Tu partida se guarda sola. Dura unos 20 minutos.</span>
               </li>
             </ul>
-            <div className="grid gap-2 rounded-xl border border-slate-700 bg-slate-900/60 p-3">
-              <div className="flex items-center gap-3">
-                <Retrato personaje="lisa" tamano={40} />
-                <p className="text-sm">
-                  <strong className="text-white">Lisa</strong> <span className="text-slate-400">· Ingeniera jefa. Sabe muchísimo y está agotada.</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Retrato personaje="leo" tamano={40} expresion="preocupado" />
-                <p className="text-sm">
-                  <strong className="text-white">Leo</strong> <span className="text-slate-400">· Técnico en prácticas. Detallista y un poco asustado.</span>
-                </p>
-              </div>
-            </div>
+            <ul className="grid gap-2 rounded-xl border border-slate-700 bg-slate-900/60 p-3" aria-label="El equipo">
+              {(
+                [
+                  ['lisa', 'Bióloga jefa. Experta en cultivos y soporte vital.'],
+                  ['leo', 'Ingeniero mecánico en prácticas. Hábil con las máquinas, pero algo inseguro.'],
+                  ['reyes', 'Jefe de seguridad y piloto. Conoce todos los protocolos.'],
+                  ['aris', 'Científica de datos. Domina servidores y sistemas digitales.'],
+                ] as const
+              ).map(([p, texto]) => (
+                <li key={p} className="flex items-center gap-3">
+                  <Retrato personaje={p} tamano={40} />
+                  <p className="text-sm">
+                    <strong className="text-white">{NOMBRE_PERSONAJE[p]}</strong> <span className="text-slate-400">· {texto}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
             <label className="flex items-center gap-3 text-sm text-slate-300">
               <input type="checkbox" checked={sonidoOn} onChange={() => alternar('sonido')} className="h-5 w-5 accent-cyan-400" />
               Jugar con sonido (mejor con auriculares)

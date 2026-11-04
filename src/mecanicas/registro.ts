@@ -8,6 +8,8 @@ export interface DefinicionMecanica {
   nombre: string;
   /** Qué observa la mecánica, explicado para el docente. */
   queObserva: string;
+  /** Respaldo teórico en el que se inspira (para el docente). */
+  fundamento?: string;
   /** Desenlaces que puede emitir. Deben coincidir con los `clave` del guion. */
   claves: readonly string[];
   /** Conductas típicas de cada desenlace (para la simulación de demo). */
@@ -34,27 +36,6 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
       escucha: ['estilo_escucha'],
       plan: ['estilo_plan'],
       ingenio: ['estilo_ingenio'],
-    },
-  },
-  reparto: {
-    nombre: 'Reparto de tareas',
-    queObserva: 'Si consulta al equipo, si asume la tarea arriesgada y cómo reparte.',
-    claves: ['consenso', 'ejemplo', 'estrategia'],
-    conductasTipicas: {
-      consenso: ['pregunto_equipo'],
-      ejemplo: ['asumio_tarea_dificil'],
-      estrategia: ['reparto_por_perfiles'],
-    },
-  },
-  inventario: {
-    nombre: 'Inventario',
-    queObserva: 'Cuántas soluciones distintas busca, si pide ideas y cómo gestiona los intentos fallidos.',
-    claves: ['equipo', 'inventor', 'tenaz', 'practico'],
-    conductasTipicas: {
-      equipo: ['pidio_ideas'],
-      inventor: ['exploro_alternativas'],
-      tenaz: ['reintento'],
-      practico: ['solucion_directa'],
     },
   },
   sonar: {
@@ -89,6 +70,64 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
       prudente: ['priorizo_margen'],
     },
   },
+  tuberias: {
+    nombre: 'Tuberías',
+    queObserva: 'Si anticipa el recorrido completo antes de actuar, cómo reajusta tras un fallo y si pide consejo.',
+    fundamento: 'Funciones ejecutivas: planificación y memoria de trabajo (Miyake et al., 2000). El reloj es solo narrativo: no puntúa.',
+    claves: ['planificador', 'insistente', 'guiado'],
+    conductasTipicas: {
+      planificador: ['anticipo_recorrido'],
+      insistente: ['reintento'],
+      guiado: ['pidio_ayuda'],
+    },
+  },
+  cultivo: {
+    nombre: 'Cultivo hidropónico',
+    queObserva: 'Fluidez (cuántas soluciones), flexibilidad (usos no convencionales) y originalidad con recursos limitados.',
+    fundamento: 'Pensamiento divergente (Guilford, 1967) y creatividad bajo restricciones (Stokes, 2005).',
+    claves: ['consultor', 'divergente', 'original', 'tenaz', 'practico'],
+    conductasTipicas: {
+      consultor: ['pidio_ideas'],
+      divergente: ['exploro_alternativas'],
+      original: ['uso_original'],
+      tenaz: ['reintento'],
+      practico: ['solucion_directa'],
+    },
+  },
+  evacuacion: {
+    nombre: 'Evacuación (delegación)',
+    queObserva: 'Si reparte según las especialidades, si asume la tarea de riesgo, si consulta al equipo y si sobrecarga a alguien.',
+    fundamento: 'Liderazgo situacional (Hersey y Blanchard, 1969) y liderazgo transformacional como modelo de rol (Bass, 1985).',
+    claves: ['ejemplo', 'situacional', 'consenso', 'improvisado'],
+    conductasTipicas: {
+      ejemplo: ['asumio_tarea_dificil'],
+      situacional: ['reparto_por_perfiles'],
+      consenso: ['pregunto_equipo'],
+      improvisado: ['reparto_no_convencional'],
+    },
+  },
+  sos: {
+    nombre: 'Protocolo S.O.S.',
+    queObserva: 'Si el mensaje da la información justa y relevante (dónde, cuántos, qué necesitan) y cómo lo ajusta con la respuesta.',
+    fundamento: 'Máximas de cantidad y relevancia de la comunicación cooperativa (Grice, 1975).',
+    claves: ['directo', 'ajustado', 'asesorado'],
+    conductasTipicas: {
+      directo: ['mensaje_completo'],
+      ajustado: ['reformulo_mensaje'],
+      asesorado: ['pidio_consejo'],
+    },
+  },
+  ondas: {
+    nombre: 'Sintonía de ondas',
+    queObserva: 'Cómo reacciona ante errores que no dependen de él: si persiste, si se autorregula con una pausa o si pide relevo.',
+    fundamento: 'Tolerancia a la frustración (Rosenzweig, 1944) y perseverancia o grit (Duckworth, 2016). Los errores están provocados a propósito y se explican al final.',
+    claves: ['perseverante', 'regulado', 'relevo'],
+    conductasTipicas: {
+      perseverante: ['persistio_tras_error'],
+      regulado: ['hizo_pausa'],
+      relevo: ['pidio_relevo'],
+    },
+  },
 };
 
 /** Etiquetas legibles para el docente. Nunca se muestran al alumno. */
@@ -116,6 +155,19 @@ export const ETIQUETAS_CONDUCTA: Record<string, string> = {
   priorizo_comunicaciones: 'Priorizó las comunicaciones',
   priorizo_iluminacion: 'Priorizó la iluminación del equipo',
   priorizo_margen: 'Priorizó el margen de seguridad',
+  anticipo_recorrido: 'Anticipó el recorrido completo antes de actuar',
+  uso_original: 'Usó un objeto para algo muy distinto de su función',
+  reparto_no_convencional: 'Repartió de forma poco convencional',
+  sobrecargo_equipo: 'Cargó a una persona con 3 o más tareas (lo corrigió)',
+  delego_riesgo: 'Delegó la tarea de riesgo en otra persona',
+  incluyo_emocional: 'Incluyó fragmentos emocionales en el mensaje',
+  incluyo_tecnico: 'Incluyó fragmentos muy técnicos en el mensaje',
+  mensaje_completo: 'Primer mensaje con dónde, cuántos y qué necesitan',
+  reformulo_mensaje: 'Reformuló el mensaje con la respuesta recibida',
+  pidio_consejo: 'Pidió consejo antes de comunicar',
+  persistio_tras_error: 'Siguió intentándolo tras errores del sistema',
+  hizo_pausa: 'Hizo una pausa para calmarse',
+  pidio_relevo: 'Pidió relevo tras los errores',
 };
 
 export function etiquetaConducta(clave: string): string {

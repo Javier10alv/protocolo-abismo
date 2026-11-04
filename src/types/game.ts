@@ -25,16 +25,19 @@ export const FIN = 'FIN';
 export const MECANICAS = [
   'cableado',
   'conversacion',
-  'reparto',
-  'inventario',
   'sonar',
   'secuencia',
   'energia',
+  'tuberias',
+  'cultivo',
+  'evacuacion',
+  'sos',
+  'ondas',
 ] as const;
 
 export type Mecanica = (typeof MECANICAS)[number];
 
-export type Personaje = 'lisa' | 'leo';
+export type Personaje = 'lisa' | 'leo' | 'reyes' | 'aris';
 
 /** Una opción de una escena de decisión. */
 export interface Opcion {

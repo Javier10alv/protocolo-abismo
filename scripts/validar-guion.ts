@@ -31,8 +31,8 @@ for (const e of escenas) {
   if (!existsSync(new URL(`../public${e.imagen}`, import.meta.url))) error(`${e.id}: no existe la imagen public${e.imagen}`);
   const existe = (ruta: string) => existsSync(new URL(`../public${ruta}`, import.meta.url));
   for (const p of e.personajes ?? []) {
-    if (p !== 'lisa' && p !== 'leo') error(`${e.id}: personaje desconocido "${p}"`);
-    else if (!existe(`/img/personajes/${p}.webp`)) error(`${e.id}: falta el sprite de ${p}`);
+    if (!['lisa', 'leo', 'reyes', 'aris'].includes(p)) error(`${e.id}: personaje desconocido "${p}"`);
+    else if ((p === 'lisa' || p === 'leo') && !existe(`/img/personajes/${p}.webp`)) error(`${e.id}: falta el sprite de ${p}`);
   }
   if (e.cinematica) {
     if (!existe(e.cinematica.src)) error(`${e.id}: no existe el vídeo public${e.cinematica.src}`);
@@ -49,7 +49,8 @@ for (const e of escenas) {
   }
 
   if (e.tipo === 'decision') {
-    if (e.opciones.length !== 3) error(`${e.id}: debe tener exactamente 3 opciones (tiene ${e.opciones.length})`);
+    // 3 opciones; las bifurcaciones hacia minijuegos pueden tener hasta 5 (una por habilidad).
+    if (e.opciones.length < 3 || e.opciones.length > 5) error(`${e.id}: debe tener entre 3 y 5 opciones (tiene ${e.opciones.length})`);
   } else if (e.tipo === 'minijuego') {
     if (!MECANICAS.includes(e.mecanica)) error(`${e.id}: mecánica desconocida "${e.mecanica}"`);
     else {

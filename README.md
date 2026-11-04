@@ -23,24 +23,31 @@ npx tsx scripts/generar-fondos.ts   # regenera las ilustraciones SVG de public/i
 
 ## Qué incluye
 
-**Juego (12 escenas, 3 caminos, ~15–20 min)**
+**Juego (15 escenas, 5 caminos, ~20 min)**
 
 | Escena | Tipo | Qué observa |
 |---|---|---|
 | *Cinemática de llegada* (`intro.mp4`) | Vídeo | — |
 | La sala de control | Decisión | — |
 | *Cinemática de alarma* (`emergencia.mp4`) | Vídeo con subtítulos | — |
+| Apagón en el Abismo | Decisión con **5 ramas**, una por habilidad | Qué frente elige atender |
+| ↳ Refrigerar el motor | **Tuberías**: girar piezas para llevar el refrigerante | Planificación (funciones ejecutivas, Miyake et al., 2000) |
+| ↳ El invernadero hidropónico | **Cultivo**: combinar objetos inusuales para estabilizar el pH | Pensamiento divergente (Guilford, 1967; Stokes, 2005) |
+| ↳ La evacuación del Sector C | **Evacuación**: delegar 5 tareas entre Lisa, Leo, Reyes, Aris y tú | Liderazgo situacional y transformacional (Hersey y Blanchard, 1969; Bass, 1985) |
+| ↳ Protocolo S.O.S. | **S.O.S.**: mensaje de 3 fragmentos con la antena dañada | Máximas de cantidad y relevancia (Grice, 1975) |
+| ↳ La señal perdida | **Ondas**: sintonizar una señal que falla a propósito | Tolerancia a la frustración y *grit* (Rosenzweig, 1944; Duckworth, 2016) |
 | La escotilla atascada | **Cableado** (puzle lógico con esquema y pistas) | Consulta antes de actuar, pide ayuda, reintenta |
-| El pasillo inundado | Decisión con **bifurcación** | — |
-| Hablar con Leo | **Conversación** de 3 turnos con un compañero asustado | Estilo comunicativo dominante |
-| Repartir tareas | **Reparto** de tareas entre 3 personas | Consulta al equipo, asume riesgos, reparte por perfiles |
-| Cuarto de mantenimiento | **Inventario**: combinar objetos (varias soluciones) | Busca alternativas, pide ideas, persiste |
+| El pasillo inundado | **Conversación** de 3 turnos con Leo, que tiene miedo | Estilo comunicativo dominante |
 | El hangar a oscuras | **Sonar** en una cuadrícula para encontrar el dron | Explora antes de actuar, coordina, persiste |
 | Voces desde la superficie | Decisión | — |
 | El manual desordenado | **Secuencia**: ordenar pasos (arrastrar o ▲▼) | Consulta notas, reintenta, deduce |
 | El corazón de la estación | Decisión | — |
 | Preparar la cápsula | **Energía**: repartir recursos + imprevisto | Prioridades y adaptación al cambio |
 | El ascenso | Decisión metacognitiva | — |
+
+Equipo: **Lisa** (bióloga jefa), **Leo** (ingeniero mecánico en prácticas), **Comandante Reyes** (seguridad y piloto) y **Dra. Aris** (científica de datos). Reyes y Aris usan retratos provisionales hasta tener su arte.
+
+Las mecánicas inspiradas en esas teorías se adaptan a las reglas del proyecto: ninguna respuesta resta, cada desenlace suma 2+1 según el comportamiento, el reloj de Tuberías es solo ambiental y la sobrecarga en Evacuación hace que el plan falle (hay que rehacerlo), sin penalizar. En Ondas los errores están provocados y se le explica al alumno al terminar.
 
 - Nunca se puntúa velocidad ni precisión motora. Tras 3 intentos fallidos, un personaje ayuda y la historia sigue.
 - Accesibilidad: todo funciona con teclado, ratón y pantalla táctil; lectura en voz alta, texto grande, texto sin animación, `prefers-reduced-motion` y foco gestionado en cada escena.

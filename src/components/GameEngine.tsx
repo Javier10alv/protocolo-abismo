@@ -165,7 +165,7 @@ function BarraSuperior({ etapa, texto, onSalir }: { etapa: number; texto?: strin
   );
 }
 
-const LETRAS = ['A', 'B', 'C', 'D'];
+const LETRAS = ['A', 'B', 'C', 'D', 'E'];
 
 /** Precarga los vídeos de las escenas a las que se puede llegar desde esta, para que la transición sea fluida. */
 function PrecargarCinematicas({ escena }: { escena: Scene }) {
@@ -227,7 +227,7 @@ function PantallaEscena({ escena, onSalir }: { escena: Scene; onSalir?: () => vo
               <ul className="flex shrink-0 -space-x-2" aria-label="Personajes presentes">
                 {escena.personajes.map((p) => (
                   <li key={p} title={`${NOMBRE_PERSONAJE[p]}, ${ROL_PERSONAJE[p]}`}>
-                    <Retrato personaje={p} tamano={44} expresion={escena.id.startsWith('esc_10') ? 'contento' : 'neutral'} />
+                    <Retrato personaje={p} tamano={44} expresion={escena.id.startsWith('esc_11') ? 'contento' : 'neutral'} />
                     <span className="sr-only">
                       {NOMBRE_PERSONAJE[p]}, {ROL_PERSONAJE[p]}
                     </span>

@@ -2,7 +2,7 @@
 
 MVP para el hackathon **hack4edu**. Juego narrativo tipo "elige tu propia aventura" que evalúa de forma **invisible** las habilidades blandas de estudiantes de 10 a 18 años de contextos vulnerables, sin exámenes. El alumno juega; el docente ve un radar de fortalezas y una recomendación pedagógica.
 
-Premisa: el alumno llega en submarino a la estación de investigación Abismo, a 3.000 m, en su primer día. Un sismo la daña y debe cooperar con Lisa (ingeniera jefa) y Leo (técnico en prácticas, asustadizo) para volver a la superficie.
+Premisa: el alumno llega en submarino a la estación de investigación Abismo, a 3.000 m, en su primer día. Un sismo provoca un apagón y debe cooperar con Lisa (bióloga jefa), Leo (ingeniero mecánico en prácticas, inseguro), el Comandante Reyes (seguridad y piloto) y la Dra. Aris (científica de datos) para volver a la superficie. Solo Lisa y Leo tienen sprite; Reyes y Aris usan retratos provisionales (iniciales).
 
 ## Comandos
 
@@ -38,7 +38,7 @@ src/
 ├── logica/recomendacion.ts     Recomendación con plantilla, resumen para el LLM, agrupamientos
 ├── logica/simulacion.ts        Partidas simuladas (demo y validador) y generador de códigos
 ├── mecanicas/registro.ts       Claves de desenlace de cada mecánica y etiquetas de conducta
-├── mecanicas/*.tsx             Cableado, Conversacion, Reparto, Inventario, Sonar, Secuencia, Energia
+├── mecanicas/*.tsx             Cableado, Conversacion, Sonar, Secuencia, Energia, Tuberias, Cultivo, Evacuacion, Sos, Ondas
 ├── store/                      useGameStore (partida) y useAjustesStore (sonido, texto grande…)
 ├── servicios/partidas.ts       Envío/lectura (local o Supabase), sesión docente, informe IA
 ├── components/                 GameEngine, ui (Boton, Bocadillo, TextoAnimado…), Retrato, Iconos, docente/
@@ -57,7 +57,7 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 - **Habilidades** (siempre estas 5, en este orden): `logica`, `creatividad`, `comunicacion`, `resiliencia`, `liderazgo`. Empiezan en 0 y solo suben.
 - **Scene** = `EscenaDecision | EscenaMinijuego` (campo `tipo`). Comunes: `id`, `titulo`, `imagen`, `altImagen`, `textoNarrativo` (máx. 3 líneas), `personajes?`.
-  - Decisión: `opciones` (3). **Opcion**: `id`, `textoBoton`, `modificadores`, `siguienteEscena` (id o `'FIN'`).
+  - Decisión: `opciones` (3; hasta 5 en una bifurcación hacia minijuegos, como el apagón: una rama por habilidad). **Opcion**: `id`, `textoBoton`, `modificadores`, `siguienteEscena` (id o `'FIN'`).
   - Minijuego: `mecanica`, `instruccion`, `resultados`. **Resultado**: `id`, `clave`, `descripcion` (para el docente), `textoCierre` (para el alumno), `modificadores`, `siguienteEscena`.
 - Opcionales en cualquier escena: `cinematica` (`src`, `descripcion` para lectores de pantalla, `subtitulos` con `desde`/`hasta`/`texto`/`personaje?`) se ve una vez por partida antes de la escena (`useCinematicasStore`); `fondoVideo` (`src`, `bucleDesde`) sustituye la imagen por un vídeo silencioso en bucle y oculta los sprites, porque los personajes ya salen en el vídeo.
 - Una mecánica devuelve `ResultadoMecanica` (`clave`, `conductas`, `intentos`, `ayudaRecibida`). Las claves posibles de cada mecánica están en `mecanicas/registro.ts` y deben coincidir con las del guion (lo comprueba `npm run validar`).
@@ -68,7 +68,8 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 ## Reglas del guion
 
 - Cada opción suma **exactamente 3 puntos**: 2 a una habilidad principal y 1 a una secundaria. Ninguna opción es "la buena" ni moralmente superior.
-- Ids: escenas `esc_NN_nombre`, opciones `esc_NN_a|b|c`, resultados `esc_NN_clave`. Las ramas comparten `NN` (p. ej. `esc_04_leo`, `esc_04_reparto`, `esc_04_taller`); los ids de opción/resultado son únicos en todo el guion.
+- Estructura: sala de control → apagón (5 ramas: tuberías, cultivo, evacuación, S.O.S., ondas) → escotilla → pasillo → hangar → radio → generador → fallo → energía → cápsula.
+- Ids: escenas `esc_NN_nombre`, opciones `esc_NN_a|b|c|d|e`, resultados `esc_NN_clave`. Las ramas comparten `NN` (p. ej. `esc_03_tuberias`, `esc_03_sos`); los ids de opción/resultado son únicos en todo el guion.
 - Los minijuegos también cumplen la regla de 3 puntos en cada `resultado`.
 - Cada vez que cambies `escenas.json`, **sube `VERSION_GUION`** en `src/data/guion.ts`. Las partidas guardadas con otra versión se descartan al cargar.
 - Toda escena debe ser alcanzable y todo camino debe llegar a `FIN`.
@@ -79,6 +80,7 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 - **El alumno nunca ve puntuaciones**: ni en la UI, ni en mensajes, ni en respuestas de red que pueda inspeccionar.
 - **El radar se normaliza** como porcentaje del máximo alcanzable de cada habilidad sobre las escenas que el alumno visitó (`maximosAlcanzables` en `logica/puntuacion.ts`). El máximo se calcula desde el guion, no se escribe a mano.
 - `tiempoRespuestaMs` es telemetría: **no puntúa**.
+- Las mecánicas inspiradas en tests con «respuesta óptima» se adaptan: lo óptimo se registra como conducta para el docente, nunca resta. Un plan inviable (p. ej. sobrecargar a una persona) se trata como intento fallido que se rehace. Si una mecánica provoca errores a propósito (Ondas), debe explicárselo al alumno en el cierre.
 - Mecánicas: se puntúan **comportamientos** (reintentar, pedir pista, explorar antes de actuar), nunca velocidad ni precisión motora. Fallar no penaliza: tras 3 intentos (`INTENTOS_ANTES_DE_AYUDA`), un personaje ayuda y la historia sigue.
 - Para añadir una mecánica: tipo en `MECANICAS` (types/game.ts), entrada en `MECANICAS_INFO` (registro.ts), componente en `mecanicas/` registrado en `mecanicas/index.ts`, y escena con sus `resultados` en el guion.
 

@@ -6,9 +6,12 @@ import type { PropsMecanica } from './tipos';
 export const COMPONENTES_MECANICA: Record<Mecanica, LazyExoticComponent<ComponentType<PropsMecanica>>> = {
   cableado: lazy(() => import('./Cableado')),
   conversacion: lazy(() => import('./Conversacion')),
-  reparto: lazy(() => import('./Reparto')),
-  inventario: lazy(() => import('./Inventario')),
   sonar: lazy(() => import('./Sonar')),
   secuencia: lazy(() => import('./Secuencia')),
   energia: lazy(() => import('./Energia')),
+  tuberias: lazy(() => import('./Tuberias')),
+  cultivo: lazy(() => import('./Cultivo')),
+  evacuacion: lazy(() => import('./Evacuacion')),
+  sos: lazy(() => import('./Sos')),
+  ondas: lazy(() => import('./Ondas')),
 };

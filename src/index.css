@@ -44,3 +44,8 @@ body {
   .no-imprimir { display: none !important; }
   body, :root { background: white; color: black; }
 }
+
+@keyframes respirar {
+  0%, 100% { transform: scale(0.7); opacity: 0.5; }
+  50% { transform: scale(1.4); opacity: 1; }
+}

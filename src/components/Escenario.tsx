@@ -9,7 +9,8 @@ import { NOMBRE_PERSONAJE, SPRITE_PERSONAJE } from './Retrato';
  */
 export default function Escenario({ escena, visible }: { escena: Scene; visible: boolean }) {
   // Si el fondo es un vídeo, los personajes ya aparecen en él: no se dibujan sprites encima.
-  const personajes = escena.fondoVideo ? [] : (escena.personajes ?? []);
+  // Solo se dibujan los personajes que tienen sprite.
+  const personajes = escena.fondoVideo ? [] : (escena.personajes ?? []).filter((p) => SPRITE_PERSONAJE[p]);
 
   return (
     <div className="pointer-events-none fixed inset-0">
@@ -42,7 +43,7 @@ export default function Escenario({ escena, visible }: { escena: Scene; visible:
  * Coloca a Leo a la izquierda y a Lisa a la derecha, como en las cinemáticas.
  * En móvil se anclan arriba (se ve cabeza y torso sobre el panel); desde `sm`, de pie sobre el suelo.
  */
-const LADO: Record<Personaje, 'izquierda' | 'derecha'> = { leo: 'izquierda', lisa: 'derecha' };
+const LADO: Record<Personaje, 'izquierda' | 'derecha'> = { leo: 'izquierda', lisa: 'derecha', reyes: 'izquierda', aris: 'derecha' };
 
 function CapaPersonajes({ personajes, visible }: { personajes: Personaje[]; visible: boolean }) {
   if (personajes.length === 0) return null;
@@ -53,7 +54,7 @@ function CapaPersonajes({ personajes, visible }: { personajes: Personaje[]; visi
         return (
           <img
             key={p}
-            src={SPRITE_PERSONAJE[p]}
+            src={SPRITE_PERSONAJE[p]!}
             alt={NOMBRE_PERSONAJE[p]}
             draggable={false}
             className={`absolute top-[7dvh] h-[62dvh] w-auto sm:top-auto sm:bottom-0 max-w-none select-none drop-shadow-[0_0_24px_rgba(8,145,178,0.35)] transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none sm:h-[78dvh] lg:h-[86dvh] ${

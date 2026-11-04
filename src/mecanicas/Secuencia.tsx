@@ -97,7 +97,7 @@ export default function Secuencia({ onCompletar }: PropsMecanica) {
         aria-expanded={notasAbiertas}
         disabled={resuelto}
       >
-        📝 {notasAbiertas ? 'Ocultar notas de Lisa' : 'Leer las notas de Lisa en la pizarra'}
+        📝 {notasAbiertas ? 'Ocultar notas de Leo' : 'Leer las notas de Leo en la pizarra'}
       </Boton>
 
       {notasAbiertas && (
@@ -176,7 +176,7 @@ export default function Secuencia({ onCompletar }: PropsMecanica) {
         </p>
       )}
       {ayuda && (
-        <Bocadillo personaje="leo" expresion="contento">
+        <Bocadillo personaje="lisa" expresion="contento">
           ¡He encontrado la página que faltaba debajo de la mesa! Mira, el orden es este.
         </Bocadillo>
       )}

@@ -143,6 +143,18 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
       tenaz: ['reintento'],
     },
   },
+  guiar: {
+    nombre: 'Al frente del equipo',
+    queObserva: 'Si adapta su forma de guiar a cada persona según sepa hacerlo y se sienta capaz (dirigir, entrenar, apoyar o delegar), si pregunta antes de actuar y si cambia de estilo cuando el estado de las personas cambia.',
+    fundamento: 'Liderazgo situacional (Hersey y Blanchard, 1969) y consideración individualizada (Bass, 1985).',
+    claves: ['situacional', 'adaptativo', 'directivo', 'delegador'],
+    conductasTipicas: {
+      situacional: ['adapto_estilo'],
+      adaptativo: ['reintento'],
+      directivo: [],
+      delegador: [],
+    },
+  },
   frecuencias: {
     nombre: 'Frecuencias enlazadas',
     queObserva: 'Si encuentra la palabra que une tres conceptos alejados (asociación remota), cuánta ayuda necesita y si la respuesta le llega de golpe o paso a paso.',
@@ -204,6 +216,8 @@ export const ETIQUETAS_CONDUCTA: Record<string, string> = {
   ignoro_limitaciones: 'Su primer plan chocó con limitaciones del equipo (lo corrigió)',
   anticipo_fallo: 'Detectó el aviso y reparó el monitor antes de que fallara',
   ignoro_aviso: 'No atendió al aviso de error antes de sincronizar',
+  adapto_estilo: 'Cambió su forma de guiar cuando cambió el estado de las personas',
+  repitio_estilo: 'Repitió con alguien el estilo que le funcionó antes, aunque ya no encajaba',
   insight_subito: 'Las respuestas le llegaron sobre todo de golpe (insight)',
   insight_analitico: 'Las respuestas le llegaron sobre todo paso a paso',
 };

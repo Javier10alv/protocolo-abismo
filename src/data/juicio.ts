@@ -35,7 +35,7 @@ export const JUICIO: Partial<Record<Mecanica, PreguntaJuicio>> = {
       { texto: 'Que decida Lisa, que es la experta.', valor: 0.6 },
     ],
   },
-  evacuacion: {
+  guiar: {
     habilidad: 'resiliencia',
     personaje: 'reyes',
     pregunta: 'Un compañero te dice que una parte de tu plan ha salido mal. ¿Cómo reaccionas?',

@@ -43,7 +43,7 @@ src/
 ├── logica/simulacion.ts        Partidas simuladas (validador) y la fila «Alumno de Prueba» del panel
 ├── config.ts                   CODIGO_DOCENTE y normalización de nombres
 ├── mecanicas/registro.ts       Claves de desenlace de cada mecánica y etiquetas de conducta
-├── mecanicas/*.tsx             En uso: Tuberias, Especie, Evacuacion, Sos, Ondas, Frecuencias. Antiguas sin usar: Cableado, Conversacion, Sonar, Secuencia, Energia, Cultivo
+├── mecanicas/*.tsx             En uso: Tuberias, Especie, Guiar (liderazgo situacional), Sos, Ondas, Frecuencias. Antiguas sin usar: Cableado, Conversacion, Sonar, Secuencia, Energia, Cultivo, Evacuacion
 ├── mecanicas/Inventario.tsx    Barra de inventario dentro de un reto (cada mecánica decide si un objeto le sirve)
 ├── store/                      useGameStore (partida) y useAjustesStore (sonido, texto grande…)
 ├── servicios/partidas.ts       Envío/lectura (local o Supabase), sesión docente, informe IA
@@ -76,7 +76,7 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 - **Puntuación por orden (hub):** el área elegida en 1.ª posición suma 10, la 2.ª 7, la 3.ª 5, la 4.ª 3 y la 5.ª 1 (`PESOS_ORDEN`). Ninguna prioridad es "la buena". Los minijuegos del hub no suman puntos (resultados con `modificadores: {}`).
 - Las escenas de decisión fuera del hub siguen la regla de 3 puntos: 2 a una habilidad principal y 1 a una secundaria.
-- Estructura (guion 5.0.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, especie, evacuación, S.O.S., ondas) → `esc_03_compuerta` (Frecuencias enlazadas, `sinPuntuacion`) → `esc_04_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas siguen en el código, sin usarse.
+- Estructura (guion 5.1.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, especie, liderazgo, S.O.S., ondas) → `esc_03_compuerta` (Frecuencias enlazadas, `sinPuntuacion`) → `esc_04_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas siguen en el código, sin usarse.
 - **Retirada estratégica:** desde cualquier reto del hub se puede volver a la sala de control (`aplicarRetirada`, registro con `retirada: true`). El reto queda aplazado; al retomarlo (`reanudacion: true`) no vuelve a sumar puntos: puntúa el orden de la **primera** elección. Retirarse nunca resta.
 - **Inventario:** cada sala tiene objetos (`data/objetos.ts`) que se recogen con «Explorar la sala». Todo reto del hub debe tener al menos un uso con un objeto de la sala de control (lo comprueba el validador).
 - Ids: escenas `esc_NN_nombre`, opciones `esc_NN_a|b|c|d|e`, resultados `esc_NN_clave`. Las ramas comparten `NN` (p. ej. `esc_03_tuberias`, `esc_03_sos`); los ids de opción/resultado son únicos en todo el guion.
@@ -86,7 +86,7 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 ## Reglas de evaluación (no negociables)
 
-- **Dos dimensiones separadas:** *prioridades* (orden del hub, 10/7/5/3/1, radar) y *desempeño* (`logica/evaluacion.ts`). El desempeño sale de indicadores 0–1 (de las mecánicas, de los eventos, de la retirada, del inventario y del juicio situacional), ponderados según la `MATRIZ`; se muestra en bandas (Emergente < 40 ≤ En desarrollo < 70 ≤ Consolidado) con confianza según el peso de evidencia observado. Todo indicador nuevo va a la `MATRIZ` con su referencia.
+- **Dos dimensiones separadas:** *prioridades* (orden del hub, 10/7/5/3/1, gráfico de barras) y *desempeño o rendimiento* (`logica/evaluacion.ts`, radar 0–100). El desempeño sale de indicadores 0–1 (de las mecánicas, de los eventos, de la retirada, del inventario y del juicio situacional), ponderados según la `MATRIZ`; se muestra en bandas (Emergente < 40 ≤ En desarrollo < 70 ≤ Consolidado) con confianza según el peso de evidencia observado. Todo indicador nuevo va a la `MATRIZ` con su referencia.
 - Cada mecánica recibe `registrar` (eventos de telemetría), `inventario` y `reintento`, y devuelve `indicadores` propios. Vocabulario de eventos: `accion`, `fallo` (con `firma`), `ayuda` (`tipo`), `presion`, `tiempo_agotado`, `objeto`, `explorar`, `recoger`, `retirada`, `insight`, `sjt`.
 - El docente puede **ajustar** la banda de una habilidad con un motivo obligatorio (`ajustes_docente` en Supabase o localStorage). El valor calculado nunca se sobrescribe.
 

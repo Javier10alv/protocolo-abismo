@@ -12,10 +12,14 @@ interface Props {
   comparacion?: Habilidades;
   nombreComparacion?: string;
   alto?: number;
+  /** Unidad que se muestra tras cada valor (tooltip y tabla). */
+  unidad?: string;
+  /** Texto de la tabla accesible. */
+  descripcionTabla?: string;
 }
 
 /** Radar normalizado (0–100 % del máximo alcanzable). Incluye una tabla accesible equivalente. */
-export default function RadarHabilidades({ principal, nombrePrincipal, comparacion, nombreComparacion = 'Media de la clase', alto = 340 }: Props) {
+export default function RadarHabilidades({ principal, nombrePrincipal, comparacion, nombreComparacion = 'Media de la clase', alto = 340, unidad = ' %', descripcionTabla = 'Porcentaje de cada habilidad respecto al máximo alcanzable' }: Props) {
   const datos = HABILIDADES.map((h) => ({
     habilidad: NOMBRE_HABILIDAD[h],
     principal: principal[h],
@@ -56,7 +60,7 @@ export default function RadarHabilidades({ principal, nombrePrincipal, comparaci
             <Tooltip
               contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0' }}
               itemStyle={{ color: '#e2e8f0' }}
-              formatter={(v) => `${v} %`}
+              formatter={(v) => `${v}${unidad}`}
             />
             {comparacion && <Legend wrapperStyle={{ color: '#cbd5e1', fontSize: 12 }} />}
           </RadarChart>
@@ -65,7 +69,7 @@ export default function RadarHabilidades({ principal, nombrePrincipal, comparaci
       <details className="text-sm text-slate-400">
         <summary className="cursor-pointer text-cyan-300/80">Ver como tabla</summary>
         <table className="mt-2 w-full text-left">
-          <caption className="sr-only">Porcentaje de cada habilidad respecto al máximo alcanzable</caption>
+          <caption className="sr-only">{descripcionTabla}</caption>
           <thead>
             <tr className="text-slate-300">
               <th scope="col" className="py-1">Habilidad</th>
@@ -77,8 +81,8 @@ export default function RadarHabilidades({ principal, nombrePrincipal, comparaci
             {datos.map((d) => (
               <tr key={d.habilidad} className="border-t border-slate-800">
                 <th scope="row" className="py-1 font-normal">{d.habilidad}</th>
-                <td className="py-1 font-mono">{d.principal} %</td>
-                {comparacion && <td className="py-1 font-mono">{d.comparacion} %</td>}
+                <td className="py-1 font-mono">{d.principal}{unidad}</td>
+                {comparacion && <td className="py-1 font-mono">{d.comparacion}{unidad}</td>}
               </tr>
             ))}
           </tbody>

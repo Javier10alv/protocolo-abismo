@@ -54,7 +54,7 @@ export const OBJETOS: Objeto[] = [
     sala: 'esc_01_hub',
     usos: [
       { mecanica: 'especie', efecto: 'La luz ultravioleta revela un rasgo oculto de la criatura.' },
-      { mecanica: 'evacuacion', efecto: 'Ilumina el subnivel inundado: la válvula deja de ser peligrosa para quien vaya.' },
+      { mecanica: 'guiar', efecto: 'Se la da a Aris para que vea las palancas de las compuertas a oscuras (dar recursos al equipo).' },
       { mecanica: 'frecuencias', efecto: 'Activa directamente el sensor óptico de la compuerta.' },
     ],
   },
@@ -79,7 +79,7 @@ export const OBJETOS: Objeto[] = [
     nombre: 'Batería portátil',
     icono: '🔋',
     pista: 'Debajo de la mesa de reuniones hay una batería portátil cargada.',
-    sala: 'esc_02_evacuacion',
+    sala: 'esc_02_liderazgo',
     usos: [{ mecanica: 'tuberias', efecto: 'Alimenta la bomba auxiliar: más tiempo y una comprobación extra del caudal.' }],
   },
   {
@@ -96,7 +96,7 @@ export const OBJETOS: Objeto[] = [
     icono: '🪢',
     pista: 'Enrollada junto a la puerta estanca hay una cuerda de seguridad con mosquetón.',
     sala: 'esc_02_ondas',
-    usos: [{ mecanica: 'evacuacion', efecto: 'Asegura a quien baje al subnivel: la válvula deja de ser peligrosa.' }],
+    usos: [{ mecanica: 'guiar', efecto: 'Se la da a Aris para que vaya asegurada por el pasillo inundado (dar recursos al equipo).' }],
   },
 ];
 

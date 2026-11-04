@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import DetallePartida from '../components/docente/DetallePartida';
-import VistaClase, { mediaHabilidades } from '../components/docente/VistaClase';
+import VistaClase, { mediaHabilidades, mediaRendimiento } from '../components/docente/VistaClase';
 import { Boton, Etiqueta } from '../components/ui';
 import { VERSION_GUION } from '../data/guion';
 import { duracionSegundos, ordenarHabilidades, porcentajes } from '../logica/puntuacion';
@@ -183,7 +183,7 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
   // Sin partidas reales se muestra una sola fila de ejemplo («Alumno de Prueba»), que no se guarda.
   const esPrueba = deLaClase.length === 0;
   const mostradas = useMemo(() => (esPrueba ? [partidaDePrueba(claseActiva || CODIGO_DOCENTE)] : deLaClase), [esPrueba, deLaClase, claseActiva]);
-  const media = mediaHabilidades(mostradas);
+  const media = { prioridades: mediaHabilidades(mostradas), rendimiento: mediaRendimiento(mostradas) };
   const termino = busqueda.trim().toLowerCase();
   const filtradas = mostradas.filter((p) => !termino || p.alumnoNombre.toLowerCase().includes(termino) || p.alumnoCodigo.toLowerCase().includes(termino));
   const elegida = mostradas.find((p) => p.partidaId === seleccion) ?? filtradas[0];

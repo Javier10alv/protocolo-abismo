@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { describirEleccion, escenasPorId } from '../../data/guion';
 import { metricasPorArea, precisionMedia, tiempoTotalTexto } from '../../logica/metricas';
-import { formatearSegundos, porcentajes } from '../../logica/puntuacion';
+import { formatearSegundos } from '../../logica/puntuacion';
 import { recomendacionLocal } from '../../logica/recomendacion';
 import { MECANICAS_INFO, etiquetaConducta } from '../../mecanicas/registro';
-import { evaluar, type AjusteDocente } from '../../logica/evaluacion';
+import { desempenoNumerico, evaluar, type AjusteDocente } from '../../logica/evaluacion';
 import { OBJETOS_POR_ID } from '../../data/objetos';
 import { MODO, guardarAjuste, informeIA, quitarAjuste } from '../../servicios/partidas';
 import { NOMBRE_HABILIDAD, type EstadoAlumno, type Habilidades } from '../../types/game';
 import { Boton } from '../ui';
 import Desempeno from './Desempeno';
+import GraficoPrioridades from './GraficoPrioridades';
 import RadarHabilidades from './RadarHabilidades';
 
 interface Props {
   partida: EstadoAlumno;
-  mediaClase?: Habilidades;
+  /** Medias de la clase: puntos de prioridad (0–10) y rendimiento (0–100). */
+  mediaClase?: { prioridades?: Habilidades; rendimiento?: Habilidades };
   /** Fila de ejemplo («Alumno de Prueba»): no es una partida real. */
   esPrueba?: boolean;
   ajustes?: AjusteDocente[];
@@ -23,7 +25,6 @@ interface Props {
 }
 
 export default function DetallePartida({ partida, mediaClase, esPrueba = false, ajustes = [], onAjustesCambiados }: Props) {
-  const pct = porcentajes(partida);
   const evaluacion = evaluar(partida);
   const rec = recomendacionLocal(partida, ajustes);
   const [ia, setIa] = useState<{ estado: 'idle' | 'cargando' | 'ok' | 'error'; texto?: string }>({ estado: 'idle' });
@@ -59,6 +60,26 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false, 
         </Boton>
       </header>
 
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Prioridades</h3>
+          <p className="mb-2 mt-1 text-xs text-slate-500">Qué le preocupó antes: puntos según el orden en que eligió atender cada área (1.ª = 10, 2.ª = 7, 3.ª = 5, 4.ª = 3, 5.ª = 1). No mide lo bien que lo hizo.</p>
+          <GraficoPrioridades principal={partida.habilidades} nombrePrincipal={partida.alumnoNombre} comparacion={mediaClase?.prioridades} mostrarOrden={!mediaClase?.prioridades} />
+        </section>
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Rendimiento</h3>
+          <p className="mb-2 mt-1 text-xs text-slate-500">Lo bien que lo hizo dentro de los retos (0–100), según los indicadores observados. El detalle y el porqué están debajo.</p>
+          <RadarHabilidades
+            principal={desempenoNumerico(evaluacion)}
+            nombrePrincipal={partida.alumnoNombre}
+            comparacion={mediaClase?.rendimiento}
+            unidad=" / 100"
+            descripcionTabla="Rendimiento de cada habilidad (0–100)"
+            alto={300}
+          />
+        </section>
+      </div>
+
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Desempeño por habilidad</h3>
         <p className="mb-3 mt-1 text-xs text-slate-500">Lo que hizo dentro de los retos. Pulsa «¿Por qué?» para ver cada indicador y «Ajustar» si tu observación en el aula indica otra cosa.</p>
@@ -84,15 +105,7 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false, 
         />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Prioridades ante la crisis</h3>
-          <RadarHabilidades principal={pct} nombrePrincipal={partida.alumnoNombre} comparacion={mediaClase} />
-          <p className="text-xs text-slate-500">
-            Puntos según el orden en que eligió atender cada área (1.ª = 10, 2.ª = 7, 3.ª = 5, 4.ª = 3, 5.ª = 1), en % sobre 10. Muestra prioridades naturales en esta partida, no un nivel de competencia.
-          </p>
-        </section>
-
+      <div className="grid gap-6">
         <section className="grid content-start gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Recomendación pedagógica</h3>
           <div className="flex flex-wrap gap-2">

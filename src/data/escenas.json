@@ -103,8 +103,8 @@
       {
         "id": "esc_01_c",
         "area": "liderazgo",
-        "textoBoton": "¡Que nadie entre en pánico! Organizo al equipo: envío a Lisa a asegurar las compuertas, a Aris a salvar los datos del ordenador, y yo me ofrezco a ir al pasillo inundado a revisar los fusibles.",
-        "escena": "esc_02_evacuacion"
+        "textoBoton": "¡Que nadie entre en pánico! Cada uno está a su manera: Leo está bloqueado, Aris agobiada, Reyes con prisa… Me pongo al frente del equipo y hablo con cada uno para que todo salga adelante.",
+        "escena": "esc_02_liderazgo"
       },
       {
         "id": "esc_01_d",
@@ -228,13 +228,13 @@
     ]
   },
   {
-    "id": "esc_02_evacuacion",
+    "id": "esc_02_liderazgo",
     "tipo": "minijuego",
-    "mecanica": "evacuacion",
-    "titulo": "La evacuación del Sector C",
+    "mecanica": "guiar",
+    "titulo": "Al frente del equipo",
     "imagen": "/img/fondos/liderazgo_decision.webp",
     "altImagen": "El equipo reunido frente al núcleo de la estación: el Comandante Reyes, la Dra. Aris, Leo y Lisa esperan instrucciones.",
-    "textoNarrativo": "La estación está cediendo en el Sector C. Hay seis tareas urgentes y solo cinco personas, contándote a ti. Y no todo el mundo puede hacer de todo.",
+    "textoNarrativo": "El Sector C se inunda y cada miembro del equipo tiene una tarea urgente. Pero no todos están igual: unos saben qué hacer, otros no, y algunos están desbordados.",
     "personajes": [
       "leo",
       "lisa",
@@ -242,37 +242,37 @@
       "aris"
     ],
     "spritesEnFondo": true,
-    "instruccion": "Asigna cada tarea a una persona (nadie puede con más de dos) y ejecuta el plan. Conocer al equipo antes de decidir puede ahorrarte sorpresas.",
+    "instruccion": "Habla con cada persona y elige qué le dices. Lo que funciona con una puede no funcionar con otra… ni con la misma persona diez minutos después.",
     "resultados": [
-      {
-        "id": "esc_02_ejemplo",
-        "clave": "ejemplo",
-        "descripcion": "Asumió personalmente la tarea crítica y arriesgada (la válvula inundada).",
-        "textoCierre": "Te metes en el agua hasta la cintura y cierras la válvula. Al verte, el equipo trabaja con otra energía. Reyes asiente: «Así se lidera».",
-        "modificadores": {},
-        "siguienteEscena": "esc_01_hub"
-      },
       {
         "id": "esc_02_situacional",
         "clave": "situacional",
-        "descripcion": "Repartió las tareas según la especialidad de cada persona.",
-        "textoCierre": "Cada uno hace lo que mejor sabe hacer y el plan avanza como un reloj. Aris comenta: «Nos conoces bien».",
+        "descripcion": "Adaptó su forma de guiar a cada persona casi siempre a la primera, también cuando su estado cambió.",
+        "textoCierre": "Cada uno ha recibido justo lo que necesitaba y el equipo funciona como un reloj. Reyes asiente: «Sabes leer a la gente. Eso es liderar».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_02_consenso",
-        "clave": "consenso",
-        "descripcion": "Preguntó al equipo antes de repartir y tuvo en cuenta lo que dijeron.",
-        "textoCierre": "Al sentirse escuchado, el equipo se coordina sin roces. Leo susurra: «Gracias por preguntar».",
+        "id": "esc_02_adaptativo",
+        "clave": "adaptativo",
+        "descripcion": "No siempre acertó a la primera, pero corrigió su enfoque al ver cómo reaccionaba cada persona.",
+        "textoCierre": "Has ido ajustando sobre la marcha y al final todos han sacado su tarea adelante. Lisa sonríe: «Escuchar cómo reacciona cada uno también es liderar».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
       {
-        "id": "esc_02_improvisado",
-        "clave": "improvisado",
-        "descripcion": "Organizó un reparto poco convencional, distinto de las especialidades.",
-        "textoCierre": "El reparto es poco habitual, pero el equipo se adapta y la estación aguanta.",
+        "id": "esc_02_directivo",
+        "clave": "directivo",
+        "descripcion": "Tendió a dar instrucciones y explicaciones a todo el mundo, incluso a quien ya sabía hacerlo.",
+        "textoCierre": "Con tus indicaciones, el equipo saca las tareas adelante. Lisa comenta: «A veces basta con confiar en quien ya sabe».",
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
+      },
+      {
+        "id": "esc_02_delegador",
+        "clave": "delegador",
+        "descripcion": "Tendió a dar autonomía y apoyo a todo el mundo, incluso a quien necesitaba instrucciones claras.",
+        "textoCierre": "Diste mucha confianza al equipo y al final todo sale. Aris comenta: «A veces lo que más ayuda es un paso claro detrás de otro».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       }

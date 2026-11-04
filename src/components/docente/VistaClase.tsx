@@ -1,18 +1,30 @@
 import { HUB } from '../../data/guion';
 import { metricasPorArea, precisionMedia, tiempoTotalTexto } from '../../logica/metricas';
-import { duracionSegundos, formatearSegundos, porcentajes } from '../../logica/puntuacion';
+import { duracionSegundos, formatearSegundos } from '../../logica/puntuacion';
 import { NOMBRE_BANDA, bandaFinal, desempenoNumerico, evaluar, type AjusteDocente, type Banda } from '../../logica/evaluacion';
 import { sugerirGrupos } from '../../logica/recomendacion';
 import { HABILIDADES, NOMBRE_HABILIDAD, type EstadoAlumno, type Habilidad, type Habilidades } from '../../types/game';
+import GraficoPrioridades from './GraficoPrioridades';
 import RadarHabilidades from './RadarHabilidades';
 
+/** Puntos de prioridad medios (0–10, con un decimal) de las partidas completadas. */
 export function mediaHabilidades(partidas: EstadoAlumno[]): Habilidades | undefined {
   const completas = partidas.filter((p) => p.completada);
   if (completas.length === 0) return undefined;
   const suma = { logica: 0, creatividad: 0, comunicacion: 0, resiliencia: 0, liderazgo: 0 };
+  for (const p of completas) for (const h of HABILIDADES) suma[h] += p.habilidades[h];
+  for (const h of HABILIDADES) suma[h] = Math.round((suma[h] / completas.length) * 10) / 10;
+  return suma;
+}
+
+/** Rendimiento medio (0–100) de las partidas completadas. */
+export function mediaRendimiento(partidas: EstadoAlumno[]): Habilidades | undefined {
+  const completas = partidas.filter((p) => p.completada);
+  if (completas.length === 0) return undefined;
+  const suma = { logica: 0, creatividad: 0, comunicacion: 0, resiliencia: 0, liderazgo: 0 };
   for (const p of completas) {
-    const pct = porcentajes(p);
-    for (const h of HABILIDADES) suma[h] += pct[h];
+    const d = desempenoNumerico(evaluar(p));
+    for (const h of HABILIDADES) suma[h] += d[h];
   }
   for (const h of HABILIDADES) suma[h] = Math.round(suma[h] / completas.length);
   return suma;
@@ -51,6 +63,7 @@ const ESTILO_BANDA: Record<Banda, string> = {
 export default function VistaClase({ partidas, onElegir, esPrueba = false, ajustes = {} }: Props) {
   const completas = partidas.filter((p) => p.completada);
   const media = mediaHabilidades(partidas);
+  const rendimiento = mediaRendimiento(partidas);
   const duraciones = completas.map(duracionSegundos).filter((d): d is number => d !== null);
   const mediaS = duraciones.length ? Math.round(duraciones.reduce((a, b) => a + b, 0) / duraciones.length) : null;
   const precisiones = completas.map(precisionMedia).filter((p): p is number => p !== null);
@@ -213,10 +226,18 @@ export default function VistaClase({ partidas, onElegir, esPrueba = false, ajust
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Prioridades medias de la clase</h3>
-          {media ? <RadarHabilidades principal={media} nombrePrincipal="Media de la clase" /> : <p className="text-slate-500">Sin partidas completadas.</p>}
-        </section>
+        <div className="grid content-start gap-6">
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Prioridades medias</h3>
+            <p className="mb-2 mt-1 text-xs text-slate-500">Puntos medios según el orden de elección (1.ª = 10 … 5.ª = 1): qué atiende antes la clase.</p>
+            {media ? <GraficoPrioridades principal={media} nombrePrincipal="Media de la clase" /> : <p className="text-slate-500">Sin partidas completadas.</p>}
+          </section>
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Rendimiento medio</h3>
+            <p className="mb-2 mt-1 text-xs text-slate-500">Lo bien que lo hace la clase dentro de los retos (0–100).</p>
+            {rendimiento ? <RadarHabilidades principal={rendimiento} nombrePrincipal="Media de la clase" unidad=" / 100" descripcionTabla="Rendimiento medio de cada habilidad (0–100)" alto={300} /> : <p className="text-slate-500">Sin partidas completadas.</p>}
+          </section>
+        </div>
 
         <div className="grid content-start gap-6">
           <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">

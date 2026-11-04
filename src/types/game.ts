@@ -35,6 +35,7 @@ export const MECANICAS = [
   'ondas',
   'especie',
   'frecuencias',
+  'guiar',
 ] as const;
 
 export type Mecanica = (typeof MECANICAS)[number];

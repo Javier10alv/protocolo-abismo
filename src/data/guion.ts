@@ -2,7 +2,7 @@ import escenasJson from './escenas.json';
 import { NOMBRE_HABILIDAD, type EscenaHub, type EstadoAlumno, type Opcion, type OpcionHub, type Resultado, type Scene } from '../types/game';
 
 /** Versión del guion. Súbela cada vez que cambies escenas.json. */
-export const VERSION_GUION = '5.0.0';
+export const VERSION_GUION = '5.1.0';
 
 // El JSON no conserva los tipos literales ('decision' | 'minijuego' | 'hub'); `npm run validar`
 // comprueba en tiempo de ejecución que el contenido cumple estos tipos.

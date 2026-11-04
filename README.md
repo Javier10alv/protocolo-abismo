@@ -4,6 +4,8 @@ Aventura narrativa submarina que **evalúa de forma invisible** cinco habilidade
 
 ## Arrancar
 
+> ¿Primera vez? Sigue la guía paso a paso de **[INSTRUCCIONES.md](INSTRUCCIONES.md)** (instalar Node.js, arrancar, jugar desde móviles y publicar).
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173

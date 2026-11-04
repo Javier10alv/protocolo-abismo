@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { VERSION_GUION } from '../data/guion';
-import { aplicarMinijuego, aplicarOpcion, aplicarOpcionHub, crearEstadoInicial, salirDelHub } from '../logica/partida';
-import type { EstadoAlumno, Opcion, ResultadoMecanica } from '../types/game';
+import { aplicarMinijuego, aplicarOpcion, aplicarOpcionHub, aplicarRetirada, crearEstadoInicial, recogerObjeto, salirDelHub } from '../logica/partida';
+import type { EstadoAlumno, EventoJuego, Opcion, ResultadoMecanica } from '../types/game';
 
 export { crearEstadoInicial };
 
@@ -16,6 +16,10 @@ interface GameStore extends EstadoAlumno {
   elegirArea: (opcionHubId: string) => void;
   salirDelHub: () => void;
   completarMinijuego: (resultado: ResultadoMecanica) => void;
+  /** Deja el minijuego a medias y vuelve a la sala de control. */
+  retirarse: (eventos: EventoJuego[]) => void;
+  /** Recoge un objeto de la sala actual (no reinicia el cronómetro de la escena). */
+  recogerObjeto: (objetoId: string) => void;
   /** Empieza una partida nueva para un alumno (se genera un ID único). */
   iniciarPartida: (alumnoNombre: string, claseId: string) => void;
   /** Vuelve a empezar con el mismo alumno. */
@@ -32,6 +36,7 @@ export const seleccionarEstadoAlumno = (s: EstadoAlumno): EstadoAlumno => ({
   escenaActual: s.escenaActual,
   habilidades: s.habilidades,
   historial: s.historial,
+  inventario: s.inventario,
   completada: s.completada,
   iniciadaEn: s.iniciadaEn,
   finalizadaEn: s.finalizadaEn,
@@ -56,6 +61,11 @@ export const useGameStore = create<GameStore>()(
         elegirArea: (id) => transicion((e, ms) => aplicarOpcionHub(e, id, ms)),
         salirDelHub: () => transicion((e) => salirDelHub(e)),
         completarMinijuego: (resultado) => transicion((e, ms) => aplicarMinijuego(e, resultado, ms)),
+        retirarse: (eventos) => transicion((e, ms) => aplicarRetirada(e, eventos, ms)),
+        recogerObjeto: (id) => {
+          const siguiente = recogerObjeto(seleccionarEstadoAlumno(get()), id);
+          if (siguiente) set({ inventario: siguiente.inventario });
+        },
 
         iniciarPartida: (alumnoNombre, claseId) => set({ ...crearEstadoInicial(alumnoNombre, claseId), escenaMostradaEn: Date.now() }),
         reiniciarPartida: () => {

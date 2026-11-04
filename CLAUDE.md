@@ -35,12 +35,16 @@ src/
 ├── data/guion.ts               VERSION_GUION, escenasPorId, eleccionesDe, describirEleccion, etapaDe
 ├── logica/partida.ts           Transiciones puras: crearEstadoInicial, aplicarOpcion, aplicarMinijuego
 ├── logica/puntuacion.ts        PESOS_ORDEN (10/7/5/3/1), máximos alcanzables y normalización a %
-├── logica/metricas.ts          Métricas por área para el panel: orden, puntos, tiempo y precisión
+├── logica/metricas.ts          Métricas por área para el panel: orden, puntos, tiempo, precisión y retiradas
+├── logica/evaluacion.ts        DESEMPEÑO: matriz de especificación (indicadores → habilidades), bandas, confianza y ajustes del docente
+├── data/objetos.ts             Objetos de las salas (inventario) y sus usos alternativos en cada reto
+├── data/juicio.ts              Preguntas de juicio situacional al final de cada reto del hub
 ├── logica/recomendacion.ts     Recomendación con plantilla, resumen para el LLM, agrupamientos
 ├── logica/simulacion.ts        Partidas simuladas (validador) y la fila «Alumno de Prueba» del panel
 ├── config.ts                   CODIGO_DOCENTE y normalización de nombres
 ├── mecanicas/registro.ts       Claves de desenlace de cada mecánica y etiquetas de conducta
-├── mecanicas/*.tsx             Cableado, Conversacion, Sonar, Secuencia, Energia, Tuberias, Cultivo, Evacuacion, Sos, Ondas
+├── mecanicas/*.tsx             En uso: Tuberias, Especie, Evacuacion, Sos, Ondas, Frecuencias. Antiguas sin usar: Cableado, Conversacion, Sonar, Secuencia, Energia, Cultivo
+├── mecanicas/Inventario.tsx    Barra de inventario dentro de un reto (cada mecánica decide si un objeto le sirve)
 ├── store/                      useGameStore (partida) y useAjustesStore (sonido, texto grande…)
 ├── servicios/partidas.ts       Envío/lectura (local o Supabase), sesión docente, informe IA
 ├── components/                 GameEngine, ui (Boton, Bocadillo, TextoAnimado…), Retrato, Iconos, docente/
@@ -72,7 +76,9 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 - **Puntuación por orden (hub):** el área elegida en 1.ª posición suma 10, la 2.ª 7, la 3.ª 5, la 4.ª 3 y la 5.ª 1 (`PESOS_ORDEN`). Ninguna prioridad es "la buena". Los minijuegos del hub no suman puntos (resultados con `modificadores: {}`).
 - Las escenas de decisión fuera del hub siguen la regla de 3 puntos: 2 a una habilidad principal y 1 a una secundaria.
-- Estructura (guion 4.0.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, cultivo, evacuación, S.O.S., ondas) → `esc_03_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas (cableado, conversación, sonar, secuencia, energía) siguen en el código, sin usarse.
+- Estructura (guion 5.0.0): cinemáticas → hub `esc_01_hub` ⇄ minijuegos `esc_02_*` (tuberías, especie, evacuación, S.O.S., ondas) → `esc_03_compuerta` (Frecuencias enlazadas, `sinPuntuacion`) → `esc_04_ascenso` (reflexión, sin puntos) → FIN. Las mecánicas antiguas siguen en el código, sin usarse.
+- **Retirada estratégica:** desde cualquier reto del hub se puede volver a la sala de control (`aplicarRetirada`, registro con `retirada: true`). El reto queda aplazado; al retomarlo (`reanudacion: true`) no vuelve a sumar puntos: puntúa el orden de la **primera** elección. Retirarse nunca resta.
+- **Inventario:** cada sala tiene objetos (`data/objetos.ts`) que se recogen con «Explorar la sala». Todo reto del hub debe tener al menos un uso con un objeto de la sala de control (lo comprueba el validador).
 - Ids: escenas `esc_NN_nombre`, opciones `esc_NN_a|b|c|d|e`, resultados `esc_NN_clave`. Las ramas comparten `NN` (p. ej. `esc_03_tuberias`, `esc_03_sos`); los ids de opción/resultado son únicos en todo el guion.
 - Cada vez que cambies `escenas.json`, **sube `VERSION_GUION`** en `src/data/guion.ts`. Las partidas guardadas con otra versión se descartan al cargar.
 - Toda escena debe ser alcanzable y se debe poder llegar a `FIN`. El único ciclo permitido es minijuego → hub.
@@ -80,13 +86,18 @@ public/img/esc_*.svg            Resto de fondos, generados por scripts/generar-f
 
 ## Reglas de evaluación (no negociables)
 
+- **Dos dimensiones separadas:** *prioridades* (orden del hub, 10/7/5/3/1, radar) y *desempeño* (`logica/evaluacion.ts`). El desempeño sale de indicadores 0–1 (de las mecánicas, de los eventos, de la retirada, del inventario y del juicio situacional), ponderados según la `MATRIZ`; se muestra en bandas (Emergente < 40 ≤ En desarrollo < 70 ≤ Consolidado) con confianza según el peso de evidencia observado. Todo indicador nuevo va a la `MATRIZ` con su referencia.
+- Cada mecánica recibe `registrar` (eventos de telemetría), `inventario` y `reintento`, y devuelve `indicadores` propios. Vocabulario de eventos: `accion`, `fallo` (con `firma`), `ayuda` (`tipo`), `presion`, `tiempo_agotado`, `objeto`, `explorar`, `recoger`, `retirada`, `insight`, `sjt`.
+- El docente puede **ajustar** la banda de una habilidad con un motivo obligatorio (`ajustes_docente` en Supabase o localStorage). El valor calculado nunca se sobrescribe.
+
 - **El alumno nunca ve puntuaciones**: ni en la UI, ni en mensajes, ni en respuestas de red que pueda inspeccionar.
 - **El radar se normaliza** como porcentaje del máximo alcanzable de cada habilidad sobre las escenas que el alumno visitó (`maximosAlcanzables` en `logica/puntuacion.ts`). El máximo se calcula desde el guion, no se escribe a mano.
 - `tiempoRespuestaMs` (duración de cada minijuego) y `precision` (0–100) son **métricas para el docente**: no cambian los puntos.
-- Tuberías (90 s) y S.O.S. (60 s) tienen cuenta atrás (`useCuentaAtras`). Al agotarse, un personaje da más tiempo: nunca se pierde.
+- Tuberías (150 s) y S.O.S. (75 s) tienen cuenta atrás (`useCuentaAtras`). Al agotarse, un personaje da más tiempo: nunca se pierde.
 - Las mecánicas inspiradas en tests con «respuesta óptima» se adaptan: lo óptimo se registra como conducta para el docente, nunca resta. Un plan inviable (p. ej. sobrecargar a una persona) se trata como intento fallido que se rehace. Si una mecánica provoca errores a propósito (Ondas), debe explicárselo al alumno en el cierre.
-- Mecánicas: se puntúan **comportamientos** (reintentar, pedir pista, explorar antes de actuar), nunca velocidad ni precisión motora. Fallar no penaliza: tras 3 intentos (`INTENTOS_ANTES_DE_AYUDA`), un personaje ayuda y la historia sigue.
-- Para añadir una mecánica: tipo en `MECANICAS` (types/game.ts), entrada en `MECANICAS_INFO` (registro.ts), componente en `mecanicas/` registrado en `mecanicas/index.ts`, y escena con sus `resultados` en el guion.
+- Mecánicas: se puntúan **comportamientos** (reintentar, pedir pista, explorar antes de actuar), nunca velocidad ni precisión motora. Fallar no penaliza: la dificultad es adaptativa (pista tras 2 fallos) y tras 3 intentos (`INTENTOS_ANTES_DE_AYUDA`) un personaje ayuda y la historia sigue.
+- Ondas tiene dos fallos provocados: uno **previsible** (ERR-47, evitable con el condensador) y uno **imprevisible** para todos. Ambos se explican en el cierre (`notaCierre`).
+- Para añadir una mecánica: tipo en `MECANICAS` (types/game.ts), entrada en `MECANICAS_INFO` (registro.ts), componente en `mecanicas/` registrado en `mecanicas/index.ts`, indicadores en la `MATRIZ`, pregunta en `data/juicio.ts` si va en el hub, y escena con sus `resultados` en el guion.
 
 ## Privacidad (usuarios menores)
 

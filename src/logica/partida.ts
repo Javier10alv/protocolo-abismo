@@ -1,11 +1,13 @@
 // Transiciones puras de una partida. El store las envuelve; la simulación y el
 // validador las usan directamente.
 
-import { ESCENA_INICIAL, VERSION_GUION, escenasPorId, opcionesHechas } from '../data/guion';
+import { OBJETOS_POR_ID } from '../data/objetos';
+import { ESCENA_INICIAL, VERSION_GUION, escenasPorId, hubDeEscena, opcionesCompletadas, opcionesHechas } from '../data/guion';
 import {
   FIN,
   type EscenaHub,
   type EstadoAlumno,
+  type EventoJuego,
   type Opcion,
   type RegistroDecision,
   type Resultado,
@@ -41,6 +43,7 @@ export function crearEstadoInicial(
     escenaActual: ESCENA_INICIAL,
     habilidades: habilidadesACero(),
     historial: [],
+    inventario: [],
     completada: false,
     iniciadaEn: ahora.toISOString(),
     finalizadaEn: null,
@@ -85,7 +88,9 @@ export function aplicarOpcion(
 
 /**
  * Elige un área en el hub: suma los puntos de su posición (10, 7, 5, 3, 1) y abre
- * su minijuego. Devuelve null si la opción no existe o ya se hizo.
+ * su minijuego. Si el área estaba aplazada (retirada), la retoma sin sumar puntos:
+ * el orden que puntúa es el de la primera elección. Devuelve null si la opción no
+ * existe o su minijuego ya se terminó.
  */
 export function aplicarOpcionHub(
   estado: EstadoAlumno,
@@ -98,7 +103,24 @@ export function aplicarOpcionHub(
   if (hub?.tipo !== 'hub') return null;
   const opcion = hub.opciones.find((o) => o.id === opcionId);
   const hechas = opcionesHechas(estado, hub);
-  if (!opcion || hechas.some((o) => o.id === opcionId)) return null;
+  if (!opcion || opcionesCompletadas(estado, hub).some((o) => o.id === opcionId)) return null;
+  if (hechas.some((o) => o.id === opcionId)) {
+    return {
+      ...estado,
+      historial: [
+        ...estado.historial,
+        {
+          escenaId: hub.id,
+          opcionId: opcion.id,
+          timestamp: ahora.toISOString(),
+          tiempoRespuestaMs: Math.max(0, Math.round(tiempoRespuestaMs)),
+          area: opcion.area,
+          reanudacion: true,
+        },
+      ],
+      escenaActual: opcion.escena,
+    };
+  }
   const orden = hechas.length + 1;
   const puntos = puntosPorOrden(orden);
   return {
@@ -135,7 +157,46 @@ export function salirDelHub(estado: EstadoAlumno, ahora = new Date()): EstadoAlu
 }
 
 export function hubCompletado(estado: Pick<EstadoAlumno, 'historial'>, hub: EscenaHub): boolean {
-  return opcionesHechas(estado, hub).length >= hub.opciones.length;
+  return opcionesCompletadas(estado, hub).length >= hub.opciones.length;
+}
+
+/**
+ * Retirada estratégica: deja el minijuego a medias y vuelve al hub. No resta nada;
+ * se registra lo que hizo hasta entonces para analizar qué pasa al volver.
+ */
+export function aplicarRetirada(
+  estado: EstadoAlumno,
+  eventos: EventoJuego[],
+  tiempoRespuestaMs: number,
+  ahora = new Date(),
+): EstadoAlumno | null {
+  if (estado.completada) return null;
+  const escena = escenasPorId.get(estado.escenaActual);
+  const hub = hubDeEscena(estado.escenaActual);
+  if (escena?.tipo !== 'minijuego' || !hub) return null;
+  return {
+    ...estado,
+    historial: [
+      ...estado.historial,
+      {
+        escenaId: escena.id,
+        opcionId: 'retirada',
+        timestamp: ahora.toISOString(),
+        tiempoRespuestaMs: Math.max(0, Math.round(tiempoRespuestaMs)),
+        intentos: eventos.filter((e) => e.tipo === 'fallo').length,
+        eventos,
+        retirada: true,
+      },
+    ],
+    escenaActual: hub.id,
+  };
+}
+
+/** Recoge un objeto de la sala actual. Devuelve null si no está en esta sala o ya se tiene. */
+export function recogerObjeto(estado: EstadoAlumno, objetoId: string, ahora = new Date()): EstadoAlumno | null {
+  const objeto = OBJETOS_POR_ID.get(objetoId);
+  if (!objeto || objeto.sala !== estado.escenaActual || estado.inventario.some((o) => o.id === objetoId)) return null;
+  return { ...estado, inventario: [...estado.inventario, { id: objetoId, escenaId: estado.escenaActual, timestamp: ahora.toISOString() }] };
 }
 
 /** Aplica el desenlace de un minijuego. Devuelve null si la clave no existe en la escena. */
@@ -159,7 +220,16 @@ export function aplicarMinijuego(
       intentos: Math.max(0, Math.round(resultado.intentos)),
       ayudaRecibida: resultado.ayudaRecibida,
       precision: Math.max(0, Math.min(100, Math.round(resultado.precision))),
+      ...(resultado.indicadores ? { indicadores: limpiarIndicadores(resultado.indicadores) } : {}),
+      ...(resultado.eventos ? { eventos: resultado.eventos } : {}),
     },
     ahora,
   );
+}
+
+/** Indicadores dentro de 0–1 y redondeados a 2 decimales. */
+function limpiarIndicadores(ind: Record<string, number>): Record<string, number> {
+  const limpio: Record<string, number> = {};
+  for (const [k, v] of Object.entries(ind)) if (Number.isFinite(v)) limpio[k] = Math.round(Math.max(0, Math.min(1, v)) * 100) / 100;
+  return limpio;
 }

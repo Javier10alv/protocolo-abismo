@@ -54,7 +54,7 @@
     "introduccion": [
       {
         "personaje": "leo",
-        "texto": "¡Menos mal que has llegado! El temblor ha tumbado la red eléctrica: el motor se recalienta, los cultivos se apagan, la antena está rota y el sistema central no responde."
+        "texto": "¡Menos mal que has llegado! El temblor ha tumbado la red eléctrica: el motor se recalienta, algo extraño se mueve en el invernadero, la antena está rota y el sistema central no responde."
       },
       {
         "personaje": "leo",
@@ -97,8 +97,8 @@
       {
         "id": "esc_01_b",
         "area": "creatividad",
-        "textoBoton": "¡El apagón va a destruir los cultivos y nos quedaremos sin comida! Voy a fabricar un filtro casero mezclando café, piezas de mascarillas y pilas gastadas para salvar las plantas.",
-        "escena": "esc_02_cultivo"
+        "textoBoton": "¡Algo desconocido se ha colado en los tanques del invernadero! Las cámaras solo captan sombras. Ayudo a Lisa a imaginar cómo es esa criatura y cómo sobrevive aquí abajo, para protegerla a ella y a los cultivos.",
+        "escena": "esc_02_especie"
       },
       {
         "id": "esc_01_c",
@@ -119,7 +119,11 @@
         "escena": "esc_02_ondas"
       }
     ],
-    "siguienteEscena": "esc_03_ascenso"
+    "siguienteEscena": "esc_03_compuerta",
+    "lineaRetirada": {
+      "personaje": "lisa",
+      "texto": "Has vuelto a la sala de control. No pasa nada por replantearlo: a veces conviene ocuparse de otra cosa y volver con ideas nuevas. ¿Qué hacemos ahora?"
+    }
   },
   {
     "id": "esc_02_tuberias",
@@ -128,11 +132,11 @@
     "titulo": "Refrigerar el motor",
     "imagen": "/img/fondos/sala_tuberias.webp",
     "altImagen": "Sala del reactor con una gran estructura de tuberías iluminadas en cian y pasarelas metálicas alrededor.",
-    "textoNarrativo": "El motor principal se calienta cada vez más. En el panel de ventilación, el temblor ha girado las piezas de tubería: el refrigerante no llega.",
+    "textoNarrativo": "El motor principal se calienta cada vez más. El temblor ha girado las piezas del panel de ventilación y ha agrietado una tubería: el refrigerante no llega.",
     "personajes": [
       "leo"
     ],
-    "instruccion": "Gira las piezas para unir el depósito (izquierda) con el motor (derecha) y abre la válvula. Piensa el recorrido antes de abrir.",
+    "instruccion": "Gira las piezas para unir el depósito con el motor sin pasar por la tubería agrietada. Puedes comprobar el caudal antes de abrir la válvula.",
     "resultados": [
       {
         "id": "esc_02_planificador",
@@ -157,59 +161,67 @@
         "textoCierre": "Con las indicaciones de Leo, el circuito queda completo. «Las tuberías son lo mío», sonríe, algo más seguro de sí mismo.",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
+      },
+      {
+        "id": "esc_02_ingenioso",
+        "clave": "ingenioso",
+        "descripcion": "Selló la grieta con un objeto del inventario y usó el camino corto: solución alternativa.",
+        "textoCierre": "Con la grieta sellada, el refrigerante va por el camino corto y la temperatura baja en segundos. Leo te mira: «No se me había ocurrido usar eso así».",
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
       }
     ]
   },
   {
-    "id": "esc_02_cultivo",
+    "id": "esc_02_especie",
     "tipo": "minijuego",
-    "mecanica": "cultivo",
-    "titulo": "El invernadero hidropónico",
+    "mecanica": "especie",
+    "titulo": "Especie desconocida",
     "imagen": "/img/fondos/hibernadero.webp",
     "altImagen": "Invernadero hidropónico: un largo pasillo con tanques de algas verdes brillantes y bandejas de cultivo.",
-    "textoNarrativo": "Sin energía, el agua del invernadero se ha vuelto demasiado ácida y las plantas se marchitan. No hay herramientas de botánica, solo un cajón de objetos poco habituales.",
+    "textoNarrativo": "En los tanques del invernadero se mueve algo que nadie había visto nunca. Las cámaras solo captan sombras y destellos. Lisa necesita saber cómo podría ser para protegerlo.",
     "personajes": [
       "lisa"
     ],
-    "instruccion": "Combina dos objetos para estabilizar el pH del agua. Hay varias soluciones: usa los objetos para cosas distintas de su uso normal.",
+    "instruccion": "Elige una parte de cada tipo para imaginar cómo es la criatura. Tiene que sobrevivir a todo lo del entorno sin gastar más energía de la que hay. Cuanto menos se parezca a lo que ya conoces, mejor.",
     "resultados": [
+      {
+        "id": "esc_02_innovador",
+        "clave": "innovador",
+        "descripcion": "Diseñó una criatura viable y muy alejada del prototipo conocido (un pez).",
+        "textoCierre": "Lisa mira tu diseño con los ojos muy abiertos: «Nunca habría pensado en algo así… y tiene todo el sentido». Las sombras de los tanques ya no dan miedo.",
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
+      },
+      {
+        "id": "esc_02_funcional",
+        "clave": "funcional",
+        "descripcion": "Diseñó una criatura viable con rasgos parecidos a los de animales conocidos.",
+        "textoCierre": "Tu criatura sobreviviría sin problema ahí abajo. Lisa la apunta en su cuaderno: «Ahora sabemos cómo cuidarla».",
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
+      },
+      {
+        "id": "esc_02_prolifico",
+        "clave": "prolifico",
+        "descripcion": "Diseñó dos o más especies viables y distintas entre sí (fluidez).",
+        "textoCierre": "Varias especies distintas, todas posibles. Lisa sonríe: «Con tanta imaginación, este cuaderno se va a quedar pequeño».",
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
+      },
       {
         "id": "esc_02_consultor",
         "clave": "consultor",
-        "descripcion": "Pidió ideas a Lisa antes o durante la búsqueda.",
-        "textoCierre": "Lisa y tú dais con la mezcla y las hojas recuperan el color. «Dos cabezas de científicas piensan mejor», ríe ella.",
-        "modificadores": {},
-        "siguienteEscena": "esc_01_hub"
-      },
-      {
-        "id": "esc_02_divergente",
-        "clave": "divergente",
-        "descripcion": "Encontró más de una solución distinta para el mismo problema.",
-        "textoCierre": "Con varias soluciones funcionando, el invernadero tiene repuesto para días. Lisa lo apunta todo: «Esto va al manual».",
-        "modificadores": {},
-        "siguienteEscena": "esc_01_hub"
-      },
-      {
-        "id": "esc_02_original",
-        "clave": "original",
-        "descripcion": "Dio con una solución poco habitual, usando un objeto para algo muy distinto de su función.",
-        "textoCierre": "A nadie se le habría ocurrido usar eso así… y funciona. El medidor de pH vuelve al verde.",
+        "descripcion": "Pidió ideas a Lisa durante el diseño.",
+        "textoCierre": "Entre Lisa y tú dais forma a la criatura. «Dos cabezas de científicas piensan mejor», ríe ella.",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
       {
         "id": "esc_02_tenaz",
         "clave": "tenaz",
-        "descripcion": "Siguió probando combinaciones tras varios intentos sin éxito.",
-        "textoCierre": "No todas las mezclas funcionaron, pero no te rendiste. El agua se estabiliza y las plantas siguen dando oxígeno.",
-        "modificadores": {},
-        "siguienteEscena": "esc_01_hub"
-      },
-      {
-        "id": "esc_02_practico",
-        "clave": "practico",
-        "descripcion": "Encontró una solución convencional y la aplicó enseguida.",
-        "textoCierre": "Una solución sencilla y eficaz: el medidor de pH vuelve al verde y las plantas siguen dando oxígeno.",
+        "descripcion": "Rehízo el diseño varias veces hasta que la criatura pudo sobrevivir.",
+        "textoCierre": "No salió a la primera, pero no te rendiste: tu criatura por fin podría vivir ahí abajo. Lisa la apunta orgullosa.",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       }
@@ -222,7 +234,7 @@
     "titulo": "La evacuación del Sector C",
     "imagen": "/img/fondos/liderazgo_decision.webp",
     "altImagen": "El equipo reunido frente al núcleo de la estación: el Comandante Reyes, la Dra. Aris, Leo y Lisa esperan instrucciones.",
-    "textoNarrativo": "La estación está cediendo en el Sector C. Hay que estabilizarla mientras se prepara una posible huida. Hay cinco tareas urgentes y cinco personas, contándote a ti.",
+    "textoNarrativo": "La estación está cediendo en el Sector C. Hay seis tareas urgentes y solo cinco personas, contándote a ti. Y no todo el mundo puede hacer de todo.",
     "personajes": [
       "leo",
       "lisa",
@@ -230,7 +242,7 @@
       "aris"
     ],
     "spritesEnFondo": true,
-    "instruccion": "Asigna cada tarea a una persona y ejecuta el plan. Puedes preguntar al equipo antes de decidir.",
+    "instruccion": "Asigna cada tarea a una persona (nadie puede con más de dos) y ejecuta el plan. Conocer al equipo antes de decidir puede ahorrarte sorpresas.",
     "resultados": [
       {
         "id": "esc_02_ejemplo",
@@ -273,18 +285,18 @@
     "titulo": "Protocolo S.O.S.",
     "imagen": "/img/fondos/sala_control_pantalla.webp",
     "altImagen": "Puesto de comunicaciones con un radar en la pantalla central y consolas a los lados.",
-    "textoNarrativo": "La antena está dañada y el ancho de banda solo permite enviar tres fragmentos de texto. Lo que digas tiene que servir a la superficie para venir a buscaros.",
+    "textoNarrativo": "La antena está dañada y el ancho de banda es mínimo. Lo que transmitas tiene que servir a la superficie para venir a buscaros, sin desperdiciar ni un hueco.",
     "personajes": [
       "reyes",
       "aris"
     ],
-    "instruccion": "Elige 3 fragmentos para formar el mensaje y transmítelo. La superficie te dirá si le falta algo.",
+    "instruccion": "Elige fragmentos para formar el mensaje (los largos ocupan dos huecos) y transmítelo. La superficie te dirá si le falta algo.",
     "resultados": [
       {
         "id": "esc_02_directo",
         "clave": "directo",
-        "descripcion": "Su primer mensaje ya incluía dónde, cuántos y qué necesitan: información justa y relevante.",
-        "textoCierre": "«Recibido: Sector C, cinco personas, rescate en camino». Reyes levanta el pulgar: «Claro y al grano».",
+        "descripcion": "Su primer mensaje ya incluía dónde, cuántos, qué necesitan y cuánto pueden aguantar.",
+        "textoCierre": "«Recibido: Sector C, cinco personas, batiscafo, seis horas de oxígeno». Reyes levanta el pulgar: «Claro y al grano».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
@@ -313,17 +325,25 @@
     "titulo": "La señal perdida",
     "imagen": "/img/fondos/alerta_roja.webp",
     "altImagen": "Puesto de control bañado en luz roja, con un gran símbolo de alerta en la pantalla central.",
-    "textoNarrativo": "El sistema central se ha bloqueado y la pantalla no deja de dar error. Para reconectarlo hay que sintonizar a mano la señal con la onda de referencia.",
+    "textoNarrativo": "El sistema central se ha bloqueado y la pantalla no deja de dar error. Para reconectarlo hay que sintonizar a mano tres señales con su onda de referencia.",
     "personajes": [
       "aris"
     ],
-    "instruccion": "Ajusta tu onda hasta que coincida con la de referencia. Si lo necesitas, puedes tomar aire o pedir relevo a Aris.",
+    "instruccion": "Ajusta tu onda hasta que coincida con la de referencia. Observa bien el panel antes de empezar. Si lo necesitas, puedes tomar aire o pedir relevo a Aris.",
     "resultados": [
+      {
+        "id": "esc_02_anticipado",
+        "clave": "anticipado",
+        "descripcion": "Detectó el aviso ERR-47 y reparó el monitor antes de que provocara un fallo (afrontamiento proactivo).",
+        "textoCierre": "La señal se estabiliza. Aris revisa el registro: «Viste el problema antes de que ocurriera. Eso es mantener la cabeza fría».",
+        "modificadores": {},
+        "siguienteEscena": "esc_01_hub"
+      },
       {
         "id": "esc_02_perseverante",
         "clave": "perseverante",
         "descripcion": "Siguió sintonizando tras los errores del sistema hasta completar la conexión.",
-        "textoCierre": "La señal se estabiliza por fin. Aris revisa el registro: «Los fallos eran del sistema, no tuyos. Y aun así no paraste».",
+        "textoCierre": "La señal se estabiliza por fin. Aris revisa el registro: «Y aun así no paraste».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
@@ -331,7 +351,7 @@
         "id": "esc_02_regulado",
         "clave": "regulado",
         "descripcion": "Hizo una pausa para calmarse tras un error y después completó la conexión.",
-        "textoCierre": "Tomar aire te ayudó a volver con calma. La señal se estabiliza. Aris sonríe: «Saber parar también es avanzar». Los fallos eran del sistema, no tuyos.",
+        "textoCierre": "Tomar aire te ayudó a volver con calma. La señal se estabiliza. Aris sonríe: «Saber parar también es avanzar».",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       },
@@ -339,14 +359,63 @@
         "id": "esc_02_relevo",
         "clave": "relevo",
         "descripcion": "Pidió relevo a Aris tras los errores del sistema.",
-        "textoCierre": "Aris toma el relevo y, juntos, reconectáis la señal. «El sistema estaba fallando solo: has hecho bien en pedir ayuda», te dice.",
+        "textoCierre": "Aris toma el relevo y, juntos, reconectáis la señal. «Has hecho bien en pedir ayuda», te dice.",
         "modificadores": {},
         "siguienteEscena": "esc_01_hub"
       }
     ]
   },
   {
-    "id": "esc_03_ascenso",
+    "id": "esc_03_compuerta",
+    "tipo": "minijuego",
+    "mecanica": "frecuencias",
+    "sinPuntuacion": true,
+    "titulo": "La compuerta del hangar",
+    "imagen": "/img/esc_05_hangar.svg",
+    "altImagen": "Hangar del batiscafo con una gran compuerta estanca cerrada y un panel de frecuencias encendido.",
+    "textoNarrativo": "El batiscafo de rescate ya espera al otro lado, pero la compuerta del hangar se bloqueó con el apagón. Para abrirla hay que enlazar cuatro frecuencias de seguridad, una tras otra.",
+    "personajes": [
+      "lisa",
+      "leo"
+    ],
+    "instruccion": "Escribe la palabra que enlaza las tres de cada frecuencia. La respuesta de una forma parte de la siguiente.",
+    "resultados": [
+      {
+        "id": "esc_03_intuitivo",
+        "clave": "intuitivo",
+        "descripcion": "Enlazó las frecuencias con pocas ayudas; las respuestas le llegaron sobre todo de golpe.",
+        "textoCierre": "La compuerta se abre con un siseo. Leo aplaude: «¡Lo veías al instante!».",
+        "modificadores": {},
+        "siguienteEscena": "esc_04_ascenso"
+      },
+      {
+        "id": "esc_03_analitico",
+        "clave": "analitico",
+        "descripcion": "Enlazó las frecuencias con pocas ayudas, razonándolas paso a paso.",
+        "textoCierre": "Paso a paso, las cuatro frecuencias encajan y la compuerta se abre. Lisa asiente: «Método y paciencia».",
+        "modificadores": {},
+        "siguienteEscena": "esc_04_ascenso"
+      },
+      {
+        "id": "esc_03_apoyado",
+        "clave": "apoyado",
+        "descripcion": "Necesitó ayuda en dos o más frecuencias.",
+        "textoCierre": "Con algunas pistas de Lisa, la última frecuencia encaja y la compuerta se abre. «Juntos llegamos antes», dice ella.",
+        "modificadores": {},
+        "siguienteEscena": "esc_04_ascenso"
+      },
+      {
+        "id": "esc_03_ingenioso",
+        "clave": "ingenioso",
+        "descripcion": "Usó la linterna para activar directamente el sensor óptico de la compuerta.",
+        "textoCierre": "La luz de tu linterna engaña al sensor y la compuerta se abre. Leo se ríe: «¡Eso no venía en el manual!».",
+        "modificadores": {},
+        "siguienteEscena": "esc_04_ascenso"
+      }
+    ]
+  },
+  {
+    "id": "esc_04_ascenso",
     "tipo": "decision",
     "titulo": "Rumbo a la superficie",
     "imagen": "/img/fondos/equipo.webp",
@@ -362,19 +431,19 @@
     "sinPuntuacion": true,
     "opciones": [
       {
-        "id": "esc_03_a",
+        "id": "esc_04_a",
         "textoBoton": "«Que pedir ayuda también es ser valiente.»",
         "modificadores": {},
         "siguienteEscena": "FIN"
       },
       {
-        "id": "esc_03_b",
+        "id": "esc_04_b",
         "textoBoton": "«Que un plan claro ayuda a que todos estén tranquilos.»",
         "modificadores": {},
         "siguienteEscena": "FIN"
       },
       {
-        "id": "esc_03_c",
+        "id": "esc_04_c",
         "textoBoton": "«Que siempre hay otra forma de intentarlo.»",
         "modificadores": {},
         "siguienteEscena": "FIN"

@@ -72,13 +72,14 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
   },
   tuberias: {
     nombre: 'Tuberías',
-    queObserva: 'Si anticipa el recorrido completo antes de actuar, cómo reajusta tras un fallo y si pide consejo.',
-    fundamento: 'Funciones ejecutivas: planificación y memoria de trabajo (Miyake et al., 2000). El reloj es solo narrativo: no puntúa.',
-    claves: ['planificador', 'insistente', 'guiado'],
+    queObserva: 'Eficiencia del recorrido (giros frente al mínimo), si comprueba hipótesis antes de abrir la válvula, si deshace piezas que ya estaban bien y si sella la grieta con un objeto para usar el camino corto.',
+    fundamento: 'Funciones ejecutivas: planificación y memoria de trabajo (Miyake et al., 2000); fijación funcional (Duncker, 1945). El reloj es solo narrativo: no puntúa.',
+    claves: ['planificador', 'insistente', 'guiado', 'ingenioso'],
     conductasTipicas: {
       planificador: ['anticipo_recorrido'],
       insistente: ['reintento'],
       guiado: ['pidio_ayuda'],
+      ingenioso: ['uso_objeto_alternativo'],
     },
   },
   cultivo: {
@@ -96,7 +97,7 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
   },
   evacuacion: {
     nombre: 'Evacuación (delegación)',
-    queObserva: 'Si reparte según las especialidades, si asume la tarea de riesgo, si consulta al equipo y si sobrecarga a alguien.',
+    queObserva: 'Si reparte según las especialidades, si respeta las limitaciones de cada persona (que solo se conocen preguntando), si reparte la carga, y si asume la tarea de riesgo o la delega con medios de seguridad.',
     fundamento: 'Liderazgo situacional (Hersey y Blanchard, 1969) y liderazgo transformacional como modelo de rol (Bass, 1985).',
     claves: ['ejemplo', 'situacional', 'consenso', 'improvisado'],
     conductasTipicas: {
@@ -108,7 +109,7 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
   },
   sos: {
     nombre: 'Protocolo S.O.S.',
-    queObserva: 'Si el mensaje da la información justa y relevante (dónde, cuántos, qué necesitan) y cómo lo ajusta con la respuesta.',
+    queObserva: 'Si el primer mensaje es completo (dónde, cuántos, qué, cuánto tiempo), si evita el relleno, si añade lo que falta tras la respuesta y si contesta exactamente a lo que le preguntan.',
     fundamento: 'Máximas de cantidad y relevancia de la comunicación cooperativa (Grice, 1975).',
     claves: ['directo', 'ajustado', 'asesorado'],
     conductasTipicas: {
@@ -119,13 +120,39 @@ export const MECANICAS_INFO: Record<Mecanica, DefinicionMecanica> = {
   },
   ondas: {
     nombre: 'Sintonía de ondas',
-    queObserva: 'Cómo reacciona ante errores que no dependen de él: si persiste, si se autorregula con una pausa o si pide relevo.',
-    fundamento: 'Tolerancia a la frustración (Rosenzweig, 1944) y perseverancia o grit (Duckworth, 2016). Los errores están provocados a propósito y se explican al final.',
-    claves: ['perseverante', 'regulado', 'relevo'],
+    queObserva: 'Si detecta el aviso ERR-47 y repara el monitor antes de que falle (anticipación) y cómo reacciona ante una interferencia imprevisible que le ocurre a todo el mundo: si sigue, se autorregula con una pausa o pide relevo.',
+    fundamento: 'Afrontamiento proactivo (Aspinwall y Taylor, 1997), tolerancia a la frustración (Rosenzweig, 1944) y perseverancia (Duckworth, 2016). Los fallos están provocados a propósito y se explican al final.',
+    claves: ['anticipado', 'perseverante', 'regulado', 'relevo'],
     conductasTipicas: {
+      anticipado: ['anticipo_fallo', 'uso_objeto_alternativo'],
       perseverante: ['persistio_tras_error'],
       regulado: ['hizo_pausa'],
       relevo: ['pidio_relevo'],
+    },
+  },
+  especie: {
+    nombre: 'Especie desconocida',
+    queObserva: 'Cuánto se aleja del prototipo conocido (originalidad), si la criatura sobrevive al entorno (utilidad), en cuántas categorías innova (flexibilidad), si explica sus adaptaciones (elaboración) y cuántas especies distintas diseña (fluidez).',
+    fundamento: 'Imaginación estructurada (Ward, 1994) y modelo Geneplore (Finke, Ward y Smith, 1992); dimensiones de Torrance (fluidez, flexibilidad, originalidad, elaboración).',
+    claves: ['innovador', 'funcional', 'prolifico', 'consultor', 'tenaz'],
+    conductasTipicas: {
+      innovador: ['uso_original'],
+      funcional: [],
+      prolifico: ['exploro_alternativas'],
+      consultor: ['pidio_ideas'],
+      tenaz: ['reintento'],
+    },
+  },
+  frecuencias: {
+    nombre: 'Frecuencias enlazadas',
+    queObserva: 'Si encuentra la palabra que une tres conceptos alejados (asociación remota), cuánta ayuda necesita y si la respuesta le llega de golpe o paso a paso.',
+    fundamento: 'Test de Asociados Remotos (Mednick, 1962) y autoinforme de insight (Bowden y Jung-Beeman, 2003).',
+    claves: ['intuitivo', 'analitico', 'apoyado', 'ingenioso'],
+    conductasTipicas: {
+      intuitivo: ['insight_subito'],
+      analitico: ['insight_analitico'],
+      apoyado: ['pidio_ayuda'],
+      ingenioso: ['uso_objeto_alternativo'],
     },
   },
 };
@@ -169,6 +196,16 @@ export const ETIQUETAS_CONDUCTA: Record<string, string> = {
   hizo_pausa: 'Hizo una pausa para calmarse',
   pidio_relevo: 'Pidió relevo tras los errores',
   tiempo_agotado: 'Se le agotó el tiempo (recibió más tiempo)',
+  uso_objeto_alternativo: 'Usó un objeto del inventario para resolverlo de otra forma',
+  comprobo_hipotesis: 'Comprobó el caudal antes de abrir la válvula',
+  incluyo_vago: 'Incluyó fragmentos vagos en el mensaje',
+  respondio_lo_preguntado: 'Contestó exactamente a lo que le preguntaron',
+  delego_con_seguridad: 'Delegó la tarea de riesgo con medios de seguridad',
+  ignoro_limitaciones: 'Su primer plan chocó con limitaciones del equipo (lo corrigió)',
+  anticipo_fallo: 'Detectó el aviso y reparó el monitor antes de que fallara',
+  ignoro_aviso: 'No atendió al aviso de error antes de sincronizar',
+  insight_subito: 'Las respuestas le llegaron sobre todo de golpe (insight)',
+  insight_analitico: 'Las respuestas le llegaron sobre todo paso a paso',
 };
 
 export function etiquetaConducta(clave: string): string {

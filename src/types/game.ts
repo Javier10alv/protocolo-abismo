@@ -33,6 +33,8 @@ export const MECANICAS = [
   'evacuacion',
   'sos',
   'ondas',
+  'especie',
+  'frecuencias',
 ] as const;
 
 export type Mecanica = (typeof MECANICAS)[number];
@@ -139,6 +141,8 @@ export interface EscenaHub extends EscenaBase {
   preguntasRetorno: LineaDialogo[];
   /** Despedida al completar todas las áreas. */
   cierre: LineaDialogo;
+  /** Lo que dice un personaje cuando el alumno vuelve de un reto sin terminarlo (retirada estratégica). */
+  lineaRetirada: LineaDialogo;
   opciones: OpcionHub[];
   /** A dónde se va al completar todas las áreas. */
   siguienteEscena: string;
@@ -150,9 +154,31 @@ export interface EscenaMinijuego extends EscenaBase {
   /** Instrucción breve que se muestra encima de la mecánica. */
   instruccion: string;
   resultados: Resultado[];
+  /** Reto final: sus resultados no suman puntos de prioridad (modificadores vacíos). */
+  sinPuntuacion?: boolean;
 }
 
 export type Scene = EscenaDecision | EscenaMinijuego | EscenaHub;
+
+/** Evento de telemetría de un minijuego. Es la materia prima de los indicadores. */
+export interface EventoJuego {
+  /** Segundos desde que empezó el minijuego (1 decimal). */
+  t: number;
+  /** accion, fallo, ayuda, presion, tiempo_agotado, objeto, explorar, recoger, retirada, insight, sjt… */
+  tipo: string;
+  datos?: Record<string, string | number | boolean>;
+}
+
+/** Indicadores observados (0–1), con las claves de la matriz de especificación. */
+export type Indicadores = Record<string, number>;
+
+/** Objeto recogido en una sala y guardado en el inventario. */
+export interface ObjetoRecogido {
+  id: string;
+  /** Escena (sala) donde se recogió. */
+  escenaId: string;
+  timestamp: string;
+}
 
 /** Lo que devuelve una mecánica al terminar. */
 export interface ResultadoMecanica {
@@ -165,6 +191,12 @@ export interface ResultadoMecanica {
   ayudaRecibida: boolean;
   /** Eficiencia en el minijuego (0–100). Métrica para el docente: no suma puntos. */
   precision: number;
+  /** Indicadores propios de la mecánica (0–1). Los generales se calculan a partir de los eventos. */
+  indicadores?: Indicadores;
+  /** Lo añade el motor: eventos registrados durante el minijuego. */
+  eventos?: EventoJuego[];
+  /** Frase extra para el cierre, adaptada a lo que hizo el alumno. */
+  notaCierre?: string;
 }
 
 export interface RegistroDecision {
@@ -183,6 +215,13 @@ export interface RegistroDecision {
   area?: Habilidad;
   orden?: number;
   puntos?: number;
+  /** Solo minijuegos: indicadores (0–1) y eventos registrados. */
+  indicadores?: Indicadores;
+  eventos?: EventoJuego[];
+  /** Minijuego abandonado a medias para volver a la sala de control (retirada estratégica). */
+  retirada?: boolean;
+  /** Elección del hub que retoma un reto aplazado (no suma puntos de prioridad). */
+  reanudacion?: boolean;
 }
 
 /** Objeto que se envía al backend. Debe validar contra estado-alumno.schema.json. */
@@ -197,6 +236,8 @@ export interface EstadoAlumno {
   escenaActual: string;
   habilidades: Habilidades;
   historial: RegistroDecision[];
+  /** Objetos recogidos en las salas. */
+  inventario: ObjetoRecogido[];
   completada: boolean;
   iniciadaEn: string;
   finalizadaEn: string | null;

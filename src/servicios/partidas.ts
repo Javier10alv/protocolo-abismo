@@ -6,8 +6,9 @@
 // El docente lee (con su sesión en Supabase) las partidas de sus clases.
 
 import { describirEleccion, escenasPorId } from '../data/guion';
+import type { AjusteDocente } from '../logica/evaluacion';
 import { resumenParaLLM } from '../logica/recomendacion';
-import type { EstadoAlumno } from '../types/game';
+import type { EstadoAlumno, Habilidad } from '../types/game';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -138,7 +139,7 @@ export function limpiarPartidasAntiguas() {
   const datos = leerLocal();
   let cambios = false;
   for (const [id, p] of Object.entries(datos)) {
-    if (!p.alumnoNombre || p.claseId.startsWith('DEMO')) {
+    if (!p.alumnoNombre || p.claseId.startsWith('DEMO') || !Array.isArray(p.inventario)) {
       delete datos[id];
       cambios = true;
     }
@@ -149,6 +150,83 @@ export function limpiarPartidasAntiguas() {
 /** Solo modo local: borra todas las partidas guardadas en este dispositivo. */
 export function borrarPartidasLocales() {
   localStorage.removeItem(CLAVE_LOCAL);
+  localStorage.removeItem(CLAVE_AJUSTES);
+}
+
+/* --------------------------- Ajustes del docente -------------------------- */
+
+const CLAVE_AJUSTES = 'protocolo-abismo-ajustes';
+
+function leerAjustesLocales(): Record<string, AjusteDocente[]> {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_AJUSTES) ?? '{}') as Record<string, AjusteDocente[]>;
+  } catch {
+    return {};
+  }
+}
+
+function cabecerasDocente(extra: Record<string, string> = {}) {
+  const sesion = sesionDocente();
+  if (!sesion) throw new Error('Sesión no iniciada');
+  return { apikey: SUPABASE_ANON_KEY!, Authorization: `Bearer ${sesion.accessToken}`, ...extra };
+}
+
+/** Ajustes manuales que el docente ha hecho en una partida. */
+export async function cargarAjustes(partidaId: string): Promise<AjusteDocente[]> {
+  if (MODO === 'local') return leerAjustesLocales()[partidaId] ?? [];
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/ajustes_docente?partida_id=eq.${encodeURIComponent(partidaId)}&select=habilidad,banda,motivo,actualizado_en`, {
+    headers: cabecerasDocente(),
+  });
+  if (!r.ok) throw new Error(`Error ${r.status} al cargar los ajustes`);
+  return ((await r.json()) as { habilidad: Habilidad; banda: AjusteDocente['banda']; motivo: string; actualizado_en: string }[]).map((f) => ({
+    habilidad: f.habilidad,
+    banda: f.banda,
+    motivo: f.motivo,
+    fecha: f.actualizado_en,
+  }));
+}
+
+/** Guarda (o sustituye) el ajuste de una habilidad. */
+export async function guardarAjuste(partidaId: string, ajuste: AjusteDocente): Promise<void> {
+  if (MODO === 'local') {
+    const todos = leerAjustesLocales();
+    todos[partidaId] = [...(todos[partidaId] ?? []).filter((a) => a.habilidad !== ajuste.habilidad), ajuste];
+    localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(todos));
+    return;
+  }
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/ajustes_docente?on_conflict=partida_id,habilidad`, {
+    method: 'POST',
+    headers: cabecerasDocente({ 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }),
+    body: JSON.stringify({ partida_id: partidaId, habilidad: ajuste.habilidad, banda: ajuste.banda, motivo: ajuste.motivo, actualizado_en: ajuste.fecha }),
+  });
+  if (!r.ok) throw new Error(`Error ${r.status} al guardar el ajuste`);
+}
+
+/** Quita el ajuste de una habilidad (vuelve a valer el cálculo del juego). */
+export async function quitarAjuste(partidaId: string, habilidad: Habilidad): Promise<void> {
+  if (MODO === 'local') {
+    const todos = leerAjustesLocales();
+    todos[partidaId] = (todos[partidaId] ?? []).filter((a) => a.habilidad !== habilidad);
+    localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(todos));
+    return;
+  }
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/ajustes_docente?partida_id=eq.${encodeURIComponent(partidaId)}&habilidad=eq.${habilidad}`, {
+    method: 'DELETE',
+    headers: cabecerasDocente(),
+  });
+  if (!r.ok) throw new Error(`Error ${r.status} al quitar el ajuste`);
+}
+
+/** Todos los ajustes del docente, agrupados por partida (para la vista de clase y el CSV). */
+export async function listarAjustes(): Promise<Record<string, AjusteDocente[]>> {
+  if (MODO === 'local') return leerAjustesLocales();
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/ajustes_docente?select=partida_id,habilidad,banda,motivo,actualizado_en`, { headers: cabecerasDocente() });
+  if (!r.ok) throw new Error(`Error ${r.status} al cargar los ajustes`);
+  const todos: Record<string, AjusteDocente[]> = {};
+  for (const f of (await r.json()) as { partida_id: string; habilidad: Habilidad; banda: AjusteDocente['banda']; motivo: string; actualizado_en: string }[]) {
+    (todos[f.partida_id] ??= []).push({ habilidad: f.habilidad, banda: f.banda, motivo: f.motivo, fecha: f.actualizado_en });
+  }
+  return todos;
 }
 
 /** Pide a la Edge Function un informe redactado por IA. Solo en modo Supabase. */

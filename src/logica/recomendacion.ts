@@ -1,9 +1,21 @@
 // Recomendación pedagógica con plantilla local (sin LLM) y sugerencia de
 // agrupamientos. Lenguaje de "indicios" y "oportunidades", nunca diagnósticos.
 
-import { NOMBRE_HABILIDAD, type EstadoAlumno, type Habilidad } from '../types/game';
+import { HABILIDADES, NOMBRE_HABILIDAD, type EstadoAlumno, type Habilidad } from '../types/game';
 import { etiquetaConducta } from '../mecanicas/registro';
-import { ordenarHabilidades, porcentajes } from './puntuacion';
+import { BANDAS, NOMBRE_BANDA, bandaFinal, evaluar, type AjusteDocente, type Evaluacion } from './evaluacion';
+import { porcentajes } from './puntuacion';
+
+/** Valor para ordenar habilidades por desempeño: la banda (ajustada por el docente si la cambió) y, dentro, el valor. */
+function valorOrden(ev: Evaluacion, h: Habilidad, ajustes: AjusteDocente[]) {
+  const { banda } = bandaFinal(ev.habilidades[h], ajustes);
+  return (banda ? BANDAS.indexOf(banda) * 100 : -100) + (ev.habilidades[h].valor ?? 0) / 10;
+}
+
+/** Habilidades de mayor a menor desempeño. */
+export function ordenarPorDesempeno(ev: Evaluacion, ajustes: AjusteDocente[] = []): Habilidad[] {
+  return [...HABILIDADES].sort((a, b) => valorOrden(ev, b, ajustes) - valorOrden(ev, a, ajustes));
+}
 
 const FORTALEZA: Record<Habilidad, string> = {
   logica: 'analizar la información y buscar la causa de los problemas antes de actuar',
@@ -28,9 +40,8 @@ export interface Recomendacion {
   texto: string;
 }
 
-export function recomendacionLocal(estado: EstadoAlumno): Recomendacion {
-  const pct = porcentajes(estado);
-  const orden = ordenarHabilidades(pct);
+export function recomendacionLocal(estado: EstadoAlumno, ajustes: AjusteDocente[] = []): Recomendacion {
+  const orden = ordenarPorDesempeno(evaluar(estado), ajustes);
   const fortalezas = orden.slice(0, 2);
   const oportunidad = orden[orden.length - 1];
 
@@ -69,8 +80,12 @@ export function recomendacionLocal(estado: EstadoAlumno): Recomendacion {
 
 /** Texto de las decisiones para enviar al LLM (sin identificadores del alumno). */
 export function resumenParaLLM(estado: EstadoAlumno, describir: (escenaId: string, opcionId: string) => string, tituloDe: (escenaId: string) => string) {
+  const ev = evaluar(estado);
   return {
     porcentajes: porcentajes(estado),
+    desempeno: Object.fromEntries(
+      HABILIDADES.map((h) => [h, { valor: ev.habilidades[h].valor, nivel: ev.habilidades[h].banda ? NOMBRE_BANDA[ev.habilidades[h].banda!] : null, confianza: ev.habilidades[h].confianza }]),
+    ),
     decisiones: estado.historial.map((r) => ({
       escena: tituloDe(r.escenaId),
       eleccion: describir(r.escenaId, r.opcionId),
@@ -89,15 +104,16 @@ export interface Grupo {
  * Propone grupos de 3 con fortalezas complementarias: reparte en orden de
  * "fortaleza principal" para que cada grupo mezcle perfiles distintos.
  */
-export function sugerirGrupos(partidas: EstadoAlumno[], tamano = 3): Grupo[] {
+export function sugerirGrupos(partidas: EstadoAlumno[], tamano = 3, ajustes: Record<string, AjusteDocente[]> = {}): Grupo[] {
   if (partidas.length === 0) return [];
-  const conFortaleza = partidas.map((p) => ({ p, f: ordenarHabilidades(porcentajes(p))[0] }));
+  const fortaleza = (p: EstadoAlumno) => ordenarPorDesempeno(evaluar(p), ajustes[p.partidaId] ?? [])[0];
+  const conFortaleza = partidas.map((p) => ({ p, f: fortaleza(p) }));
   conFortaleza.sort((a, b) => a.f.localeCompare(b.f));
   const nGrupos = Math.max(1, Math.round(partidas.length / tamano));
   const grupos: EstadoAlumno[][] = Array.from({ length: nGrupos }, () => []);
   conFortaleza.forEach(({ p }, i) => grupos[i % nGrupos].push(p));
   return grupos.map((miembros) => ({
     miembros,
-    fortalezas: [...new Set(miembros.map((m) => ordenarHabilidades(porcentajes(m))[0]))],
+    fortalezas: [...new Set(miembros.map(fortaleza))],
   }));
 }

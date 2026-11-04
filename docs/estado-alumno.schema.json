@@ -14,6 +14,7 @@
     "escenaActual",
     "habilidades",
     "historial",
+    "inventario",
     "completada",
     "iniciadaEn",
     "finalizadaEn"
@@ -159,6 +160,84 @@
             "type": "integer",
             "minimum": 0,
             "description": "Solo elecciones del hub: puntos ganados por esa posición."
+          },
+          "indicadores": {
+            "type": "object",
+            "description": "Solo minijuegos: indicadores observados (0–1) con las claves de la matriz de especificación (logica/evaluacion.ts).",
+            "additionalProperties": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "propertyNames": {
+              "pattern": "^[a-z_]+$"
+            }
+          },
+          "eventos": {
+            "type": "array",
+            "description": "Solo minijuegos: telemetría (segundos desde el inicio, tipo y datos).",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "t",
+                "tipo"
+              ],
+              "properties": {
+                "t": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "tipo": {
+                  "type": "string",
+                  "pattern": "^[a-z_]+$"
+                },
+                "datos": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "retirada": {
+            "type": "boolean",
+            "description": "El alumno dejó el minijuego a medias para volver a la sala de control (retirada estratégica)."
+          },
+          "reanudacion": {
+            "type": "boolean",
+            "description": "Elección del hub que retoma un reto aplazado: no suma puntos de prioridad."
+          }
+        }
+      }
+    },
+    "inventario": {
+      "type": "array",
+      "description": "Objetos recogidos explorando las salas.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "escenaId",
+          "timestamp"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z_]+$"
+          },
+          "escenaId": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
@@ -180,7 +259,7 @@
   },
   "examples": [
     {
-      "version": "4.0.0",
+      "version": "5.0.0",
       "partidaId": "3f1c9a2e-8b4d-4e6a-9c1f-2a7b5d8e0f13",
       "alumnoCodigo": "K7Q2-M4X9",
       "alumnoNombre": "Alumno de Prueba",
@@ -194,6 +273,7 @@
         "liderazgo": 0
       },
       "historial": [],
+      "inventario": [],
       "completada": false,
       "iniciadaEn": "2026-11-14T10:00:00Z",
       "finalizadaEn": null

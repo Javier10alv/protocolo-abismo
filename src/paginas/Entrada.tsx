@@ -150,7 +150,7 @@ export default function Entrada() {
             <ul className="grid gap-3 text-slate-300">
               <li className="flex gap-3">
                 <span aria-hidden="true">🌊</span>
-                <span>Un temblor ha dañado la estación. Tendrás que cooperar con dos supervivientes para volver a la superficie.</span>
+                <span>Un temblor ha dañado la estación. Tendrás que cooperar con el equipo de la estación para volver a la superficie.</span>
               </li>
               <li className="flex gap-3">
                 <span aria-hidden="true">🧭</span>
@@ -160,7 +160,7 @@ export default function Entrada() {
               </li>
               <li className="flex gap-3">
                 <span aria-hidden="true">🛠️</span>
-                <span>Encontrarás retos: cables, mapas, inventos… Equivocarse forma parte del juego y siempre puedes pedir ayuda.</span>
+                <span>Encontrarás retos: tuberías, criaturas, mensajes, señales… Explora las salas, usa lo que encuentres y, si te atascas, puedes volver más tarde. Equivocarse forma parte del juego.</span>
               </li>
               <li className="flex gap-3">
                 <span aria-hidden="true">⏸</span>

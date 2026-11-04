@@ -5,6 +5,8 @@ import VistaClase, { mediaHabilidades } from '../components/docente/VistaClase';
 import { Boton, Etiqueta } from '../components/ui';
 import { VERSION_GUION } from '../data/guion';
 import { duracionSegundos, ordenarHabilidades, porcentajes } from '../logica/puntuacion';
+import { NOMBRE_BANDA, bandaFinal, evaluar, type AjusteDocente } from '../logica/evaluacion';
+import { ordenarPorDesempeno } from '../logica/recomendacion';
 import { CODIGO_DOCENTE } from '../config';
 import { metricasPorArea, textoSecuencia } from '../logica/metricas';
 import { partidaDePrueba } from '../logica/simulacion';
@@ -16,6 +18,7 @@ import {
   crearClase,
   iniciarSesion,
   limpiarPartidasAntiguas,
+  listarAjustes,
   listarPartidas,
   sesionDocente,
 } from '../servicios/partidas';
@@ -82,7 +85,7 @@ function Login({ onEntrar }: { onEntrar: (s: ReturnType<typeof sesionDocente>) =
   );
 }
 
-function exportarCSV(partidas: EstadoAlumno[], incluirNombres: boolean) {
+function exportarCSV(partidas: EstadoAlumno[], incluirNombres: boolean, ajustes: Record<string, AjusteDocente[]>) {
   const areas = [...HABILIDADES];
   const cab = [
     'clase',
@@ -93,12 +96,18 @@ function exportarCSV(partidas: EstadoAlumno[], incluirNombres: boolean) {
     'completada',
     'secuencia',
     ...areas.map((h) => `${h}_puntos`),
-    ...areas.flatMap((h) => [`${h}_orden`, `${h}_tiempo_s`, `${h}_precision`]),
+    ...areas.flatMap((h) => [`${h}_orden`, `${h}_tiempo_s`, `${h}_precision`, `${h}_aplazado`]),
+    ...areas.flatMap((h) => [`${h}_desempeno`, `${h}_banda_juego`, `${h}_banda_final`, `${h}_confianza`, `${h}_ajuste_motivo`]),
     'prioridad_principal',
+    'fortaleza_principal',
+    'objetos_recogidos',
+    'juego_sospechoso',
   ];
   const filas = partidas.map((p) => {
     const m = metricasPorArea(p);
     const de = (h: (typeof areas)[number]) => m.find((x) => x.area === h);
+    const ev = evaluar(p);
+    const aj = ajustes[p.partidaId] ?? [];
     return [
       p.claseId,
       p.alumnoCodigo,
@@ -108,8 +117,16 @@ function exportarCSV(partidas: EstadoAlumno[], incluirNombres: boolean) {
       p.completada,
       textoSecuencia(p),
       ...areas.map((h) => p.habilidades[h]),
-      ...areas.flatMap((h) => [de(h)?.orden ?? '', de(h)?.tiempoS ?? '', de(h)?.precision ?? '']),
+      ...areas.flatMap((h) => [de(h)?.orden ?? '', de(h)?.tiempoS ?? '', de(h)?.precision ?? '', de(h)?.retiradas ?? '']),
+      ...areas.flatMap((h) => {
+        const e = ev.habilidades[h];
+        const f = bandaFinal(e, aj);
+        return [e.valor ?? '', e.banda ? NOMBRE_BANDA[e.banda] : '', f.banda ? NOMBRE_BANDA[f.banda] : '', e.confianza, f.ajuste?.motivo ?? ''];
+      }),
       ordenarHabilidades(porcentajes(p))[0],
+      ordenarPorDesempeno(ev, aj)[0],
+      p.inventario.map((o) => o.id).join(' '),
+      ev.sospechosa,
     ];
   });
   const csv = [cab, ...filas].map((f) => f.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -129,6 +146,16 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
   const [pestana, setPestana] = useState<Pestana>('clase');
   const [seleccion, setSeleccion] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState('');
+  const [ajustes, setAjustes] = useState<Record<string, AjusteDocente[]>>({});
+
+  const cargarAjustes = useCallback(async () => {
+    try {
+      setAjustes(await listarAjustes());
+    } catch {
+      // Sin ajustes (p. ej. falta la migración en Supabase): se muestra el cálculo del juego.
+      setAjustes({});
+    }
+  }, []);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -137,12 +164,13 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
       // El panel empieza limpio: se descartan datos simulados de versiones anteriores.
       if (MODO === 'local') limpiarPartidasAntiguas();
       setPartidas(await listarPartidas());
+      await cargarAjustes();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al cargar');
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [cargarAjustes]);
 
   useEffect(() => {
     void cargar();
@@ -229,7 +257,7 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
                 Todavía no hay partidas reales. Se muestra un <strong>Alumno de Prueba</strong> para que veas cómo se presentan los datos; desaparecerá en cuanto alguien termine la misión.
               </p>
             )}
-            <VistaClase partidas={mostradas} onElegir={verAlumno} esPrueba={esPrueba} />
+            <VistaClase partidas={mostradas} onElegir={verAlumno} esPrueba={esPrueba} ajustes={ajustes} />
           </>
         ) : pestana === 'alumnado' ? (
           <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
@@ -244,7 +272,7 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
               />
               <ul className="grid max-h-[70dvh] gap-1 overflow-auto" aria-label="Partidas">
                 {filtradas.map((p) => {
-                  const f = ordenarHabilidades(porcentajes(p))[0];
+                  const f = ordenarPorDesempeno(evaluar(p), ajustes[p.partidaId] ?? [])[0];
                   const activa = elegida?.partidaId === p.partidaId;
                   return (
                     <li key={p.partidaId}>
@@ -263,10 +291,10 @@ function Panel({ onSalir }: { onSalir?: () => void }) {
                 {filtradas.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">Sin resultados.</li>}
               </ul>
             </aside>
-            {elegida ? <DetallePartida key={elegida.partidaId} partida={elegida} mediaClase={esPrueba ? undefined : media} esPrueba={esPrueba} /> : <p className="text-slate-500">Elige una partida.</p>}
+            {elegida ? <DetallePartida key={elegida.partidaId} partida={elegida} mediaClase={esPrueba ? undefined : media} esPrueba={esPrueba} ajustes={ajustes[elegida.partidaId] ?? []} onAjustesCambiados={() => void cargarAjustes()} /> : <p className="text-slate-500">Elige una partida.</p>}
           </div>
         ) : (
-          <Herramientas partidas={partidas} onCambio={() => void cargar()} />
+          <Herramientas partidas={partidas} ajustes={ajustes} onCambio={() => void cargar()} />
         )}
       </main>
     </div>
@@ -306,7 +334,7 @@ function NuevaClase() {
   );
 }
 
-function Herramientas({ partidas, onCambio }: { partidas: EstadoAlumno[]; onCambio: () => void }) {
+function Herramientas({ partidas, ajustes, onCambio }: { partidas: EstadoAlumno[]; ajustes: Record<string, AjusteDocente[]>; onCambio: () => void }) {
   const [incluirNombres, setIncluirNombres] = useState(false);
 
   return (
@@ -331,7 +359,7 @@ function Herramientas({ partidas, onCambio }: { partidas: EstadoAlumno[]; onCamb
           </span>
         </label>
         <div className="flex flex-wrap gap-2">
-          <Boton onClick={() => exportarCSV(partidas, incluirNombres)} disabled={partidas.length === 0}>⬇ Exportar CSV</Boton>
+          <Boton onClick={() => exportarCSV(partidas, incluirNombres, ajustes)} disabled={partidas.length === 0}>⬇ Exportar CSV</Boton>
           {MODO === 'local' && (
             <Boton
               variante="peligro"
@@ -352,10 +380,11 @@ function Herramientas({ partidas, onCambio }: { partidas: EstadoAlumno[]; onCamb
       <section className="grid content-start gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
         <h2 className="text-lg font-semibold">Cómo se evalúa</h2>
         <ul className="grid gap-2 text-sm text-slate-300">
-          <li>· Tras el apagón, el alumno atiende los 5 problemas en el orden que quiera. Cada área suma puntos según su posición: 1.ª = 10, 2.ª = 7, 3.ª = 5, 4.ª = 3 y 5.ª = 1. Así se ven sus prioridades naturales ante una crisis.</li>
-          <li>· El radar muestra esos puntos en % sobre 10. Ninguna prioridad es «la buena»: son indicios para conversar, no un diagnóstico.</li>
-          <li>· En cada minijuego se registran el <strong>tiempo</strong> y la <strong>precisión</strong> (eficiencia), además de los comportamientos (pedir ayuda, reintentar, explorar antes de actuar). Son métricas descriptivas: no cambian los puntos.</li>
-          <li>· Agotar el tiempo o fallar nunca hace perder: un personaje da más tiempo o ayuda tras 3 intentos y la historia sigue.</li>
+          <li>· <strong>Prioridades:</strong> tras el apagón, el alumno atiende los 5 problemas en el orden que quiera (1.ª = 10, 2.ª = 7, 3.ª = 5, 4.ª = 3, 5.ª = 1). Dice qué le preocupa primero, no lo bien que lo hace.</li>
+          <li>· <strong>Desempeño:</strong> cada reto registra lo que hace el alumno (eventos) y de ahí salen indicadores de 0 a 1. Cada indicador aporta, con un peso, a una o varias habilidades. El resultado se muestra en bandas (Emergente, En desarrollo, Consolidado) con un nivel de confianza según cuánta evidencia hay.</li>
+          <li>· También cuentan la <strong>retirada estratégica</strong> (dejar un reto y volver con otra idea), la <strong>exploración</strong> y el <strong>uso alternativo de objetos</strong>, y una pregunta breve de juicio situacional al final de cada reto.</li>
+          <li>· Puedes <strong>ajustar</strong> la banda de cualquier habilidad con un motivo; el valor del juego se conserva a la vista.</li>
+          <li>· Fallar o agotar el tiempo nunca hace perder: hay ayudas que se adaptan y quedan registradas.</li>
         </ul>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {Object.values(MECANICAS_INFO).map((m) => (

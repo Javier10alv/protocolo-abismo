@@ -1,6 +1,7 @@
 import { HUB } from '../../data/guion';
 import { metricasPorArea, precisionMedia, tiempoTotalTexto } from '../../logica/metricas';
 import { duracionSegundos, formatearSegundos, porcentajes } from '../../logica/puntuacion';
+import { NOMBRE_BANDA, bandaFinal, desempenoNumerico, evaluar, type AjusteDocente, type Banda } from '../../logica/evaluacion';
 import { sugerirGrupos } from '../../logica/recomendacion';
 import { HABILIDADES, NOMBRE_HABILIDAD, type EstadoAlumno, type Habilidad, type Habilidades } from '../../types/game';
 import RadarHabilidades from './RadarHabilidades';
@@ -38,9 +39,16 @@ interface Props {
   onElegir: (partidaId: string) => void;
   /** Se está mostrando la fila de ejemplo porque aún no hay partidas reales. */
   esPrueba?: boolean;
+  ajustes?: Record<string, AjusteDocente[]>;
 }
 
-export default function VistaClase({ partidas, onElegir, esPrueba = false }: Props) {
+const ESTILO_BANDA: Record<Banda, string> = {
+  emergente: 'bg-slate-600/40 text-slate-100',
+  desarrollo: 'bg-cyan-600/40 text-cyan-50',
+  consolidado: 'bg-emerald-600/45 text-emerald-50',
+};
+
+export default function VistaClase({ partidas, onElegir, esPrueba = false, ajustes = {} }: Props) {
   const completas = partidas.filter((p) => p.completada);
   const media = mediaHabilidades(partidas);
   const duraciones = completas.map(duracionSegundos).filter((d): d is number => d !== null);
@@ -54,7 +62,12 @@ export default function VistaClase({ partidas, onElegir, esPrueba = false }: Pro
     const primera = metricasPorArea(p)[0];
     if (primera) primeras.set(primera.area, (primeras.get(primera.area) ?? 0) + 1);
   }
-  const grupos = sugerirGrupos(completas);
+  const grupos = sugerirGrupos(completas, 3, ajustes);
+  const evaluaciones = new Map(partidas.map((p) => [p.partidaId, evaluar(p)]));
+  const desempenoMedio = (h: Habilidad) => {
+    const v = completas.map((p) => desempenoNumerico(evaluaciones.get(p.partidaId)!)[h]);
+    return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+  };
   const areas = HUB?.opciones.map((o) => o.area) ?? [...HABILIDADES];
 
   return (
@@ -140,6 +153,65 @@ export default function VistaClase({ partidas, onElegir, esPrueba = false }: Pro
         </div>
       </section>
 
+      <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Desempeño de la clase</h3>
+        <p className="mt-1 text-xs text-slate-500">Banda de cada habilidad según lo que hizo en los retos (✎ = ajustada por ti). Las celdas tenues tienen confianza baja.</p>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[40rem] border-separate border-spacing-0.5 text-sm">
+            <thead>
+              <tr>
+                <th scope="col" className="min-w-[10rem] px-2 py-1 text-left font-medium text-slate-400">Alumno</th>
+                {HABILIDADES.map((h) => (
+                  <th key={h} scope="col" className="px-1 py-1 text-center text-xs font-medium text-slate-400">
+                    {NOMBRE_HABILIDAD[h]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {partidas.map((p) => {
+                const ev = evaluaciones.get(p.partidaId)!;
+                return (
+                  <tr key={p.partidaId}>
+                    <th scope="row" className="text-left">
+                      <button type="button" onClick={() => onElegir(p.partidaId)} className="rounded px-2 py-1 text-left text-cyan-200 hover:bg-cyan-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">
+                        {p.alumnoNombre}
+                        {ev.sospechosa && <span className="ml-2 text-[10px] text-amber-300" title="Posible juego al azar">⚠</span>}
+                      </button>
+                    </th>
+                    {HABILIDADES.map((h) => {
+                      const e = ev.habilidades[h];
+                      const { banda, ajuste } = bandaFinal(e, ajustes[p.partidaId] ?? []);
+                      return (
+                        <td
+                          key={h}
+                          className={`whitespace-nowrap rounded px-2 py-1 text-center text-xs ${banda ? ESTILO_BANDA[banda] : 'text-slate-600'} ${e.confianza === 'baja' && !ajuste ? 'opacity-50' : ''}`}
+                          title={`${NOMBRE_HABILIDAD[h]}: ${e.valor ?? '—'} / 100 · confianza ${e.confianza}${ajuste ? ` · ajustado: ${ajuste.motivo}` : ''}`}
+                        >
+                          {banda ? NOMBRE_BANDA[banda] : '—'}
+                          {ajuste && ' ✎'}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+              <tr>
+                <th scope="row" className="px-2 py-1 text-left text-xs font-medium text-slate-400">Media de la clase</th>
+                {HABILIDADES.map((h) => {
+                  const m = desempenoMedio(h);
+                  return (
+                    <td key={h} className="px-2 py-1 text-center font-mono text-xs text-slate-300">
+                      {m ?? '—'}
+                    </td>
+                  );
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Prioridades medias de la clase</h3>
@@ -168,7 +240,7 @@ export default function VistaClase({ partidas, onElegir, esPrueba = false }: Pro
 
           <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Agrupamientos sugeridos</h3>
-            <p className="mt-1 text-xs text-slate-500">Grupos que mezclan prioridades distintas para que se complementen. Ajústalos con tu conocimiento del aula.</p>
+            <p className="mt-1 text-xs text-slate-500">Grupos que mezclan fortalezas de desempeño distintas para que se complementen. Ajústalos con tu conocimiento del aula.</p>
             <ol className="mt-3 grid gap-2 sm:grid-cols-2">
               {grupos.map((g, i) => (
                 <li key={i} className="rounded-xl border border-slate-700 p-3">

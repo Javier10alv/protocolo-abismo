@@ -4,9 +4,12 @@ import { metricasPorArea, precisionMedia, tiempoTotalTexto } from '../../logica/
 import { formatearSegundos, porcentajes } from '../../logica/puntuacion';
 import { recomendacionLocal } from '../../logica/recomendacion';
 import { MECANICAS_INFO, etiquetaConducta } from '../../mecanicas/registro';
-import { MODO, informeIA } from '../../servicios/partidas';
+import { evaluar, type AjusteDocente } from '../../logica/evaluacion';
+import { OBJETOS_POR_ID } from '../../data/objetos';
+import { MODO, guardarAjuste, informeIA, quitarAjuste } from '../../servicios/partidas';
 import { NOMBRE_HABILIDAD, type EstadoAlumno, type Habilidades } from '../../types/game';
 import { Boton } from '../ui';
+import Desempeno from './Desempeno';
 import RadarHabilidades from './RadarHabilidades';
 
 interface Props {
@@ -14,11 +17,15 @@ interface Props {
   mediaClase?: Habilidades;
   /** Fila de ejemplo («Alumno de Prueba»): no es una partida real. */
   esPrueba?: boolean;
+  ajustes?: AjusteDocente[];
+  /** Se llama tras guardar o quitar un ajuste, para recargar. */
+  onAjustesCambiados?: () => void;
 }
 
-export default function DetallePartida({ partida, mediaClase, esPrueba = false }: Props) {
+export default function DetallePartida({ partida, mediaClase, esPrueba = false, ajustes = [], onAjustesCambiados }: Props) {
   const pct = porcentajes(partida);
-  const rec = recomendacionLocal(partida);
+  const evaluacion = evaluar(partida);
+  const rec = recomendacionLocal(partida, ajustes);
   const [ia, setIa] = useState<{ estado: 'idle' | 'cargando' | 'ok' | 'error'; texto?: string }>({ estado: 'idle' });
   const metricas = metricasPorArea(partida);
   const media = precisionMedia(partida);
@@ -52,6 +59,31 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false }
         </Boton>
       </header>
 
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Desempeño por habilidad</h3>
+        <p className="mb-3 mt-1 text-xs text-slate-500">Lo que hizo dentro de los retos. Pulsa «¿Por qué?» para ver cada indicador y «Ajustar» si tu observación en el aula indica otra cosa.</p>
+        <Desempeno
+          evaluacion={evaluacion}
+          ajustes={ajustes}
+          onGuardar={
+            esPrueba
+              ? undefined
+              : async (a) => {
+                  await guardarAjuste(partida.partidaId, a);
+                  onAjustesCambiados?.();
+                }
+          }
+          onQuitar={
+            esPrueba
+              ? undefined
+              : async (h) => {
+                  await quitarAjuste(partida.partidaId, h);
+                  onAjustesCambiados?.();
+                }
+          }
+        />
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Prioridades ante la crisis</h3>
@@ -73,7 +105,7 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false }
           </div>
           <p className="leading-relaxed text-slate-200">{ia.estado === 'ok' ? ia.texto : rec.texto}</p>
           <p className="text-xs text-slate-500">
-            {ia.estado === 'ok' ? 'Redactado con IA a partir de porcentajes y decisiones, sin datos identificativos.' : 'Generado con plantilla local.'}
+            {ia.estado === 'ok' ? 'Redactado con IA a partir del desempeño y las decisiones, sin datos identificativos.' : 'Generado con plantilla local a partir del desempeño (incluidos tus ajustes).'}
           </p>
           {MODO === 'supabase' ? (
             <div className="no-imprimir">
@@ -112,6 +144,7 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false }
                 <th scope="col" className="py-2 pr-3 text-right">Puntos</th>
                 <th scope="col" className="py-2 pr-3 text-right">Decidió en</th>
                 <th scope="col" className="py-2 pr-3 text-right">Tiempo</th>
+                <th scope="col" className="py-2 pr-3 text-right">Aplazado</th>
                 <th scope="col" className="py-2 text-right">Precisión</th>
               </tr>
             </thead>
@@ -124,6 +157,7 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false }
                   <td className="py-2 pr-3 text-right font-mono">+{m.puntos}</td>
                   <td className="whitespace-nowrap py-2 pr-3 text-right font-mono text-slate-400">{m.decisionS !== null ? formatearSegundos(m.decisionS) : '—'}</td>
                   <td className="whitespace-nowrap py-2 pr-3 text-right font-mono">{m.tiempoS !== null ? formatearSegundos(m.tiempoS) : 'en curso'}</td>
+                  <td className="py-2 pr-3 text-right font-mono text-slate-400">{m.retiradas ? `${m.retiradas}×` : '—'}</td>
                   <td className="whitespace-nowrap py-2 text-right">
                     {m.precision !== null ? (
                       <span className="inline-flex items-center gap-2">
@@ -140,12 +174,18 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false }
               ))}
               {metricas.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-3 text-slate-500">Todavía no ha elegido ninguna área.</td>
+                  <td colSpan={8} className="py-3 text-slate-500">Todavía no ha elegido ninguna área.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+        {partida.inventario.length > 0 && (
+          <p className="mt-3 text-sm text-slate-300">
+            Objetos recogidos:{' '}
+            {partida.inventario.map((o) => `${OBJETOS_POR_ID.get(o.id)?.icono ?? ''} ${OBJETOS_POR_ID.get(o.id)?.nombre ?? o.id}`).join(' · ')}
+          </p>
+        )}
         <p className="mt-2 text-xs text-slate-500">
           La precisión mide la eficiencia dentro de cada minijuego (intentos, ayuda recibida, información útil…). Tiempo y precisión son métricas descriptivas: no cambian los puntos, que dependen solo del orden.
         </p>
@@ -157,6 +197,7 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false }
           {partida.historial.map((r, i) => {
             const escena = escenasPorId.get(r.escenaId);
             const esMini = escena?.tipo === 'minijuego';
+            const usados = (r.eventos ?? []).filter((e) => e.tipo === 'objeto' && e.datos?.util === true).map((e) => OBJETOS_POR_ID.get(String(e.datos?.id))?.nombre);
             return (
               <li key={`${r.escenaId}-${i}`} className="relative rounded-xl border border-slate-800 bg-slate-900/50 p-3">
                 <span aria-hidden="true" className={`absolute -left-[27px] top-4 h-3 w-3 rounded-full ring-4 ring-slate-950 ${esMini ? 'bg-amber-400' : 'bg-cyan-400'}`} />
@@ -170,6 +211,9 @@ export default function DetallePartida({ partida, mediaClase, esPrueba = false }
                   {r.tiempoRespuestaMs !== undefined && <span className="font-mono text-xs text-slate-500">{Math.round(r.tiempoRespuestaMs / 1000)} s</span>}
                 </div>
                 <p className="mt-1 text-sm text-slate-300">{describirEleccion(r.escenaId, r.opcionId)}</p>
+                {r.retirada && <p className="mt-1 text-xs text-amber-200">Aplazado tras {r.intentos ?? 0} intento(s) fallido(s).</p>}
+                {r.reanudacion && <p className="mt-1 text-xs text-amber-200">Retomó el reto aplazado.</p>}
+                {usados.length > 0 && <p className="mt-1 text-xs text-amber-100">Usó: {usados.join(', ')}</p>}
                 {r.precision !== undefined && <p className="mt-1 text-xs text-cyan-300/80">Precisión: {r.precision} %</p>}
                 {!!(r.conductas?.length || r.intentos) && (
                   <ul className="mt-2 flex flex-wrap gap-1.5">

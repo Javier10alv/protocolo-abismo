@@ -14,4 +14,6 @@ export const COMPONENTES_MECANICA: Record<Mecanica, LazyExoticComponent<Componen
   evacuacion: lazy(() => import('./Evacuacion')),
   sos: lazy(() => import('./Sos')),
   ondas: lazy(() => import('./Ondas')),
+  especie: lazy(() => import('./Especie')),
+  frecuencias: lazy(() => import('./Frecuencias')),
 };

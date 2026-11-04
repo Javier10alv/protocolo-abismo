@@ -1,10 +1,13 @@
 // Genera partidas simuladas. La usa el validador para recorrer el guion y
 // comprobar el esquema del estado, y el panel para la fila de «Alumno de Prueba».
 
-import { escenasPorId, opcionesHechas } from '../data/guion';
+import { escenasPorId, hubDeEscena, opcionesCompletadas, opcionesHechas } from '../data/guion';
+import { JUICIO } from '../data/juicio';
+import { objetosDeSala, objetosUtiles } from '../data/objetos';
 import { MECANICAS_INFO } from '../mecanicas/registro';
-import { HABILIDADES, type EstadoAlumno, type Habilidad, type Opcion, type OpcionHub, type Resultado } from '../types/game';
-import { aplicarMinijuego, aplicarOpcion, aplicarOpcionHub, crearEstadoInicial, generarIdAlumno, salirDelHub } from './partida';
+import { HABILIDADES, type EscenaMinijuego, type EstadoAlumno, type EventoJuego, type Habilidad, type Opcion, type OpcionHub, type Resultado } from '../types/game';
+import { MATRIZ } from './evaluacion';
+import { aplicarMinijuego, aplicarOpcion, aplicarOpcionHub, aplicarRetirada, crearEstadoInicial, generarIdAlumno, recogerObjeto, salirDelHub } from './partida';
 
 /** Generador pseudoaleatorio reproducible (mulberry32). */
 export function crearAzar(semilla: number): () => number {
@@ -53,40 +56,71 @@ export function simularPartida(
 
     let siguiente: EstadoAlumno | null;
     if (escena.tipo === 'hub') {
-      const pendientes = escena.opciones.filter((o) => !opcionesHechas(estado, escena).some((h) => h.id === o.id));
+      // A veces explora la sala de control y recoge lo que encuentra.
+      for (const o of objetosDeSala(escena.id)) if (azar() < 0.5) estado = recogerObjeto(estado, o.id, ahora) ?? estado;
+      const completadas = opcionesCompletadas(estado, escena);
+      const pendientes = escena.opciones.filter((o) => !completadas.some((h) => h.id === o.id));
+      const aplazada = pendientes.find((o) => opcionesHechas(estado, escena).some((h) => h.id === o.id));
       if (pendientes.length === 0) {
         siguiente = salirDelHub(estado, ahora);
       } else {
         // La habilidad preferida suele elegirse antes; el resto, al azar.
         const favorita = pendientes.find((o) => o.area === preferida);
-        const elegida: OpcionHub = favorita && azar() < 0.7 ? favorita : alAzar(pendientes, azar);
+        const elegida: OpcionHub = aplazada && azar() < 0.6 ? aplazada : favorita && azar() < 0.7 ? favorita : alAzar(pendientes, azar);
         siguiente = aplicarOpcionHub(estado, elegida.id, tiempo, ahora);
       }
     } else if (escena.tipo === 'decision') {
       siguiente = aplicarOpcion(estado, elegir(escena.opciones, preferida, azar).id, tiempo, ahora);
     } else {
-      const r = alAzar(escena.resultados, azar);
-      const tipicas = MECANICAS_INFO[escena.mecanica].conductasTipicas[r.clave] ?? [];
-      const fallos = tipicas.includes('reintento') ? 1 + Math.floor(azar() * 3) : 0;
-      const ayuda = fallos >= 3;
-      siguiente = aplicarMinijuego(
-        estado,
-        {
-          clave: r.clave,
-          conductas: ayuda ? [...tipicas, 'ayuda_automatica'] : tipicas,
-          intentos: fallos,
-          ayudaRecibida: ayuda,
-          precision: Math.max(20, Math.round(100 - fallos * 20 - azar() * 15)),
-        },
-        tiempo,
-        ahora,
-      );
+      for (const o of objetosDeSala(escena.id)) if (azar() < 0.4) estado = recogerObjeto(estado, o.id, ahora) ?? estado;
+      const yaSeRetiro = estado.historial.some((r) => r.escenaId === escena.id && r.retirada);
+      if (hubDeEscena(escena.id) && !yaSeRetiro && azar() < 0.12) {
+        // Retirada estratégica: lo intenta un poco y vuelve a la sala de control.
+        siguiente = aplicarRetirada(estado, [{ t: 4, tipo: 'accion' }, { t: 9, tipo: 'fallo', datos: { firma: 'a' } }, { t: 12, tipo: 'retirada' }], tiempo / 2, ahora);
+      } else {
+        siguiente = aplicarMinijuego(estado, simularMecanica(escena, estado, azar), tiempo, ahora);
+      }
     }
 
     if (!siguiente) throw new Error(`Transición no válida en ${estado.escenaActual}`);
     estado = siguiente;
   }
   return estado;
+}
+
+/** Resultado verosímil de una mecánica: desenlace, conductas, indicadores y eventos. */
+function simularMecanica(escena: EscenaMinijuego, estado: EstadoAlumno, azar: () => number) {
+  const r = alAzar(escena.resultados, azar);
+  const tipicas = MECANICAS_INFO[escena.mecanica].conductasTipicas[r.clave] ?? [];
+  const fallos = tipicas.includes('reintento') ? 1 + Math.floor(azar() * 3) : Math.floor(azar() * 2);
+  const ayuda = fallos >= 3;
+  const habilidadAlumno = 0.35 + azar() * 0.6;
+  const indicadores: Record<string, number> = {};
+  for (const d of MATRIZ) if (d.fuente === escena.mecanica) indicadores[d.id] = Math.round(Math.min(1, Math.max(0, habilidadAlumno + (azar() - 0.5) * 0.4)) * 100) / 100;
+  const eventos: EventoJuego[] = [{ t: 2 + Math.round(azar() * 8), tipo: 'accion' }];
+  let t = eventos[0].t;
+  for (let i = 0; i < fallos; i++) {
+    t += 8 + Math.round(azar() * 20);
+    eventos.push({ t, tipo: 'fallo', datos: { firma: azar() < 0.6 ? `f${i}` : 'f0' } }, { t: t + 4, tipo: 'accion' });
+  }
+  const enMano = estado.inventario.map((o) => o.id);
+  const utiles = objetosUtiles(enMano, escena.mecanica);
+  if (utiles.length && azar() < 0.5) eventos.push({ t: t + 2, tipo: 'objeto', datos: { id: utiles[0].id, util: true } });
+  const juicio = hubDeEscena(escena.id) ? JUICIO[escena.mecanica] : undefined;
+  if (juicio) {
+    const opcion = Math.floor(azar() * juicio.opciones.length);
+    indicadores[`sjt_${juicio.habilidad}`] = juicio.opciones[opcion].valor;
+    eventos.push({ t: t + 10, tipo: 'sjt', datos: { habilidad: juicio.habilidad, opcion } });
+  }
+  return {
+    clave: r.clave,
+    conductas: ayuda ? [...tipicas, 'ayuda_automatica'] : tipicas,
+    intentos: fallos,
+    ayudaRecibida: ayuda,
+    precision: Math.max(20, Math.round(100 - fallos * 20 - azar() * 15)),
+    indicadores,
+    eventos,
+  };
 }
 
 /**

@@ -9,6 +9,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import addFormatsModule from 'ajv-formats';
 import { ESCENA_INICIAL, eleccionesDe, escenas, escenasPorId, siguientesDe } from '../src/data/guion';
+import { JUICIO } from '../src/data/juicio';
+import { OBJETOS } from '../src/data/objetos';
+import { MATRIZ, evaluar } from '../src/logica/evaluacion';
 import { PESOS_ORDEN, maximosAlcanzables } from '../src/logica/puntuacion';
 import { crearAzar, simularPartida } from '../src/logica/simulacion';
 import { MECANICAS_INFO } from '../src/mecanicas/registro';
@@ -68,9 +71,9 @@ for (const e of escenas) {
     if (e.opciones.length !== PESOS_ORDEN.length) error(`${e.id}: el hub debe tener ${PESOS_ORDEN.length} opciones (tiene ${e.opciones.length})`);
     for (const h of HABILIDADES) if (!areas.includes(h)) error(`${e.id}: falta una opción para el área "${h}"`);
     if (new Set(areas).size !== areas.length) error(`${e.id}: hay áreas repetidas en el hub`);
-    if (!e.introduccion?.length || !e.pregunta || !e.cierre) error(`${e.id}: el hub necesita introduccion, pregunta y cierre`);
+    if (!e.introduccion?.length || !e.pregunta || !e.cierre || !e.lineaRetirada) error(`${e.id}: el hub necesita introduccion, pregunta, cierre y lineaRetirada`);
     if ((e.preguntasRetorno?.length ?? 0) < e.opciones.length - 1) error(`${e.id}: faltan preguntasRetorno (una por vuelta: ${e.opciones.length - 1})`);
-    for (const l of [...(e.introduccion ?? []), e.pregunta, e.cierre, ...(e.preguntasRetorno ?? [])]) {
+    for (const l of [...(e.introduccion ?? []), e.pregunta, e.cierre, e.lineaRetirada, ...(e.preguntasRetorno ?? [])]) {
       if (!l || !PERSONAJES.includes(l.personaje) || !l.texto?.trim()) error(`${e.id}: línea de diálogo no válida`);
     }
     for (const o of e.opciones) {
@@ -100,7 +103,7 @@ for (const e of escenas) {
   }
 
   const hub = hubDe.get(e.id);
-  const sinPuntos = (e.tipo === 'decision' && e.sinPuntuacion) || !!hub;
+  const sinPuntos = !!e.sinPuntuacion || !!hub;
   for (const x of eleccionesDe(e)) {
     comprobarId(x.id);
     const valores = Object.entries(x.modificadores);
@@ -150,6 +153,48 @@ function recorrer(id: string, camino: string[]) {
 recorrer(ESCENA_INICIAL, []);
 if (!llegaAFin) error('Ningún camino llega a FIN');
 
+// --- Objetos del inventario ----------------------------------------------------
+const mecanicasDelHub = new Map<string, string>();
+for (const e of escenas) if (e.tipo === 'hub') for (const o of e.opciones) {
+  const m = escenasPorId.get(o.escena);
+  if (m?.tipo === 'minijuego') mecanicasDelHub.set(m.mecanica, o.area);
+}
+const mecanicasUsadas = new Set(escenas.flatMap((e) => (e.tipo === 'minijuego' ? [e.mecanica] : [])));
+if (new Set(OBJETOS.map((o) => o.id)).size !== OBJETOS.length) error('Objetos: hay ids repetidos');
+for (const o of OBJETOS) {
+  if (!escenasPorId.has(o.sala)) error(`Objeto ${o.id}: la sala "${o.sala}" no existe`);
+  if (!o.usos.length) error(`Objeto ${o.id}: no tiene ningún uso`);
+  for (const u of o.usos) if (!mecanicasUsadas.has(u.mecanica)) error(`Objeto ${o.id}: su uso en "${u.mecanica}" no aparece en el guion`);
+}
+// En cualquier orden de juego debe haber alternativa: cada reto del hub tiene un uso con un objeto de la sala de control.
+for (const e of escenas) {
+  if (e.tipo !== 'hub') continue;
+  const delHub = OBJETOS.filter((o) => o.sala === e.id);
+  for (const op of e.opciones) {
+    const m = escenasPorId.get(op.escena);
+    if (m?.tipo === 'minijuego' && !delHub.some((o) => o.usos.some((u) => u.mecanica === m.mecanica))) error(`${m.id}: ningún objeto de ${e.id} tiene uso en "${m.mecanica}" (no habría alternativa si se juega primero)`);
+  }
+}
+
+// --- Juicio situacional --------------------------------------------------------
+for (const [mecanica, area] of mecanicasDelHub) {
+  const j = JUICIO[mecanica as keyof typeof JUICIO];
+  if (!j) {
+    error(`Falta la pregunta de juicio situacional de "${mecanica}"`);
+    continue;
+  }
+  if (j.habilidad === area) error(`Juicio de "${mecanica}": debe medir una habilidad distinta de la del propio reto (${area})`);
+  if (j.opciones.length !== 4 || j.opciones.some((o) => o.valor < 0 || o.valor > 1)) error(`Juicio de "${mecanica}": necesita 4 opciones con valor entre 0 y 1`);
+  if (!j.opciones.some((o) => o.valor === 1)) error(`Juicio de "${mecanica}": falta una opción de valor 1 (la más eficaz)`);
+}
+
+// --- Matriz de especificación -------------------------------------------------
+if (new Set(MATRIZ.map((d) => d.id)).size !== MATRIZ.length) error('Matriz: hay indicadores con id repetido');
+for (const d of MATRIZ) {
+  if (!['general', 'retirada', 'inventario', 'juicio'].includes(d.fuente) && !mecanicasUsadas.has(d.fuente as never)) error(`Matriz: ${d.id} sale de "${d.fuente}", que no se usa en el guion`);
+  if (!Object.keys(d.pesos).length || Object.keys(d.pesos).some((h) => !HABILIDADES.includes(h as Habilidad))) error(`Matriz: ${d.id} tiene pesos no válidos`);
+}
+
 // --- Esquema del estado con partidas simuladas --------------------------------
 const esquema = JSON.parse(readFileSync(new URL('../docs/estado-alumno.schema.json', import.meta.url), 'utf8'));
 const ajv = new Ajv2020({ allErrors: true, strict: false });
@@ -165,6 +210,12 @@ for (let i = 0; i < 200; i++) {
   const esperado = PESOS_ORDEN.reduce((a, b) => a + b, 0);
   if (total !== esperado) error(`Partida simulada ${i}: suma ${total} puntos y debería sumar ${esperado} (orden ponderado)`);
   maxRadar ??= maximosAlcanzables(p.historial.map((h) => h.escenaId));
+  const ev = evaluar(p);
+  for (const h of HABILIDADES) {
+    const v = ev.habilidades[h].valor;
+    if (v === null || v < 0 || v > 100) error(`Partida simulada ${i}: el desempeño de ${h} no se pudo calcular (${v})`);
+  }
+  for (const r of p.historial) for (const id of Object.keys(r.indicadores ?? {})) if (!MATRIZ.some((d) => d.id === id)) error(`Partida simulada ${i}: indicador desconocido "${id}"`);
   if (!validarEstado(p)) {
     error(`Partida simulada no cumple el esquema: ${ajv.errorsText(validarEstado.errors)}`);
     break;
@@ -176,6 +227,7 @@ const fmt = (h: Habilidades) => HABILIDADES.map((k) => `${k} ${h[k]}`).join(' ·
 const hubs = escenas.filter((e) => e.tipo === 'hub');
 console.log(`\nGuion: ${escenas.length} escenas · ${hubs.length} hub · ${escenas.filter((e) => e.tipo === 'minijuego').length} minijuegos`);
 console.log(`Mecánicas usadas: ${[...new Set(escenas.flatMap((e) => (e.tipo === 'minijuego' ? [e.mecanica] : [])))].join(', ')}`);
+console.log(`Objetos: ${OBJETOS.length} · indicadores en la matriz: ${MATRIZ.length} · preguntas de juicio: ${Object.keys(JUICIO).length}`);
 console.log(`Puntuación por orden: ${PESOS_ORDEN.join(' / ')} (total ${PESOS_ORDEN.reduce((a, b) => a + b, 0)} por partida)`);
 if (maxRadar) console.log(`Máximo del radar por habilidad: ${fmt(maxRadar)}`);
 for (const a of avisos) console.log(`⚠  ${a}`);

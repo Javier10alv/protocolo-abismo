@@ -19,6 +19,8 @@ export interface MetricaArea {
   precision: number | null;
   intentos: number;
   conductas: string[];
+  /** Veces que dejó el reto a medias para volver más tarde. */
+  retiradas: number;
 }
 
 export function metricasPorArea(estado: Pick<EstadoAlumno, 'historial'>): MetricaArea[] {
@@ -28,17 +30,21 @@ export function metricasPorArea(estado: Pick<EstadoAlumno, 'historial'>): Metric
   estado.historial.forEach((r, i) => {
     if (r.escenaId !== hub.id || r.area === undefined || r.orden === undefined) return;
     const opcion = hub.opciones.find((o) => o.id === r.opcionId);
-    const juego = opcion ? estado.historial.slice(i + 1).find((x) => x.escenaId === opcion.escena) : undefined;
+    const intentos = opcion ? estado.historial.slice(i + 1).filter((x) => x.escenaId === opcion.escena) : [];
+    const juego = intentos.find((x) => !x.retirada);
+    // El tiempo cuenta todos los intentos (también los que se dejaron a medias).
+    const tiempoMs = juego ? intentos.reduce((a, x) => a + (x.tiempoRespuestaMs ?? 0), 0) : undefined;
     resultado.push({
       area: r.area,
       orden: r.orden,
       puntos: r.puntos ?? 0,
       minijuego: opcion ? (escenasPorId.get(opcion.escena)?.titulo ?? opcion.escena) : '',
       decisionS: r.tiempoRespuestaMs !== undefined ? Math.round(r.tiempoRespuestaMs / 1000) : null,
-      tiempoS: juego?.tiempoRespuestaMs !== undefined ? Math.round(juego.tiempoRespuestaMs / 1000) : null,
+      tiempoS: tiempoMs !== undefined ? Math.round(tiempoMs / 1000) : null,
       precision: juego?.precision ?? null,
       intentos: juego?.intentos ?? 0,
       conductas: juego?.conductas ?? [],
+      retiradas: intentos.filter((x) => x.retirada).length,
     });
   });
   return resultado.sort((a, b) => a.orden - b.orden);

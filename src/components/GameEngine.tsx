@@ -1,6 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { sonido } from '../audio/sonido';
-import { escenasPorId, progresoDe, siguientesDe } from '../data/guion';
+import { escenasPorId, hubDeEscena, progresoDe, siguientesDe } from '../data/guion';
+import { JUICIO } from '../data/juicio';
 import { COMPONENTES_MECANICA } from '../mecanicas';
 import { useAjustesStore } from '../store/useAjustesStore';
 import { useCinematicasStore } from '../store/useCinematicasStore';
@@ -10,16 +12,18 @@ import {
   type EscenaDecision,
   type EscenaMinijuego,
   type EstadoAlumno,
+  type EventoJuego,
   type Resultado,
   type ResultadoMecanica,
   type Scene,
 } from '../types/game';
 import Cinematica from './Cinematica';
 import Escenario from './Escenario';
+import ExplorarSala from './ExplorarSala';
 import { BarraSuperior, Burbujas } from './Marco';
 import PantallaHub from './PantallaHub';
 import Retrato, { NOMBRE_PERSONAJE, ROL_PERSONAJE } from './Retrato';
-import { Boton, Etiqueta, Panel, TextoAnimado } from './ui';
+import { Bocadillo, Boton, Etiqueta, Panel, TextoAnimado } from './ui';
 
 export type EstadoEnvio = 'enviando' | 'enviado' | 'error';
 
@@ -181,7 +185,7 @@ function PantallaEscena({ escena, onSalir }: { escena: EscenaDecision | EscenaMi
           </div>
 
           {cierre ? (
-            <Cierre resultado={cierre.resultado} mecanica={cierre.mecanica} />
+            <Cierre resultado={cierre.resultado} mecanica={cierre.mecanica} escena={escena as EscenaMinijuego} />
           ) : (
             <>
               <TextoAnimado
@@ -274,40 +278,133 @@ function Opciones({ escena }: { escena: EscenaDecision }) {
 function Minijuego({ escena, onCompletar }: { escena: EscenaMinijuego; onCompletar: (r: ResultadoMecanica) => void }) {
   const Componente = COMPONENTES_MECANICA[escena.mecanica];
   const hecho = useRef(false);
+  const inicio = useRef(Date.now());
+  const eventos = useRef<EventoJuego[]>([]);
+  const inventario = useGameStore(useShallow((s) => s.inventario.map((o) => o.id)));
+  const reintento = useGameStore((s) => s.historial.some((r) => r.escenaId === escena.id && r.retirada));
+  const retirarse = useGameStore((s) => s.retirarse);
+  const [confirmar, setConfirmar] = useState(false);
+  const puedeRetirarse = !!hubDeEscena(escena.id);
+
+  // Registro de telemetría: estable entre renders para que las mecánicas puedan usarlo en efectos.
+  const registrar = useCallback((tipo: string, datos?: EventoJuego['datos']) => {
+    if (hecho.current) return;
+    eventos.current.push({ t: Math.round((Date.now() - inicio.current) / 100) / 10, tipo, ...(datos ? { datos } : {}) });
+  }, []);
+
   return (
     <div className="grid gap-4">
       <p className="flex items-start gap-2 rounded-lg border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-sm text-cyan-100">
         <span aria-hidden="true">🛈</span>
         {escena.instruccion}
       </p>
+      {reintento && (
+        <Bocadillo personaje={escena.personajes?.[0] ?? 'lisa'} expresion="contento">
+          ¡Has vuelto! Empezamos de nuevo con calma: puede que ahora tengas otras ideas… o algo nuevo en el inventario.
+        </Bocadillo>
+      )}
+      <ExplorarSala escenaId={escena.id} registrar={registrar} />
       <Suspense fallback={<p className="text-sm text-slate-400">Cargando sistema…</p>}>
         <Componente
+          registrar={registrar}
+          inventario={inventario}
+          reintento={reintento}
           onCompletar={(r) => {
             if (hecho.current) return;
             hecho.current = true;
-            onCompletar(r);
+            onCompletar({ ...r, eventos: eventos.current });
           }}
         />
       </Suspense>
+      {puedeRetirarse && !confirmar && (
+        <button
+          type="button"
+          onClick={() => setConfirmar(true)}
+          className="justify-self-start rounded-lg px-2 py-1 text-sm text-slate-400 underline-offset-4 hover:text-cyan-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          ↩ Volver a la sala de control y hacerlo más tarde
+        </button>
+      )}
+      {confirmar && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 p-3 text-sm text-slate-300">
+          <span className="flex-1 basis-56">Este reto quedará aplazado: podrás volver cuando quieras y empezarlo de nuevo.</span>
+          <Boton onClick={() => setConfirmar(false)}>Seguir aquí</Boton>
+          <Boton
+            variante="primario"
+            onClick={() => {
+              if (hecho.current) return;
+              hecho.current = true;
+              retirarse([...eventos.current, { t: Math.round((Date.now() - inicio.current) / 100) / 10, tipo: 'retirada' }]);
+            }}
+          >
+            Volver a la sala
+          </Boton>
+        </div>
+      )}
     </div>
   );
 }
 
-function Cierre({ resultado, mecanica }: { resultado: Resultado; mecanica: ResultadoMecanica }) {
+function Cierre({ resultado, mecanica, escena }: { resultado: Resultado; mecanica: ResultadoMecanica; escena: EscenaMinijuego }) {
   const completarMinijuego = useGameStore((s) => s.completarMinijuego);
   const animarTexto = useAjustesStore((s) => s.animarTexto);
   const [listo, setListo] = useState(false);
+  const [respuesta, setRespuesta] = useState<number | null>(null);
   const botonRef = useRef<HTMLButtonElement>(null);
+  // Pregunta breve de juicio situacional (solo en los retos del hub).
+  const juicio = hubDeEscena(escena.id) ? JUICIO[escena.mecanica] : undefined;
+  const puedeSeguir = listo && (!juicio || respuesta !== null);
 
   useEffect(() => {
-    if (listo) botonRef.current?.focus();
-  }, [listo]);
+    if (puedeSeguir) botonRef.current?.focus();
+  }, [puedeSeguir]);
+
+  const continuar = () => {
+    if (!juicio || respuesta === null) return completarMinijuego(mecanica);
+    const opcion = juicio.opciones[respuesta];
+    const t = mecanica.eventos?.length ? mecanica.eventos[mecanica.eventos.length - 1].t : 0;
+    completarMinijuego({
+      ...mecanica,
+      indicadores: { ...mecanica.indicadores, [`sjt_${juicio.habilidad}`]: opcion.valor },
+      eventos: [...(mecanica.eventos ?? []), { t, tipo: 'sjt', datos: { habilidad: juicio.habilidad, opcion: respuesta } }],
+    });
+  };
+
+  const texto = mecanica.notaCierre ? `${resultado.textoCierre} ${mecanica.notaCierre}` : resultado.textoCierre;
 
   return (
     <div className="mt-3 grid gap-5" role="status">
-      <TextoAnimado texto={resultado.textoCierre} animar={animarTexto} onTerminado={() => setListo(true)} className="text-base leading-relaxed text-emerald-100 sm:text-lg" />
-      <Aparecer visible={listo}>
-        <Boton ref={botonRef} variante="primario" className="w-full sm:w-auto" onClick={() => completarMinijuego(mecanica)}>
+      <TextoAnimado texto={texto} animar={animarTexto} onTerminado={() => setListo(true)} className="text-base leading-relaxed text-emerald-100 sm:text-lg" />
+      {juicio && (
+        <Aparecer visible={listo}>
+          <div className="grid gap-3 rounded-xl border border-cyan-400/20 bg-slate-900/60 p-3">
+            <Bocadillo personaje={juicio.personaje} anunciar={false}>
+              Antes de seguir, una pregunta rápida: {juicio.pregunta}
+            </Bocadillo>
+            <ul className="grid gap-2" aria-label="Tu respuesta">
+              {juicio.opciones.map((o, i) => (
+                <li key={o.texto}>
+                  <button
+                    type="button"
+                    aria-pressed={respuesta === i}
+                    onClick={() => {
+                      sonido.click();
+                      setRespuesta(i);
+                    }}
+                    className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
+                      respuesta === i ? 'border-cyan-200 bg-cyan-400/25 text-white' : 'border-slate-700 bg-slate-900/70 text-slate-200 hover:border-cyan-300/60'
+                    }`}
+                  >
+                    {o.texto}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Aparecer>
+      )}
+      <Aparecer visible={puedeSeguir}>
+        <Boton ref={botonRef} variante="primario" className="w-full sm:w-auto" onClick={continuar}>
           Continuar →
         </Boton>
       </Aparecer>
@@ -328,7 +425,7 @@ function PantallaFin({ envio, onReintentar, onSalir }: { envio: EstadoEnvio; onR
 
   // Recorrido: los problemas que fue resolviendo, en el orden que eligió.
   const recorrido = historial
-    .filter((h) => escenasPorId.get(h.escenaId)?.tipo === 'minijuego')
+    .filter((h) => !h.retirada && escenasPorId.get(h.escenaId)?.tipo === 'minijuego')
     .map((h) => escenasPorId.get(h.escenaId)!.titulo);
 
   return (

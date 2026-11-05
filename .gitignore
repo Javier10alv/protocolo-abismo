@@ -3,3 +3,8 @@ dist
 .DS_Store
 *.local
 *.tsbuildinfo
+
+# Variables de entorno con posibles claves reales
+.env
+.env.*
+!.env.example
